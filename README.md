@@ -1,2 +1,3 @@
-# betor
-BeTor é o buscador Tor de filmes e séries mais brasileiro
+# BeTor
+
+BeTor é o buscador Tor de filmes e séries com o jeitinho mais brasileiro da internet.
