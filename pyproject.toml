@@ -1,0 +1,25 @@
+[project]
+name = "betor"
+version = "0.1.0"
+description = "BeTor é o buscador Tor de filmes e séries com o jeitinho mais brasileiro da internet."
+authors = [
+    {name = "Douglas Paz",email = "eu@douglaspaz.com"}
+]
+readme = "README.mxd"
+requires-python = ">=3.13"
+dependencies = [
+    "scrapy (>=2.13.3,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^4.2.0"
+flake8 = "^7.3.0"
+black = "^25.1.0"
+isort = "^6.0.1"
+mypy = "^1.17.0"

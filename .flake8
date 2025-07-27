@@ -1,0 +1,4 @@
+[flake8]
+paths =
+    ./betor
+    ./betor_scrapy
