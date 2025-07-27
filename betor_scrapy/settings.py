@@ -8,3 +8,6 @@ ROBOTSTXT_OBEY = True
 CONCURRENT_REQUESTS_PER_DOMAIN = 1
 DOWNLOAD_DELAY = 1
 FEED_EXPORT_ENCODING = "utf-8"
+DOWNLOADER_MIDDLEWARES = {
+    "betor_scrapy.middlewares.CloudflareDownloaderMiddleware": 543
+}
