@@ -5,7 +5,7 @@ description = "BeTor é o buscador Tor de filmes e séries com o jeitinho mais b
 authors = [
     {name = "Douglas Paz",email = "eu@douglaspaz.com"}
 ]
-readme = "README.mxd"
+readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "scrapy (>=2.13.3,<3.0.0)"
