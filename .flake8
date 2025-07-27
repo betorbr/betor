@@ -2,3 +2,4 @@
 paths =
     ./betor
     ./betor_scrapy
+extend-ignore = E501
