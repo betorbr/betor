@@ -1,3 +1,5 @@
+from betor.settings import flaresolverr_settings
+
 BOT_NAME = "betor_scrapy"
 SPIDER_MODULES = ["betor_scrapy.spiders"]
 NEWSPIDER_MODULE = "betor_scrapy.spiders"
@@ -9,3 +11,4 @@ DOWNLOADER_MIDDLEWARES = {
     "betor_scrapy.middlewares.CloudflareDownloaderResponseMiddleware": 552,
 }
 CONCURRENT_REQUESTS_PER_DOMAIN = 2
+FLARESOLVERR_BASE_URL = flaresolverr_settings.base_url

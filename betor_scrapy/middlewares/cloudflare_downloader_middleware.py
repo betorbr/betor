@@ -4,8 +4,6 @@ from typing import Optional, TypedDict
 import scrapy
 import scrapy.http
 
-from betor.settings import flaresolverr_settings
-
 
 class FlareSolverrSolutionType(TypedDict):
     url: str
@@ -21,17 +19,24 @@ class CloudflareDownloaderMiddleware:
         response: scrapy.http.Response,
         spider: scrapy.Spider,
     ):
+        if request.meta.get("flaresolverr", False):
+            return response
         if not (
             response.status == 403
-            and "<title>Just a moment...</title>" in response.text
+            and response.xpath("//title/text()").get() == "Just a moment..."
         ):
             return response
         spider.logger.info(
             "Cloudflare detected. Using FlareSolverr on URL: %s", request.url
         )
-        assert flaresolverr_settings.base_url, "FlareSolverr base URL not setted"
+        flaresolverr_base_url: Optional[str] = spider.crawler.settings.get(
+            "FLARESOLVERR_BASE_URL"
+        )
+        if not flaresolverr_base_url:
+            spider.logger.warning("Skip FlareSolverr, base URL not setted!")
+            return response
         return scrapy.http.Request(
-            f"{flaresolverr_settings.base_url}/v1",
+            f"{flaresolverr_base_url}/v1",
             request.callback,
             "POST",
             {"Content-type": "application/json"},
@@ -59,12 +64,9 @@ class CloudflareDownloaderResponseMiddleware:
     ):
         if not request.meta.get("flaresolverr", False):
             return response
-        assert (
-            response.status == 200
-        ), f"FlareSolverr fails... {response.status=} {response.body=}"
+        if response.status != 200:
+            return response
         data: dict = json.loads(response.body)
-        data_status = data.get("status")
-        assert data_status == "ok", f"FlareSolverr status {data_status}"
         data_solution: Optional[FlareSolverrSolutionType] = data.get("solution")
         assert data_solution, "FlareSolverr Solution empty"
         return scrapy.http.HtmlResponse(
