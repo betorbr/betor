@@ -1,6 +1,6 @@
+import json
 from typing import Optional, TypedDict
 
-import requests
 import scrapy
 import scrapy.http
 
@@ -30,28 +30,48 @@ class CloudflareDownloaderMiddleware:
             "Cloudflare detected. Using FlareSolverr on URL: %s", request.url
         )
         assert flaresolverr_settings.base_url, "FlareSolverr base URL not setted"
-        flaresolverr_response = requests.post(
+        return scrapy.http.Request(
             f"{flaresolverr_settings.base_url}/v1",
-            json={
-                "cmd": f"request.{request.method.lower()}",
-                "url": request.url,
+            request.callback,
+            "POST",
+            {"Content-type": "application/json"},
+            json.dumps(
+                {
+                    "cmd": f"request.{request.method.lower()}",
+                    "url": request.url,
+                }
+            ),
+            meta={
+                "flaresolverr": True,
+                **request.meta,
             },
+            errback=request.errback,
+            cb_kwargs=request.cb_kwargs,
         )
-        flaresolverr_response.raise_for_status()
-        flaresolverr_data: dict = flaresolverr_response.json()
-        flaresolverr_data_status = flaresolverr_data.get("status")
+
+
+class CloudflareDownloaderResponseMiddleware:
+    def process_response(
+        self,
+        request: scrapy.http.Request,
+        response: scrapy.http.Response,
+        spider: scrapy.Spider,
+    ):
+        if not request.meta.get("flaresolverr", False):
+            return response
         assert (
-            flaresolverr_data_status == "ok"
-        ), f"FlareSolverr status {flaresolverr_data_status}"
-        flaresolverr_data_solution: Optional[FlareSolverrSolutionType] = (
-            flaresolverr_data.get("solution")
-        )
-        assert flaresolverr_data_solution, "FlareSolverr Solution empty"
-        return scrapy.http.TextResponse(
-            url=flaresolverr_data_solution["url"],
-            status=flaresolverr_data_solution["status"],
-            headers=flaresolverr_data_solution["headers"],
-            body=flaresolverr_data_solution["response"],
+            response.status != 200
+        ), f"FlareSolverr fails... {response.status=} {response.body=}"
+        data: dict = json.loads(response.body)
+        data_status = data.get("status")
+        assert data_status == "ok", f"FlareSolverr status {data_status}"
+        data_solution: Optional[FlareSolverrSolutionType] = data.get("solution")
+        assert data_solution, "FlareSolverr Solution empty"
+        return scrapy.http.HtmlResponse(
+            url=data_solution["url"],
+            status=data_solution["status"],
+            headers=data_solution["headers"],
+            body=data_solution["response"],
             request=request,
             encoding="utf-8",
         )

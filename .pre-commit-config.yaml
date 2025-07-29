@@ -7,14 +7,15 @@ repos:
   rev: 7.3.0
   hooks:
   - id: flake8
-- repo: https://github.com/psf/black
-  rev: 25.1.0
-  hooks:
-  - id: black
 - repo: https://github.com/pycqa/isort
   rev: 6.0.1
   hooks:
   - id: isort
+    args: ["--profile", "black", "--filter-files"]
+- repo: https://github.com/psf/black
+  rev: 25.1.0
+  hooks:
+  - id: black
 - repo: https://github.com/pre-commit/mirrors-mypy
   rev: v1.17.0
   hooks:
