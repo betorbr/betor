@@ -60,7 +60,7 @@ class CloudflareDownloaderResponseMiddleware:
         if not request.meta.get("flaresolverr", False):
             return response
         assert (
-            response.status != 200
+            response.status == 200
         ), f"FlareSolverr fails... {response.status=} {response.body=}"
         data: dict = json.loads(response.body)
         data_status = data.get("status")
