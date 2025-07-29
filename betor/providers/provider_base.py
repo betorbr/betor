@@ -2,11 +2,20 @@ from abc import ABCMeta, abstractmethod
 from typing import Iterator
 
 import scrapy.http
+from slugify import slugify
 
 
 class ProviderBase(metaclass=ABCMeta):
     base_url: str
     page_url: str
+
+    @classmethod
+    def _slug(cls) -> str:
+        return slugify(cls.__name__)
+
+    @property
+    def slug(self) -> str:
+        return self.__class__._slug()
 
     def get_page_url(self, page: int = 1) -> str:
         if page > 1:
