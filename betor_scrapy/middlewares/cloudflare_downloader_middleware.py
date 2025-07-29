@@ -19,7 +19,7 @@ class CloudflareDownloaderMiddleware:
         response: scrapy.http.Response,
         spider: scrapy.Spider,
     ):
-        if request.meta.get("flaresolverr", False):
+        if "flaresolverr" in request.flags:
             return response
         if not (
             response.status == 403
@@ -46,11 +46,9 @@ class CloudflareDownloaderMiddleware:
                     "url": request.url,
                 }
             ),
-            meta={
-                "flaresolverr": True,
-                **request.meta,
-            },
+            meta=request.meta,
             errback=request.errback,
+            flags=["flaresolverr", *request.flags],
             cb_kwargs=request.cb_kwargs,
         )
 
@@ -62,7 +60,7 @@ class CloudflareDownloaderResponseMiddleware:
         response: scrapy.http.Response,
         spider: scrapy.Spider,
     ):
-        if not request.meta.get("flaresolverr", False):
+        if "flaresolverr" not in request.flags:
             return response
         if response.status != 200:
             return response
@@ -76,4 +74,5 @@ class CloudflareDownloaderResponseMiddleware:
             body=data_solution["response"],
             request=request,
             encoding="utf-8",
+            flags=["flaresolverr", *response.flags],
         )
