@@ -18,6 +18,10 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 
+[tool.setuptools]
+packages = ["betor", "betor_scrapy"]
+
+
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^4.2.0"
 flake8 = "^7.3.0"
