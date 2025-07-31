@@ -1,4 +1,5 @@
-from .bludv import BludvProvider
-from .comando_torrents import ComandoTorrentsProvider
+from .bludv import bludv
+from .comando_torrents import comando_torrents
+from .provider import Provider
 
-__all__ = ["ComandoTorrentsProvider", "BludvProvider"]
+__all__ = ["Provider", "bludv", "comando_torrents"]
