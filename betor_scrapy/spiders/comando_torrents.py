@@ -12,7 +12,7 @@ from betor_scrapy.loaders import ProviderLoader
 FIELD_TOKENS = {
     "translated_title": ["titulo-traduzido"],
     "title": ["titulo-original"],
-    "imdb": ["imdb"],
+    "imdb_rating": ["imdb"],
     "year": ["lancamento"],
     "quality": ["qualidade"],
     "languages": ["idioma"],
