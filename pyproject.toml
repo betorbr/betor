@@ -13,6 +13,13 @@ dependencies = [
     "python-slugify (>=8.0.4,<9.0.0)",
 ]
 
+[project.urls]
+Homepage = "https://github.com/dougppaz/betor"
+Documentation = "https://github.com/dougppaz/betor"
+Repository = "https://github.com/dougppaz/betor.git"
+"Bug Tracker" = "https://github.com/dougppaz/betor/issues"
+Changelog = "https://github.com/dougppaz/betor/releases"
+
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
