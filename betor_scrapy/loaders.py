@@ -4,10 +4,11 @@ import scrapy.http
 import scrapy.loader
 from itemloaders.processors import MapCompose, TakeFirst
 
+from betor.enum import QualityEnum
 from betor.providers.provider import Provider
 from betor_scrapy.items import ProviderItem
 
-from .processors import Title
+from .processors import Quality, SetIdentity, Title
 
 
 class ProviderLoader(scrapy.loader.ItemLoader):
@@ -18,6 +19,8 @@ class ProviderLoader(scrapy.loader.ItemLoader):
     translated_title_out = Title()
     raw_title_out = Title()
     year_in = MapCompose(int)
+    qualitys_in = MapCompose(Quality())
+    qualitys_out = SetIdentity[QualityEnum]()
 
     def __init__(
         self,

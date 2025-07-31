@@ -8,3 +8,4 @@ class ProviderItem(scrapy.Item):
     translated_title = scrapy.Field()
     raw_title = scrapy.Field()
     year = scrapy.Field(serializer=int)
+    qualitys = scrapy.Field()
