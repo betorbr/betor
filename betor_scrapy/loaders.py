@@ -2,7 +2,7 @@ from typing import Optional
 
 import scrapy.http
 import scrapy.loader
-from itemloaders.processors import TakeFirst
+from itemloaders.processors import MapCompose, TakeFirst
 
 from betor.providers.provider import Provider
 from betor_scrapy.items import ProviderItem
@@ -17,6 +17,7 @@ class ProviderLoader(scrapy.loader.ItemLoader):
     title_out = Title()
     translated_title_out = Title()
     raw_title_out = Title()
+    year_in = MapCompose(int)
 
     def __init__(
         self,
