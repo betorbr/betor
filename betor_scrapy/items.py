@@ -1,10 +1,10 @@
 import scrapy
-import scrapy.item
 
 
 class ProviderItem(scrapy.Item):
-    provider_slug = scrapy.item.Field()
-    provider_url = scrapy.item.Field()
-    title = scrapy.item.Field()
-    translated_title = scrapy.item.Field()
-    raw_title = scrapy.item.Field()
+    provider_slug = scrapy.Field()
+    provider_url = scrapy.Field()
+    title = scrapy.Field()
+    translated_title = scrapy.Field()
+    raw_title = scrapy.Field()
+    year = scrapy.Field(serializer=int)
