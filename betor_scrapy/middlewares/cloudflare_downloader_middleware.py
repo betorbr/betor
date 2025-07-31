@@ -46,7 +46,7 @@ class CloudflareDownloaderMiddleware:
                     "url": request.url,
                 }
             ),
-            meta=request.meta,
+            meta={"allow_offsite": True, **request.meta},
             errback=request.errback,
             flags=["flaresolverr", *request.flags],
             cb_kwargs=request.cb_kwargs,
