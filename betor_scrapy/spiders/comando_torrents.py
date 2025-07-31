@@ -14,7 +14,7 @@ FIELD_TOKENS = {
     "title": ["titulo-original"],
     "imdb_rating": ["imdb"],
     "year": ["lancamento"],
-    "quality": ["qualidade"],
+    "qualitys": ["qualidade"],
     "languages": ["idioma"],
     "genres": ["genero"],
     "format": ["formato"],
