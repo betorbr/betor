@@ -1,4 +1,5 @@
 import itertools
+import re
 from typing import Optional
 
 import scrapy
@@ -59,7 +60,14 @@ class ComandoTorrentsSpider(scrapy.Spider):
                     k for k, v in FIELD_TOKENS.items() if token_value in v
                 )
                 continue
-            if current_field and current_field in ProviderItem.fields.keys():
-                loader.add_value(current_field, informacoes_text[i])
+            if not current_field or current_field not in ProviderItem.fields.keys():
+                continue
+            value = informacoes_text[i]
+            cleaned_value = re.sub(r"^(:\W)", "", value)
+            if current_field == "languages":
+                for v in cleaned_value.split("|"):
+                    loader.add_value(current_field, v)
+                continue
+            loader.add_value(current_field, cleaned_value)
         loader.add_xpath("raw_title", "//article//header//h1//a/text()")
         yield loader.load_item()
