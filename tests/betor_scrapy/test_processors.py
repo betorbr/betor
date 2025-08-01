@@ -3,7 +3,7 @@ from typing import List
 import pytest
 
 from betor.enum import QualityEnum
-from betor_scrapy.processors import Quality, Title
+from betor_scrapy.processors import Language, Quality, Title
 
 
 class TestTitle:
@@ -80,3 +80,25 @@ class TestQuality:
     def test_ok(self, value: str, expected: str):
         processor = Quality()
         assert processor(value) == expected
+
+
+class TestLanguage:
+    @pytest.mark.parametrize(
+        (
+            "value",
+            "expected",
+        ),
+        [
+            (
+                "Português",
+                ["pt"],
+            ),
+            (
+                "Inglês",
+                ["en"],
+            ),
+        ],
+    )
+    def test_ok(self, value: str, expected: str):
+        processor = Language()
+        assert list(processor(value)) == expected

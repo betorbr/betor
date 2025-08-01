@@ -1,6 +1,7 @@
 import re
-from typing import List, Optional, Set, TypeVar
+from typing import Generator, List, Optional, Set, TypeVar
 
+import langcodes
 from slugify import slugify
 
 from betor.enum import QualityEnum
@@ -28,3 +29,14 @@ class Quality:
 class SetIdentity[T]:
     def __call__(self, values: Optional[List[T]]) -> Set[T]:
         return set(values or [])
+
+
+class Language:
+    def __call__(self, value: str) -> Generator[str]:
+        v_cleaned = re.sub(r"\s+", " ", value.strip())
+        if not v_cleaned:
+            return
+        try:
+            yield langcodes.find(v_cleaned).to_tag()
+        except LookupError:
+            pass
