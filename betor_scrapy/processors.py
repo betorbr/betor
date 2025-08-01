@@ -13,7 +13,6 @@ class Title:
         if not values:
             return None
         value = " ".join(values).strip()
-        value = re.sub(r"^(:\W)", "", value)
         value = re.sub(r"\s+", " ", value)
         return value
 

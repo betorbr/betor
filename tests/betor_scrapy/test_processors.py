@@ -18,10 +18,6 @@ class TestTitle:
                 "Rick and Morty",
             ),
             (
-                [": Rick and Morty"],
-                "Rick and Morty",
-            ),
-            (
                 [" Rick and  Morty"],
                 "Rick and Morty",
             ),
