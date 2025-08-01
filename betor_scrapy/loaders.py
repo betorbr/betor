@@ -8,7 +8,7 @@ from betor.enum import QualityEnum
 from betor.providers.provider import Provider
 from betor_scrapy.items import ProviderItem
 
-from .processors import Quality, SetIdentity, Title
+from .processors import Language, Quality, SetIdentity, Title
 
 
 class ProviderLoader(scrapy.loader.ItemLoader):
@@ -21,6 +21,8 @@ class ProviderLoader(scrapy.loader.ItemLoader):
     year_in = MapCompose(int)
     qualitys_in = MapCompose(Quality())
     qualitys_out = SetIdentity[QualityEnum]()
+    languages_in = MapCompose(Language())
+    languages_out = SetIdentity[QualityEnum]()
 
     def __init__(
         self,
