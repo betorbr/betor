@@ -71,4 +71,7 @@ class ComandoTorrentsSpider(scrapy.Spider):
             loader.add_value(current_field, cleaned_value)
         loader.add_xpath("raw_title", "//article//header//h1//a/text()")
         loader.add_xpath("magnet_links", "//a[starts-with(@href, 'magnet')]/@href")
+        loader.add_xpath(
+            "imdb_id", "//article//a[starts-with(@href, 'https://www.imdb.com')]/@href"
+        )
         yield loader.load_item()
