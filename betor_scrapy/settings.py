@@ -12,3 +12,6 @@ DOWNLOADER_MIDDLEWARES = {
 }
 CONCURRENT_REQUESTS_PER_DOMAIN = 2
 FLARESOLVERR_BASE_URL = flaresolverr_settings.base_url
+ITEM_PIPELINES = {
+    "betor_scrapy.pipelines.ItemsRepositoryPipeline": 300,
+}
