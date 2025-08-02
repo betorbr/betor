@@ -3,7 +3,7 @@ from typing import List
 import pytest
 
 from betor.enum import QualityEnum
-from betor_scrapy.processors import Language, Quality, Title
+from betor_scrapy.processors import IMDbIDs, Language, Quality, Title
 
 
 class TestTitle:
@@ -101,4 +101,42 @@ class TestLanguage:
     )
     def test_ok(self, value: str, expected: str):
         processor = Language()
+        assert list(processor(value)) == expected
+
+
+class TestIMDbIDs:
+    @pytest.mark.parametrize(
+        (
+            "value",
+            "expected",
+        ),
+        [
+            (
+                "https://www.imdb.com/pt/title/tt10548174/",
+                ["tt10548174"],
+            ),
+            (
+                "https://www.imdb.com/title/tt10548174/",
+                ["tt10548174"],
+            ),
+            (
+                "https://imdb.com/title/tt10548174/",
+                ["tt10548174"],
+            ),
+            (
+                "http://imdb.com/title/tt10548174/",
+                ["tt10548174"],
+            ),
+            (
+                "tt10548174",
+                ["tt10548174"],
+            ),
+            (
+                "10548174",
+                [],
+            ),
+        ],
+    )
+    def test_ok(self, value: str, expected: str):
+        processor = IMDbIDs()
         assert list(processor(value)) == expected

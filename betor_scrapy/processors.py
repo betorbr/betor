@@ -40,3 +40,14 @@ class Language:
             yield langcodes.find(v_cleaned).to_tag()
         except LookupError:
             pass
+
+
+class IMDbIDs:
+    URL_REGEX = r"http(s)?://(www.)?imdb.com/([\w]+/)?title/(?P<imdb_id>tt[\d]+)"
+
+    def __call__(self, value: str) -> Generator[str]:
+        if url_search := re.search(IMDbIDs.URL_REGEX, value):
+            yield url_search.group("imdb_id")
+        v = value.strip()
+        if v.startswith("tt"):
+            yield v
