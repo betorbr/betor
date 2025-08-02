@@ -7,7 +7,7 @@ import scrapy.http
 from slugify import slugify
 
 from betor.providers import comando_torrents
-from betor_scrapy.items import ProviderItem
+from betor_scrapy.items import ScrapyItem
 from betor_scrapy.loaders import ProviderLoader
 
 FIELD_TOKENS = {
@@ -60,7 +60,7 @@ class ComandoTorrentsSpider(scrapy.Spider):
                     k for k, v in FIELD_TOKENS.items() if token_value in v
                 )
                 continue
-            if not current_field or current_field not in ProviderItem.fields.keys():
+            if not current_field or current_field not in ScrapyItem.fields.keys():
                 continue
             value = informacoes_text[i]
             cleaned_value = re.sub(r"^(:\W)", "", value)

@@ -1,7 +1,7 @@
 import scrapy
 
 
-class ProviderItem(scrapy.Item):
+class ScrapyItem(scrapy.Item):
     provider_slug = scrapy.Field()
     provider_url = scrapy.Field()
     title = scrapy.Field()

@@ -6,13 +6,13 @@ from itemloaders.processors import Identity, MapCompose, TakeFirst
 
 from betor.enum import QualityEnum
 from betor.providers.provider import Provider
-from betor_scrapy.items import ProviderItem
+from betor_scrapy.items import ScrapyItem
 
 from .processors import IMDbIDs, Language, Quality, SetIdentity, Title
 
 
 class ProviderLoader(scrapy.loader.ItemLoader):
-    default_item_class = ProviderItem
+    default_item_class = ScrapyItem
     default_output_processor = TakeFirst()
 
     title_out = Title()
