@@ -32,11 +32,13 @@ class ProviderLoader(scrapy.loader.ItemLoader):
         provider: Provider,
         item=None,
         selector=None,
-        response: Optional[scrapy.http.Response] = None,
+        response: Optional[scrapy.http.TextResponse] = None,
         parent=None,
         **context,
     ):
-        super().__init__(item, selector, response, parent, **context)
+        super().__init__(
+            item=item, selector=selector, response=response, parent=parent, **context
+        )
         self.add_value("provider_slug", provider.slug)
         if response:
             self.add_value("provider_url", response.url)

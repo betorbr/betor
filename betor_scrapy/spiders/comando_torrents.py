@@ -45,6 +45,7 @@ class ComandoTorrentsSpider(scrapy.Spider):
             yield scrapy.http.Request(item_url)
 
     def parse_item(self, response: scrapy.http.Response):
+        assert isinstance(response, scrapy.http.TextResponse)
         loader = ProviderLoader(comando_torrents, response=response)
         informacoes_text = [
             t.strip()
