@@ -11,3 +11,4 @@ class ProviderItem(scrapy.Item):
     qualitys = scrapy.Field()
     languages = scrapy.Field()
     magnet_links = scrapy.Field()
+    imdb_id = scrapy.Field()

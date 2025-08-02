@@ -8,7 +8,7 @@ from betor.enum import QualityEnum
 from betor.providers.provider import Provider
 from betor_scrapy.items import ProviderItem
 
-from .processors import Language, Quality, SetIdentity, Title
+from .processors import IMDbIDs, Language, Quality, SetIdentity, Title
 
 
 class ProviderLoader(scrapy.loader.ItemLoader):
@@ -24,6 +24,8 @@ class ProviderLoader(scrapy.loader.ItemLoader):
     languages_in = MapCompose(Language())
     languages_out = SetIdentity[QualityEnum]()
     magnet_links_out = Identity()
+    imdb_id_in = MapCompose(IMDbIDs())
+    imdb_id_out = Identity()
 
     def __init__(
         self,
