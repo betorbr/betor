@@ -10,3 +10,4 @@ class ProviderItem(scrapy.Item):
     year = scrapy.Field(serializer=int)
     qualitys = scrapy.Field()
     languages = scrapy.Field()
+    magnet_links = scrapy.Field()

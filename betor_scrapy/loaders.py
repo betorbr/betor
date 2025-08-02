@@ -2,7 +2,7 @@ from typing import Optional
 
 import scrapy.http
 import scrapy.loader
-from itemloaders.processors import MapCompose, TakeFirst
+from itemloaders.processors import Identity, MapCompose, TakeFirst
 
 from betor.enum import QualityEnum
 from betor.providers.provider import Provider
@@ -23,6 +23,7 @@ class ProviderLoader(scrapy.loader.ItemLoader):
     qualitys_out = SetIdentity[QualityEnum]()
     languages_in = MapCompose(Language())
     languages_out = SetIdentity[QualityEnum]()
+    magnet_links_out = Identity()
 
     def __init__(
         self,
