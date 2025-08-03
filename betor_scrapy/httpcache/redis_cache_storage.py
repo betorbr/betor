@@ -1,5 +1,5 @@
 import pickle
-from typing import Optional
+from typing import List, Optional, TypedDict, cast
 
 import redis.exceptions
 import scrapy
@@ -8,6 +8,14 @@ import scrapy.responsetypes
 import scrapy.settings
 
 from betor.databases.redis import get_redis_client
+
+
+class _ResponseData(TypedDict):
+    url: str
+    headers: dict
+    status: int
+    body: bytes
+    flags: List[str]
 
 
 class RedisCacheStorage:
@@ -32,6 +40,7 @@ class RedisCacheStorage:
         pass
 
     def _get_request_key(self, spider: scrapy.Spider, request: scrapy.Request):
+        assert spider.crawler.request_fingerprinter
         return spider.crawler.request_fingerprinter.fingerprint(request).hex()
 
     def store_response(
@@ -43,16 +52,14 @@ class RedisCacheStorage:
         if not self.redis_available:
             return
         key = self._get_request_key(spider, request)
-        data = pickle.dumps(
-            {
-                "url": response.url,
-                "headers": dict(response.headers),
-                "status": response.status,
-                "body": response.body,
-                "flags": response.flags,
-            },
-            protocol=pickle.HIGHEST_PROTOCOL,
+        response_data = _ResponseData(
+            url=response.url,
+            headers=dict(response.headers),
+            status=response.status,
+            body=response.body,
+            flags=response.flags,
         )
+        data = pickle.dumps(response_data, protocol=pickle.HIGHEST_PROTOCOL)
         self.redis_client.set(key, data, ex=self.expiration_secs)
 
     def retrieve_response(
@@ -61,16 +68,18 @@ class RedisCacheStorage:
         if not self.redis_available:
             return None
         key = self._get_request_key(spider, request)
-        data = self.redis_client.get(key)
+        data = cast(Optional[bytes], self.redis_client.get(key))
         if data is None:
             return None
-        data = pickle.loads(data)
-        url = data["url"]
-        headers = scrapy.http.Headers(data["headers"])
-        status = data["status"]
-        body = data["body"]
-        flags = data["flags"]
+        response_data = cast(_ResponseData, pickle.loads(data))
+        headers = scrapy.http.Headers(response_data["headers"])
         respcls = scrapy.responsetypes.responsetypes.from_args(
-            headers=headers, url=url, body=body
+            headers=headers, url=response_data["url"], body=response_data["body"]
         )
-        return respcls(url=url, headers=headers, status=status, body=body, flags=flags)
+        return respcls(
+            url=response_data["url"],
+            headers=headers,
+            status=response_data["status"],
+            body=response_data["body"],
+            flags=response_data["flags"],
+        )
