@@ -15,6 +15,10 @@ class ComandoTorrentsSpider(scrapy.Spider):
         comando_torrents.get_page_url(3),
     ]
 
+    def start_requests(self):
+        for url in self.start_urls:
+            yield scrapy.Request(url, dont_filter=True, flags=["no-cache"])
+
     def parse(self, response: scrapy.http.Response):
         if response.xpath("//article//div[@itemprop='text']//p//a[@class='more-link']"):
             yield from self.parse_page(response)
@@ -23,7 +27,7 @@ class ComandoTorrentsSpider(scrapy.Spider):
 
     def parse_page(self, response: scrapy.http.Response):
         for item_url in response.xpath("//article//header//h2//a/@href").getall():
-            yield scrapy.http.Request(item_url)
+            yield scrapy.Request(item_url)
 
     def parse_item(self, response: scrapy.http.Response):
         assert isinstance(response, scrapy.http.TextResponse)

@@ -15,6 +15,10 @@ class BludvSpider(scrapy.Spider):
         bludv.get_page_url(3),
     ]
 
+    def start_requests(self):
+        for url in self.start_urls:
+            yield scrapy.Request(url, dont_filter=True, flags=["no-cache"])
+
     def parse(self, response: scrapy.http.Response):
         if response.xpath(
             "//div[@class='post']//div[@class='content']//p//a[@class='more-link']"
@@ -27,7 +31,7 @@ class BludvSpider(scrapy.Spider):
         for item_url in response.xpath(
             "//div[@class='posts']//div[@class='post']//div[@class='title']//a/@href"
         ).getall():
-            yield scrapy.http.Request(item_url)
+            yield scrapy.Request(item_url)
 
     def parse_item(self, response: scrapy.http.Response):
         assert isinstance(response, scrapy.http.TextResponse)
