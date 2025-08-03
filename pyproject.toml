@@ -14,6 +14,7 @@ dependencies = [
     "langcodes (>=3.5.0,<4.0.0)",
     "motor (>=3.7.1,<4.0.0)",
     "redis (>=6.2.0,<7.0.0)",
+    "fastapi[standard] (>=0.116.1,<0.117.0)",
 ]
 
 [project.urls]
