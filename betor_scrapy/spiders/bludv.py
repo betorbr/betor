@@ -11,8 +11,8 @@ class BludvSpider(scrapy.Spider):
     allowed_domains = bludv.domains
     start_urls = [
         bludv.get_page_url(),
-        bludv.get_page_url(1),
         bludv.get_page_url(2),
+        bludv.get_page_url(3),
     ]
 
     def parse(self, response: scrapy.http.Response):
