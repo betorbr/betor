@@ -20,5 +20,14 @@ class DatabaseMongoDBSettings(BaseSettings):
     betor_database: str = "betor"
 
 
+class DatabaseRedisSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env", env_prefix="database_redis_", extra="allow"
+    )
+
+    url: str = "redis://localhost:6379"
+
+
 flaresolverr_settings = FlareSolverrSettings()
 database_mongodb_settings = DatabaseMongoDBSettings()
+database_redis_settings = DatabaseRedisSettings()
