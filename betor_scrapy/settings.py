@@ -19,3 +19,5 @@ ITEM_PIPELINES = {
 HTTPCACHE_ENABLED = True
 HTTPCACHE_EXPIRATION_SECS = 14400
 HTTPCACHE_STORAGE = "betor_scrapy.httpcache.RedisCacheStorage"
+HTTPCACHE_POLICY = "betor_scrapy.httpcache.BetorHTTPCachePolicy"
+HTTPCACHE_IGNORE_HTTP_CODES = [500]
