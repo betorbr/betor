@@ -5,19 +5,13 @@ from betor.providers import comando_torrents
 from betor_scrapy.loaders import ProviderLoader
 from betor_scrapy.utils import extract_fields
 
+from .provider_spider import ProviderSpider
 
-class ComandoTorrentsSpider(scrapy.Spider):
+
+class ComandoTorrentsSpider(ProviderSpider, scrapy.Spider):
+    provider = comando_torrents
     name = comando_torrents.slug
     allowed_domains = comando_torrents.domains
-    start_urls = [
-        comando_torrents.get_page_url(),
-        comando_torrents.get_page_url(2),
-        comando_torrents.get_page_url(3),
-    ]
-
-    def start_requests(self):
-        for url in self.start_urls:
-            yield scrapy.Request(url, dont_filter=True, flags=["no-cache"])
 
     def parse(self, response: scrapy.http.Response):
         if response.xpath("//article//div[@itemprop='text']//p//a[@class='more-link']"):

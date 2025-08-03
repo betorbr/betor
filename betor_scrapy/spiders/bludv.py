@@ -5,19 +5,13 @@ from betor.providers import bludv
 from betor_scrapy.loaders import ProviderLoader
 from betor_scrapy.utils import extract_fields
 
+from .provider_spider import ProviderSpider
 
-class BludvSpider(scrapy.Spider):
+
+class BludvSpider(ProviderSpider, scrapy.Spider):
+    provider = bludv
     name = bludv.slug
     allowed_domains = bludv.domains
-    start_urls = [
-        bludv.get_page_url(),
-        bludv.get_page_url(2),
-        bludv.get_page_url(3),
-    ]
-
-    def start_requests(self):
-        for url in self.start_urls:
-            yield scrapy.Request(url, dont_filter=True, flags=["no-cache"])
 
     def parse(self, response: scrapy.http.Response):
         if response.xpath(
