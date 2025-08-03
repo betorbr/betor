@@ -1,38 +1,19 @@
-import itertools
-import re
-from typing import Optional
-
 import scrapy
 import scrapy.http
-from slugify import slugify
 
 from betor.providers import comando_torrents
-from betor_scrapy.items import ScrapyItem
 from betor_scrapy.loaders import ProviderLoader
-
-FIELD_TOKENS = {
-    "translated_title": ["titulo-traduzido"],
-    "title": ["titulo-original"],
-    "imdb_rating": ["imdb"],
-    "year": ["lancamento"],
-    "qualitys": ["qualidade"],
-    "languages": ["idioma"],
-    "genres": ["genero"],
-    "format": ["formato"],
-    "subtitles": ["legenda"],
-    "size": ["tamanho"],
-    "duration": ["duracao"],
-    "audio-quality": ["qualidade-do-audio"],
-    "video-quality": ["qualidade-de-video"],
-    "server": ["servidor"],
-}
-ALL_FIELD_TOKENS_VALUES = list(itertools.chain(*FIELD_TOKENS.values()))
+from betor_scrapy.utils import extract_fields
 
 
 class ComandoTorrentsSpider(scrapy.Spider):
     name = comando_torrents.slug
     allowed_domains = comando_torrents.domains
-    start_urls = [comando_torrents.get_page_url()]
+    start_urls = [
+        comando_torrents.get_page_url(),
+        comando_torrents.get_page_url(2),
+        comando_torrents.get_page_url(3),
+    ]
 
     def parse(self, response: scrapy.http.Response):
         if response.xpath("//article//div[@itemprop='text']//p//a[@class='more-link']"):
@@ -54,22 +35,8 @@ class ComandoTorrentsSpider(scrapy.Spider):
             ).getall()
             if t.strip() not in ["", "\n", ":", "»INFORMAÇÕES«"]
         ]
-        current_field: Optional[str] = None
-        for i, token_value in enumerate([slugify(t) for t in informacoes_text]):
-            if token_value in ALL_FIELD_TOKENS_VALUES:
-                current_field = next(
-                    k for k, v in FIELD_TOKENS.items() if token_value in v
-                )
-                continue
-            if not current_field or current_field not in ScrapyItem.fields.keys():
-                continue
-            value = informacoes_text[i]
-            cleaned_value = re.sub(r"^(:\W)", "", value)
-            if current_field == "languages":
-                for v in cleaned_value.split("|"):
-                    loader.add_value(current_field, v)
-                continue
-            loader.add_value(current_field, cleaned_value)
+        for field, value in extract_fields(informacoes_text):
+            loader.add_value(field, value)
         loader.add_xpath("raw_title", "//article//header//h1//a/text()")
         loader.add_xpath("magnet_links", "//a[starts-with(@href, 'magnet')]/@href")
         loader.add_xpath(
