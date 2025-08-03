@@ -32,3 +32,8 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: betor
       ME_CONFIG_MONGODB_URL: mongodb://betor:betor@mongodb:27017/
       ME_CONFIG_BASICAUTH: false
+
+  redis:
+    image: redis:8
+    ports:
+    - 6379:6379
