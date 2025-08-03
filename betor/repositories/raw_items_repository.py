@@ -7,28 +7,28 @@ from typing import Literal, Optional
 import motor.motor_asyncio
 
 from betor.settings import database_mongodb_settings
-from betor.types import Item
+from betor.types import RawItem
 
 
-class ItemsRepository:
+class RawItemsRepository:
     HASH_FIELD = "hash"
     INSERTED_AT_FIELD = "inserted_at"
     UPDATED_AT_FIELD = "updated_at"
 
     @classmethod
-    def calculate_hash(cls, item: Item) -> int:
-        item_data = cls.build_item_data(item)
+    def calculate_hash(cls, raw_item: RawItem) -> int:
+        item_data = cls.build_data(raw_item)
         raw = json.dumps(item_data)
         return int(hashlib.sha1(raw.encode()).hexdigest(), 16) % (10**8)
 
     @classmethod
-    def build_item_data(cls, item: Item) -> dict:
+    def build_data(cls, raw_item: RawItem) -> dict:
         return OrderedDict(
             (
                 k,
                 v,
             )
-            for k, v in sorted(item.items(), key=lambda kv: kv[0])
+            for k, v in sorted(raw_item.items(), key=lambda kv: kv[0])
             if k not in ["id", "hash", "inserted_at", "updated_at"]
         )
 
@@ -43,9 +43,9 @@ class ItemsRepository:
 
     @property
     def collection(self) -> motor.motor_asyncio.AsyncIOMotorCollection:
-        return self.database["items"]
+        return self.database["raw_items"]
 
-    async def get(self, provider_slug: str, provider_url: str) -> Optional[Item]:
+    async def get(self, provider_slug: str, provider_url: str) -> Optional[RawItem]:
         result = await self.collection.find_one(
             {"provider_slug": provider_slug, "provider_url": provider_url}
         )
@@ -53,11 +53,11 @@ class ItemsRepository:
             return None
         return {
             "id": result.get("_id"),
-            "hash": result.get(ItemsRepository.HASH_FIELD),
+            "hash": result.get(RawItemsRepository.HASH_FIELD),
             "provider_slug": result["provider_slug"],
             "provider_url": result["provider_url"],
-            "inserted_at": result.get(ItemsRepository.INSERTED_AT_FIELD),
-            "updated_at": result.get(ItemsRepository.UPDATED_AT_FIELD),
+            "inserted_at": result.get(RawItemsRepository.INSERTED_AT_FIELD),
+            "updated_at": result.get(RawItemsRepository.UPDATED_AT_FIELD),
             "imdb_id": result.get("imdb_id"),
             "magnet_links": result.get("magnet_links", []),
             "languages": result.get("languages", []),
@@ -68,40 +68,42 @@ class ItemsRepository:
             "year": result.get("year"),
         }
 
-    async def insert_or_update_item(
-        self, item: Item
+    async def insert_or_update(
+        self, raw_item: RawItem
     ) -> Literal["inserted", "updated", "no_change"]:
-        retrieved = await self.get(item["provider_slug"], item["provider_url"])
+        retrieved = await self.get(raw_item["provider_slug"], raw_item["provider_url"])
         if not retrieved:
-            await self.insert_item(item)
+            await self.insert(raw_item)
             return "inserted"
-        if retrieved.get("hash") != ItemsRepository.calculate_hash(item):
-            await self.update_item(item)
+        if retrieved.get("hash") != RawItemsRepository.calculate_hash(raw_item):
+            await self.update(raw_item)
             return "updated"
         return "no_change"
 
-    async def insert_item(self, item: Item, hash: Optional[str] = None):
+    async def insert(self, raw_item: RawItem, hash: Optional[str] = None):
         await self.collection.insert_one(
             {
-                **ItemsRepository.build_item_data(item),
-                ItemsRepository.HASH_FIELD: hash
-                or ItemsRepository.calculate_hash(item),
-                ItemsRepository.INSERTED_AT_FIELD: datetime.now(),
-                ItemsRepository.UPDATED_AT_FIELD: None,
+                **RawItemsRepository.build_data(raw_item),
+                RawItemsRepository.HASH_FIELD: hash
+                or RawItemsRepository.calculate_hash(raw_item),
+                RawItemsRepository.INSERTED_AT_FIELD: datetime.now(),
+                RawItemsRepository.UPDATED_AT_FIELD: None,
             }
         )
 
-    async def update_item(self, item: Item):
+    async def update(self, raw_item: RawItem):
         await self.collection.update_one(
             {
-                "provider_slug": item["provider_slug"],
-                "provider_url": item["provider_url"],
+                "provider_slug": raw_item["provider_slug"],
+                "provider_url": raw_item["provider_url"],
             },
             {
                 "$set": {
-                    **ItemsRepository.build_item_data(item),
-                    ItemsRepository.HASH_FIELD: ItemsRepository.calculate_hash(item),
-                    ItemsRepository.UPDATED_AT_FIELD: datetime.now(),
+                    **RawItemsRepository.build_data(raw_item),
+                    RawItemsRepository.HASH_FIELD: RawItemsRepository.calculate_hash(
+                        raw_item
+                    ),
+                    RawItemsRepository.UPDATED_AT_FIELD: datetime.now(),
                 }
             },
         )

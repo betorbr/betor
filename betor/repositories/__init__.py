@@ -1,3 +1,3 @@
-from .items_repository import ItemsRepository
+from .raw_items_repository import RawItemsRepository
 
-__all__ = ["ItemsRepository"]
+__all__ = ["RawItemsRepository"]

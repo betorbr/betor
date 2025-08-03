@@ -1,6 +1,6 @@
 import scrapy
 
-from betor.types import Item
+from betor.types import RawItem
 
 
 class ScrapyItem(scrapy.Item):
@@ -15,7 +15,7 @@ class ScrapyItem(scrapy.Item):
     magnet_links = scrapy.Field()
     imdb_id = scrapy.Field()
 
-    def to_item(self) -> Item:
+    def to_raw_item(self) -> RawItem:
         provider_slug = self.get("provider_slug")
         provider_url = self.get("provider_url")
         assert (

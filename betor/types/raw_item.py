@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional, TypedDict
 
 
-class Item(TypedDict):
+class RawItem(TypedDict):
     id: Optional[str]
     hash: Optional[int]
     inserted_at: Optional[datetime]
