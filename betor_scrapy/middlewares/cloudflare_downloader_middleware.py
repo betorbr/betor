@@ -60,7 +60,7 @@ class CloudflareDownloaderResponseMiddleware:
         response: scrapy.http.Response,
         spider: scrapy.Spider,
     ):
-        if "flaresolverr" not in request.flags:
+        if "flaresolverr" not in request.flags or "flaresolverr" in response.flags:
             return response
         if response.status != 200:
             return response
