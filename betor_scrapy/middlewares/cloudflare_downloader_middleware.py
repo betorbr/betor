@@ -4,6 +4,8 @@ from typing import Optional, TypedDict
 import scrapy
 import scrapy.http
 
+from betor_scrapy.extension import FlareSolverrExtension
+
 
 class FlareSolverrSolutionType(TypedDict):
     url: str
@@ -35,6 +37,8 @@ class CloudflareDownloaderMiddleware:
         if not flaresolverr_base_url:
             spider.logger.warning("Skip FlareSolverr, base URL not setted!")
             return response
+        flaresolverr: Optional[FlareSolverrExtension] = getattr(spider, "flaresolverr")
+        session = flaresolverr.get_free_session() if flaresolverr else None
         return scrapy.http.Request(
             f"{flaresolverr_base_url}/v1",
             request.callback,
@@ -44,9 +48,14 @@ class CloudflareDownloaderMiddleware:
                 {
                     "cmd": f"request.{request.method.lower()}",
                     "url": request.url,
+                    **({"session": session} if session else {}),
                 }
             ),
-            meta={"allow_offsite": True, **request.meta},
+            meta={
+                "allow_offsite": True,
+                "flaresolverr_session": session,
+                **request.meta,
+            },
             errback=request.errback,
             flags=["flaresolverr", *request.flags],
             cb_kwargs=request.cb_kwargs,
@@ -62,6 +71,12 @@ class CloudflareDownloaderResponseMiddleware:
     ):
         if "flaresolverr" not in request.flags or "flaresolverr" in response.flags:
             return response
+        if session := request.meta.get("flaresolverr_session"):
+            flaresolverr: Optional[FlareSolverrExtension] = getattr(
+                spider, "flaresolverr"
+            )
+            if flaresolverr:
+                flaresolverr.free_session(session)
         if response.status != 200:
             return response
         data: dict = json.loads(response.body)
