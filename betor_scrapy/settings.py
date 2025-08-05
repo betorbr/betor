@@ -14,7 +14,7 @@ DOWNLOADER_MIDDLEWARES = {
 CONCURRENT_REQUESTS_PER_DOMAIN = 2
 FLARESOLVERR_BASE_URL = flaresolverr_settings.base_url
 ITEM_PIPELINES = {
-    "betor_scrapy.pipelines.ItemsRepositoryPipeline": 300,
+    "betor_scrapy.pipelines.RawItemsRepositoryPipeline": 300,
 }
 HTTPCACHE_ENABLED = True
 HTTPCACHE_EXPIRATION_SECS = 14400

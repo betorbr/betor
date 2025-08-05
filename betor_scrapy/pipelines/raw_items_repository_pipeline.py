@@ -3,7 +3,7 @@ from betor.repositories import RawItemsRepository
 from betor_scrapy.items import ScrapyItem
 
 
-class ItemsRepositoryPipeline:
+class RawItemsRepositoryPipeline:
     def open_spider(self, spider):
         self.mongodb_client = get_mongodb_client()
         self.raw_items_repository = RawItemsRepository(self.mongodb_client)
