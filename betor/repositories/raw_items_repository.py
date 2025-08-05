@@ -51,22 +51,23 @@ class RawItemsRepository:
         )
         if not result:
             return None
-        return {
-            "id": result.get("_id"),
-            "hash": result.get(RawItemsRepository.HASH_FIELD),
-            "provider_slug": result["provider_slug"],
-            "provider_url": result["provider_url"],
-            "inserted_at": result.get(RawItemsRepository.INSERTED_AT_FIELD),
-            "updated_at": result.get(RawItemsRepository.UPDATED_AT_FIELD),
-            "imdb_id": result.get("imdb_id"),
-            "magnet_links": result.get("magnet_links", []),
-            "languages": result.get("languages", []),
-            "qualitys": result.get("qualitys", []),
-            "title": result.get("title"),
-            "translated_title": result.get("translated_title"),
-            "raw_title": result.get("raw_title"),
-            "year": result.get("year"),
-        }
+        return RawItem(
+            id=result.get("_id"),
+            hash=result.get(RawItemsRepository.HASH_FIELD),
+            provider_slug=result["provider_slug"],
+            provider_url=result["provider_url"],
+            inserted_at=result.get(RawItemsRepository.INSERTED_AT_FIELD),
+            updated_at=result.get(RawItemsRepository.UPDATED_AT_FIELD),
+            imdb_id=result.get("imdb_id"),
+            tmdb_id=result.get("tmdb_id"),
+            magnet_links=result.get("magnet_links", []),
+            languages=result.get("languages", []),
+            qualitys=result.get("qualitys", []),
+            title=result.get("title"),
+            translated_title=result.get("translated_title"),
+            raw_title=result.get("raw_title"),
+            year=result.get("year"),
+        )
 
     async def insert_or_update(
         self, raw_item: RawItem

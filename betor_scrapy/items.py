@@ -14,6 +14,7 @@ class ScrapyItem(scrapy.Item):
     languages = scrapy.Field()
     magnet_links = scrapy.Field()
     imdb_id = scrapy.Field()
+    tmdb_id = scrapy.Field()
 
     def to_raw_item(self) -> RawItem:
         provider_slug = self.get("provider_slug")
@@ -29,6 +30,7 @@ class ScrapyItem(scrapy.Item):
             "provider_slug": provider_slug,
             "provider_url": provider_url,
             "imdb_id": self.get("imdb_id"),
+            "tmdb_id": self.get("tmdb_id"),
             "magnet_links": self.get("magnet_links", []),
             "languages": list(self.get("languages", set())),
             "qualitys": list(self.get("qualitys", set())),

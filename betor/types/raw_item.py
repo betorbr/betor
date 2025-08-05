@@ -10,6 +10,7 @@ class RawItem(TypedDict):
     provider_slug: str
     provider_url: str
     imdb_id: Optional[str]
+    tmdb_id: Optional[str]
     magnet_links: List[str]
     languages: List[str]
     qualitys: List[str]
