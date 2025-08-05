@@ -25,7 +25,7 @@ class DatabaseRedisSettings(BaseSettings):
         env_file=".env", env_prefix="database_redis_", extra="allow"
     )
 
-    url: str = "redis://localhost:6379"
+    url: str = "redis://localhost:6379/0"
 
 
 flaresolverr_settings = FlareSolverrSettings()
