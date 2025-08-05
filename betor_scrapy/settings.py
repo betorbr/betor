@@ -11,7 +11,7 @@ DOWNLOADER_MIDDLEWARES = {
     "betor_scrapy.middlewares.CloudflareDownloaderMiddleware": 551,
     "betor_scrapy.middlewares.CloudflareDownloaderResponseMiddleware": 552,
 }
-CONCURRENT_REQUESTS_PER_DOMAIN = 2
+CONCURRENT_REQUESTS = 4
 FLARESOLVERR_BASE_URL = flaresolverr_settings.base_url
 ITEM_PIPELINES = {
     "betor_scrapy.pipelines.RawItemsRepositoryPipeline": 300,
