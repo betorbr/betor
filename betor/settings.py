@@ -28,6 +28,16 @@ class DatabaseRedisSettings(BaseSettings):
     url: str = "redis://localhost:6379/0"
 
 
+class CelerySettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env", env_prefix="database_redis_", extra="allow"
+    )
+
+    backend_url: str = "redis://localhost:6379/1"
+    broker_url: str = "redis://localhost:6379/1"
+
+
 flaresolverr_settings = FlareSolverrSettings()
 database_mongodb_settings = DatabaseMongoDBSettings()
 database_redis_settings = DatabaseRedisSettings()
+celery_settings = CelerySettings()
