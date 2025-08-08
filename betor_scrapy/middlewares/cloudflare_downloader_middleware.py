@@ -81,7 +81,7 @@ class CloudflareDownloaderResponseMiddleware:
             return response
         data: dict = json.loads(response.body)
         data_solution: Optional[FlareSolverrSolutionType] = data.get("solution")
-        assert data_solution, "FlareSolverr Solution empty"
+        assert data_solution, "FlareSolverr solution empty"
         return scrapy.http.HtmlResponse(
             url=data_solution["url"],
             status=data_solution["status"],

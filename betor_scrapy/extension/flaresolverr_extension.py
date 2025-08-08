@@ -63,5 +63,6 @@ class FlareSolverrExtension:
         self.free_sessions.add(data["session"])
 
     def free_session(self, session: str):
-        self.locked_sessions.remove(session)
+        if session in self.locked_sessions:
+            self.locked_sessions.remove(session)
         self.free_sessions.add(session)
