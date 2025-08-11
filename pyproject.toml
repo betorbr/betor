@@ -1,7 +1,7 @@
 [project]
 name = "betor"
 version = "0.1.0"
-description = "BeTor é o buscador Tor de filmes e séries com o jeitinho mais brasileiro da internet."
+description = "BeTor é o buscador P2P de filmes e séries com o jeitinho mais brasileiro da internet."
 authors = [
     {name = "Douglas Paz",email = "eu@douglaspaz.com"}
 ]
