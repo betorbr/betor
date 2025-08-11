@@ -4,7 +4,7 @@ from typing import Optional, TypedDict
 import scrapy
 import scrapy.http
 
-from betor_scrapy.extension import FlareSolverrExtension
+from betor_scrapy.extensions import FlareSolverrExtension
 
 
 class FlareSolverrSolutionType(TypedDict):
@@ -71,7 +71,7 @@ class CloudflareDownloaderResponseMiddleware:
     ):
         if "flaresolverr" not in request.flags or "flaresolverr" in response.flags:
             return response
-        if session := request.meta.get("flaresolverr_session"):
+        if session := request.meta.pop("flaresolverr_session"):
             flaresolverr: Optional[FlareSolverrExtension] = getattr(
                 spider, "flaresolverr"
             )

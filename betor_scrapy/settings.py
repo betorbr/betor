@@ -22,5 +22,5 @@ HTTPCACHE_STORAGE = "betor_scrapy.httpcache.RedisCacheStorage"
 HTTPCACHE_POLICY = "betor_scrapy.httpcache.BetorHTTPCachePolicy"
 HTTPCACHE_IGNORE_HTTP_CODES = [500]
 EXTENSIONS = {
-    "betor_scrapy.extension.FlareSolverrExtension": 500,
+    "betor_scrapy.extensions.FlareSolverrExtension": 500,
 }
