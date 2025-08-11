@@ -6,6 +6,12 @@ from .imdb_suggestion_api import (
     IMDbSuggestionResponseLink,
     IMDbSuggestionResponseTitle,
 )
+from .tmdb_trending_api import (
+    TMDBTrendingAPI,
+    TMDBTrendingAPIError,
+    TMDBTrendingResponse,
+    TMDBTrendingResponseResultTitle,
+)
 
 __all__ = [
     "IMDbSuggestionAPI",
@@ -14,4 +20,8 @@ __all__ = [
     "IMDbSuggestionResponseTitle",
     "IMDbSuggestionResponseLink",
     "IMDbSuggestionResponseImage",
+    "TMDBTrendingAPI",
+    "TMDBTrendingAPIError",
+    "TMDBTrendingResponse",
+    "TMDBTrendingResponseResultTitle",
 ]
