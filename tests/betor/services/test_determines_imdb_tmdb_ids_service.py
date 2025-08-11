@@ -185,8 +185,8 @@ class TestDetermines:
         ):
             raw_item = mock.MagicMock(spec=RawItem)
             assert await determines_imdb_tmdb_ids_service.determines(raw_item) == (
-                None,
-                None,
+                "1234",
+                "5678",
                 None,
             )
 

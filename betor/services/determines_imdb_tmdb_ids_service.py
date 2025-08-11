@@ -54,7 +54,7 @@ class DeterminesIMDbTMDBIdsService:
             )
         )
         if imdb_item_type != tmdb_item_type:
-            return None, None, None
+            return imdb_id, tmdb_id, None
         return imdb_id, tmdb_id, imdb_item_type
 
     async def determines_imdb_id(self, raw_item: RawItem) -> DeterminesGenerator:
