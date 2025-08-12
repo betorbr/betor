@@ -71,7 +71,7 @@ class CloudflareDownloaderResponseMiddleware:
     ):
         if "flaresolverr" not in request.flags or "flaresolverr" in response.flags:
             return response
-        if session := request.meta.pop("flaresolverr_session"):
+        if session := request.meta.pop("flaresolverr_session", None):
             flaresolverr: Optional[FlareSolverrExtension] = getattr(
                 spider, "flaresolverr"
             )
