@@ -7,7 +7,7 @@ from typing import Literal, Optional
 import motor.motor_asyncio
 
 from betor.settings import database_mongodb_settings
-from betor.types import Item
+from betor.types import Item, TorrentInfo
 
 
 class ItemsRepository:
@@ -29,7 +29,17 @@ class ItemsRepository:
                 v,
             )
             for k, v in sorted(item.items(), key=lambda kv: kv[0])
-            if k not in ["id", "hash", "inserted_at", "updated_at"]
+            if k
+            not in [
+                "id",
+                "hash",
+                "inserted_at",
+                "updated_at",
+                "torrent_name",
+                "torrent_num_peers",
+                "torrent_num_seeds",
+                "torrent_files",
+            ]
         )
 
     def __init__(self, mongodb_client: motor.motor_asyncio.AsyncIOMotorClient):
@@ -112,6 +122,19 @@ class ItemsRepository:
                 "$set": {
                     **ItemsRepository.build_data(item),
                     ItemsRepository.HASH_FIELD: ItemsRepository.calculate_hash(item),
+                    ItemsRepository.UPDATED_AT_FIELD: datetime.now(),
+                }
+            },
+        )
+
+    async def update_torrent_info(self, magnet_uri: str, torrent_info: TorrentInfo):
+        await self.collection.update_many(
+            {
+                "magnet_uri": magnet_uri,
+            },
+            {
+                "$set": {
+                    **torrent_info,
                     ItemsRepository.UPDATED_AT_FIELD: datetime.now(),
                 }
             },
