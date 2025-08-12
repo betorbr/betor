@@ -139,11 +139,14 @@ class TestProcessRawItemMagnetURI:
             tmdb_id=None,
             item_type=None,
         )
-        result = await process_raw_item_service.process_raw_item_magnet_uri(
-            raw_item,
-            base_item,
-            MAGNET_LINK_1,
-        )
+        with mock.patch(
+            "betor.services.process_raw_item_service.celery_app.signature"
+        ) as signature_mock:
+            result = await process_raw_item_service.process_raw_item_magnet_uri(
+                raw_item,
+                base_item,
+                MAGNET_LINK_1,
+            )
         assert result == process_raw_item_service.items_repository.get.return_value  # type: ignore[attr-defined]
         item = process_raw_item_service.items_repository.insert_or_update.call_args[0][  # type: ignore[attr-defined]
             0
@@ -152,6 +155,8 @@ class TestProcessRawItemMagnetURI:
         assert item["magnet_uri"] == MAGNET_LINK_1
         assert item["magnet_xt"] == "urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c"
         assert item["magnet_dn"] == "Big Buck Bunny"
+        signature_mock.assert_called_once_with("update_item_torrent_info")
+        signature_mock.return_value.delay.assert_called_once_with(MAGNET_LINK_1)
 
     @pytest.mark.parametrize(
         "magnet_uri",

@@ -4,6 +4,7 @@ from typing import List, Optional, TypedDict
 import motor.motor_asyncio
 import torf
 
+from betor.celery.app import celery_app
 from betor.repositories import ItemsRepository, RawItemsRepository
 from betor.types import BaseItem, Item, RawItem
 
@@ -70,6 +71,7 @@ class ProcessRawItemService:
             torrent_files=None,
         )
         await self.items_repository.insert_or_update(item)
+        celery_app.signature("update_item_torrent_info").delay(magnet_uri)
         return await self.items_repository.get(
             item["provider_slug"], item["provider_url"], item["magnet_xt"]
         )
