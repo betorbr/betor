@@ -1,3 +1,6 @@
+import base64
+from urllib.parse import parse_qs, urlparse
+
 import scrapy
 import scrapy.http
 
@@ -12,6 +15,19 @@ class BludvSpider(ProviderSpider, scrapy.Spider):
     provider = bludv
     name = bludv.slug
     allowed_domains = bludv.domains
+
+    @classmethod
+    def unlock_protected_link(cls, url: str) -> str:
+        parsed = urlparse(url)
+        qs = parse_qs(parsed.query)
+        id_values = qs.get("id")
+        if not id_values:
+            raise ValueError("id value not found")
+        id_value = "".join(id_values)[::-1]
+        try:
+            return base64.b64decode(id_value).decode()
+        except Exception as e:
+            raise ValueError("can't decode base64 value") from e
 
     def parse(self, response: scrapy.http.Response):
         if response.xpath(
@@ -47,4 +63,12 @@ class BludvSpider(ProviderSpider, scrapy.Spider):
             "imdb_id",
             "//div[@class='post']//a[starts-with(@href, 'https://www.imdb.com')]/@href",
         )
+        for protected_url in response.xpath(
+            "//a[starts-with(@href, 'https://www.systemads.org/get.php?id=')]/@href"
+        ).getall():
+            try:
+                unlocked = BludvSpider.unlock_protected_link(protected_url)
+                loader.add_value("magnet_links", unlocked)
+            except ValueError:
+                self.logger.debug("Can't not unlock URL: %s", protected_url)
         yield loader.load_item()
