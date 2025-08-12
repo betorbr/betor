@@ -17,8 +17,8 @@ class RawItemsRepository:
 
     @classmethod
     def calculate_hash(cls, raw_item: RawItem) -> int:
-        item_data = cls.build_data(raw_item)
-        raw = json.dumps(item_data)
+        raw_item_data = cls.build_data(raw_item)
+        raw = json.dumps(raw_item_data)
         return int(hashlib.sha1(raw.encode()).hexdigest(), 16) % (10**8)
 
     @classmethod
@@ -52,7 +52,7 @@ class RawItemsRepository:
         if not result:
             return None
         return RawItem(
-            id=result.get("_id"),
+            id=str(result["_id"]),
             hash=result.get(RawItemsRepository.HASH_FIELD),
             provider_slug=result["provider_slug"],
             provider_url=result["provider_url"],
