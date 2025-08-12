@@ -67,7 +67,8 @@ class DeterminesIMDbTMDBIdsService:
                 if "qid" not in item.keys():
                     continue
                 similarity = jaccard_similarity(
-                    raw_item["title"] or raw_item["translated_title"] or "", item["l"]
+                    item["l"],
+                    raw_item["title"] or raw_item["translated_title"] or "",
                 )
                 qid = item.get("qid")
                 if qid == "movie":
@@ -85,8 +86,8 @@ class DeterminesIMDbTMDBIdsService:
                 if isinstance(result, str):
                     continue
                 similarity = jaccard_similarity(
-                    raw_item["title"] or raw_item["translated_title"] or "",
                     result["name"],
+                    raw_item["title"] or raw_item["translated_title"] or "",
                 )
                 if result["media_type"] == "movie":
                     yield similarity, str(result["id"]), ItemType.movie
