@@ -57,6 +57,9 @@ class ProcessRawItemService:
         item = Item(
             **base_item,
             id=None,
+            hash=None,
+            inserted_at=None,
+            updated_at=None,
             magnet_link=magnet_link,
             magnet_xt=magnet.xt,
             magnet_dn=magnet.dn,
