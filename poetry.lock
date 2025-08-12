@@ -1243,6 +1243,61 @@ build = ["build", "twine"]
 test = ["pytest", "pytest-cov"]
 
 [[package]]
+name = "libtorrent"
+version = "2.0.11"
+description = "Python bindings for libtorrent-rasterbar"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "libtorrent-2.0.11-cp310-cp310-macosx_13_0_x86_64.whl", hash = "sha256:32abb3a0488d489f5d74a3c5fb164f0e445a9890af8d8bed5b617f5b145b3cf5"},
+    {file = "libtorrent-2.0.11-cp310-cp310-macosx_14_0_arm64.whl", hash = "sha256:684d9a1f06d4437735ea7aa1efb744cf9c8be28bf54f033e854516b8640f3eb4"},
+    {file = "libtorrent-2.0.11-cp310-cp310-macosx_15_0_arm64.whl", hash = "sha256:6639904a349532bbd785344f83849cd03bfc671f272a6701fc994ec77eaa9230"},
+    {file = "libtorrent-2.0.11-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:932e519299442e8dcd1b85cec84170b967e05ebc048e6b91b3212de8276b4f51"},
+    {file = "libtorrent-2.0.11-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:68d739dd51e5c2a0deb6822fdf4434113016fd942a70569813bfee3f1184a15b"},
+    {file = "libtorrent-2.0.11-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:1a09b0287ea545b3bc31552792db31d3c8999b179b0dbae6090b7986913d97ed"},
+    {file = "libtorrent-2.0.11-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:5f2354c596bd85b212c81daa84ea017b87fbe35aafbf167eb3b73d4be10a8e52"},
+    {file = "libtorrent-2.0.11-cp310-cp310-win32.whl", hash = "sha256:f29bbf659272c46c14b333c945e38282907c6c1784fd73af370fa475361bff84"},
+    {file = "libtorrent-2.0.11-cp310-cp310-win_amd64.whl", hash = "sha256:cf681e540d9c71d580262b64573be67ffe98e85a2fa22cf68cdbc9766878a7ef"},
+    {file = "libtorrent-2.0.11-cp311-cp311-macosx_13_0_x86_64.whl", hash = "sha256:5041f69119a4c0dc2c586a4cfa72b75bd3591561369da97abaa6fab9ed8bb0db"},
+    {file = "libtorrent-2.0.11-cp311-cp311-macosx_14_0_arm64.whl", hash = "sha256:4463ffa568cbfcc348098f15c7cfc8afccdbae2a63d929de9c45a929a0865b56"},
+    {file = "libtorrent-2.0.11-cp311-cp311-macosx_15_0_arm64.whl", hash = "sha256:93627846dd1567cbd961b23e4314d1661a1c64797338518837a35c5bb702a61c"},
+    {file = "libtorrent-2.0.11-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e92f5154527171ab48aa13116d6571fb167cde859b3169e8c28ae86989f301fd"},
+    {file = "libtorrent-2.0.11-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ffc0a821ea9df5ce33efcd9c08f34fcf7302d0eaa772cf12d9245c69fed32aeb"},
+    {file = "libtorrent-2.0.11-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:ac9ecf07a155fb2c2ac3da6596ca71d4bc3886e17bff1ab7c7594e2b663f99f1"},
+    {file = "libtorrent-2.0.11-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:a61a7b203d38a43db8a895437deef6c9b601fbb3444b972a8b2f4c7dac8ede7b"},
+    {file = "libtorrent-2.0.11-cp311-cp311-win32.whl", hash = "sha256:285e9e14771a3a0f4a49ad5c8e31f18a123e3a770d1f66b1376f72cc07bace99"},
+    {file = "libtorrent-2.0.11-cp311-cp311-win_amd64.whl", hash = "sha256:1c6520d43593da16aaac7dd49e5778be59a4f975e2566eb571779c5527433b24"},
+    {file = "libtorrent-2.0.11-cp312-cp312-macosx_13_0_x86_64.whl", hash = "sha256:392f8879911efc7c87f3bc7d6e2cff42be5c17abfc77d766f56083d07c9b6c8b"},
+    {file = "libtorrent-2.0.11-cp312-cp312-macosx_14_0_arm64.whl", hash = "sha256:e372dd7bf042296365d42b4bdf266f58626066f6ceb62bbd8ac23b376ab26d30"},
+    {file = "libtorrent-2.0.11-cp312-cp312-macosx_15_0_arm64.whl", hash = "sha256:31e2a990a055cefb296ed52d2998bea406ee4db538df8e919af9c6878f4d4c5b"},
+    {file = "libtorrent-2.0.11-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:fea392e3e0b2f5e84000ec87fd2b3fa11477216875809737ce00c9ba07db4c55"},
+    {file = "libtorrent-2.0.11-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fbf4418471a96158d995c4573697ce2dcf27ca42d0b03c3bf97b0165015bf641"},
+    {file = "libtorrent-2.0.11-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:db0bd26b803c21f3d02a455c9521c8aef4418c457b5751493cd464ca336ae11e"},
+    {file = "libtorrent-2.0.11-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:545bf693844477c42e8d24e0d461c3bec4ab3a71914cb6aea105044994e40a89"},
+    {file = "libtorrent-2.0.11-cp312-cp312-win32.whl", hash = "sha256:00c626742e03447703bc726bb430a0f3e2f0661ae5a5cd06f5d7cd1b81eb92c2"},
+    {file = "libtorrent-2.0.11-cp312-cp312-win_amd64.whl", hash = "sha256:5b8a9a5943c304d1c8093d2a6ec222d81dd84d080861cd5aaaa040e31034417a"},
+    {file = "libtorrent-2.0.11-cp313-cp313-macosx_13_0_x86_64.whl", hash = "sha256:f4489732bbc44114c7fb1893b71c578052d1aca352852002938b23ac8a6fb5c3"},
+    {file = "libtorrent-2.0.11-cp313-cp313-macosx_14_0_arm64.whl", hash = "sha256:758662c88a186c6018e4062d1b1b5e58ed55e17189ad4a7389c87b8b2b5efeb4"},
+    {file = "libtorrent-2.0.11-cp313-cp313-macosx_15_0_arm64.whl", hash = "sha256:55aa67cdc8cbf777e41998d5432a3ab01f198c955ec6d2fb14c500b309db3f37"},
+    {file = "libtorrent-2.0.11-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:474e792c52319cc918a007aa61cb34fb7f9236fa6c9603953e8c0fb3e6d922c7"},
+    {file = "libtorrent-2.0.11-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e234f665c987262d4102f6d2e099d76b12dfa20bcc77b77891184b075ab84ea8"},
+    {file = "libtorrent-2.0.11-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:8be0e27f40594bfee42e60e7785261834fdaf938267dceee8a08eae08a12a3c2"},
+    {file = "libtorrent-2.0.11-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:51daa58d0958ac99d88a1749d6848c6023ea899da98e503b12a1a311189d79fd"},
+    {file = "libtorrent-2.0.11-cp313-cp313-win32.whl", hash = "sha256:63fcb829d2b9fed566771426c7b1473a4acb7ccb4957ef07793b28de8468cd3e"},
+    {file = "libtorrent-2.0.11-cp313-cp313-win_amd64.whl", hash = "sha256:f72f0075b84aa18d25ee3ab3c39ba5193777d34d016c9a38294c92ffc60f6225"},
+    {file = "libtorrent-2.0.11-cp39-cp39-macosx_13_0_x86_64.whl", hash = "sha256:6be2cf307a3382568f6c7e115792afe6b4b6f92a597ebd764e06977930922fe6"},
+    {file = "libtorrent-2.0.11-cp39-cp39-macosx_14_0_arm64.whl", hash = "sha256:8b023adf97fe42427046a5c5c76095dac1af7bae3db6d3951a240a4b5786ff79"},
+    {file = "libtorrent-2.0.11-cp39-cp39-macosx_15_0_arm64.whl", hash = "sha256:1c9c8eb5075b8c0d46fcd8bd8f27ffb5df974b0dfdc361afa868c67bffeb4623"},
+    {file = "libtorrent-2.0.11-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3aabd1b4297be3b0be715711d4d38c058f67a7cbe5bc05335bdaf7f81e5ba4af"},
+    {file = "libtorrent-2.0.11-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:89164ae3ddaabd15d49b9ead2219f2810e1a76e6168203dab2d945338d2244e3"},
+    {file = "libtorrent-2.0.11-cp39-cp39-musllinux_1_2_aarch64.whl", hash = "sha256:c47a773f2c177a809b543ea59fd0f189e22fe1a9ff27067f8c0513878cd1620c"},
+    {file = "libtorrent-2.0.11-cp39-cp39-musllinux_1_2_x86_64.whl", hash = "sha256:bad4f90f95b5fae5499b8423e6eaa98bdf20391edb80faa56acc3899aad47b1f"},
+    {file = "libtorrent-2.0.11-cp39-cp39-win32.whl", hash = "sha256:a161094c82e3916347229c08835449a0238dbba6aa44e20a5dc7f53cfeb289f5"},
+    {file = "libtorrent-2.0.11-cp39-cp39-win_amd64.whl", hash = "sha256:3483f2379cd78508d550fa1fb2549d591340668199e1459cae36d04c4402f011"},
+]
+
+[[package]]
 name = "lxml"
 version = "6.0.0"
 description = "Powerful and Pythonic XML processing library combining libxml2/libxslt with the ElementTree API."
@@ -3382,4 +3437,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
-content-hash = "183d95cc81ec81992854fa0ff73641dcb0d0bc9d2b2d38fa44274bd68ad7cb67"
+content-hash = "e668e655ba154ba6ababa26320d23983c0759cf068052d9b7a8135dc7231cf77"
