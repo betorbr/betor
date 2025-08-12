@@ -4,7 +4,7 @@ import motor.motor_asyncio
 import pytest
 from faker import Faker
 
-from betor.repositories import RawItemsRepository
+from betor.repositories import ItemsRepository, RawItemsRepository
 from betor.services import DeterminesIMDbTMDBIdsService, ProcessRawItemService
 from betor.types import BaseItem, RawItem
 from betor.types.item_type import ItemType
@@ -24,6 +24,11 @@ def process_raw_item_service(mongodb_client_mock):
             "betor.services.process_raw_item_service.RawItemsRepository",
             new_callable=mock.MagicMock,
             spec=RawItemsRepository,
+        ),
+        mock.patch(
+            "betor.services.process_raw_item_service.ItemsRepository",
+            new_callable=mock.MagicMock,
+            spec=ItemsRepository,
         ),
         mock.patch(
             "betor.services.process_raw_item_service.DeterminesIMDbTMDBIdsService",
@@ -139,12 +144,14 @@ class TestProcessRawItemMagnetLink:
             base_item,
             MAGNET_LINK_1,
         )
-        assert result
-        assert result["magnet_link"] == MAGNET_LINK_1
-        assert (
-            result["magnet_xt"] == "urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c"
-        )
-        assert result["magnet_dn"] == "Big Buck Bunny"
+        assert result == process_raw_item_service.items_repository.get.return_value  # type: ignore[attr-defined]
+        item = process_raw_item_service.items_repository.insert_or_update.call_args[0][  # type: ignore[attr-defined]
+            0
+        ]
+        assert item
+        assert item["magnet_link"] == MAGNET_LINK_1
+        assert item["magnet_xt"] == "urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c"
+        assert item["magnet_dn"] == "Big Buck Bunny"
 
     @pytest.mark.parametrize(
         "magnet_link",

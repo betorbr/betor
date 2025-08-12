@@ -4,7 +4,7 @@ from typing import List, Optional, TypedDict
 import motor.motor_asyncio
 import torf
 
-from betor.repositories import RawItemsRepository
+from betor.repositories import ItemsRepository, RawItemsRepository
 from betor.types import BaseItem, Item, RawItem
 
 from .determines_imdb_tmdb_ids_service import DeterminesIMDbTMDBIdsService
@@ -18,6 +18,7 @@ class ProcessRawItemReturn(TypedDict):
 class ProcessRawItemService:
     def __init__(self, mongodb_client: motor.motor_asyncio.AsyncIOMotorClient):
         self.raw_items_repository = RawItemsRepository(mongodb_client)
+        self.items_repository = ItemsRepository(mongodb_client)
         self.determines_imdb_tmdb_ids_service = DeterminesIMDbTMDBIdsService()
 
     async def process(
@@ -64,4 +65,7 @@ class ProcessRawItemService:
             magnet_xt=magnet.xt,
             magnet_dn=magnet.dn,
         )
-        return item
+        await self.items_repository.insert_or_update(item)
+        return await self.items_repository.get(
+            item["provider_slug"], item["provider_url"], item["magnet_xt"]
+        )
