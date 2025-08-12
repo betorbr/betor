@@ -44,7 +44,7 @@ class TestProcess:
         "raw_item",
         [
             {
-                "magnet_links": [
+                "magnet_uris": [
                     "magnet:?xt=urn:btih:abcf1eaa3eb970de111e83be6cdd57260c1664ec"
                 ]
             }
@@ -70,7 +70,7 @@ class TestProcess:
         )
         with mock.patch.object(
             process_raw_item_service,
-            "process_raw_item_magnet_link",
+            "process_raw_item_magnet_uri",
             new_callable=mock.AsyncMock,
             return_value={"id": None},
         ):
@@ -105,10 +105,10 @@ class TestProcess:
         )
         with mock.patch.object(
             process_raw_item_service,
-            "process_raw_item_magnet_link",
+            "process_raw_item_magnet_uri",
             new_callable=mock.AsyncMock,
             return_value={"id": None},
-        ) as process_raw_item_magnet_link:
+        ) as process_raw_item_magnet_uri:
             assert await process_raw_item_service.process(
                 raw_item["provider_slug"], raw_item["provider_url"]
             ) == {
@@ -121,12 +121,12 @@ class TestProcess:
                 },
                 "items": [],
             }
-            process_raw_item_magnet_link.assert_not_called()
+            process_raw_item_magnet_uri.assert_not_called()
 
 
-class TestProcessRawItemMagnetLink:
+class TestProcessRawItemMagnetURI:
     @pytest.mark.parametrize(
-        "raw_item", [{"magnet_links": [MAGNET_LINK_1]}], indirect=["raw_item"]
+        "raw_item", [{"magnet_uris": [MAGNET_LINK_1]}], indirect=["raw_item"]
     )
     @pytest.mark.asyncio
     async def test_ok(
@@ -139,7 +139,7 @@ class TestProcessRawItemMagnetLink:
             tmdb_id=None,
             item_type=None,
         )
-        result = await process_raw_item_service.process_raw_item_magnet_link(
+        result = await process_raw_item_service.process_raw_item_magnet_uri(
             raw_item,
             base_item,
             MAGNET_LINK_1,
@@ -149,12 +149,12 @@ class TestProcessRawItemMagnetLink:
             0
         ]
         assert item
-        assert item["magnet_link"] == MAGNET_LINK_1
+        assert item["magnet_uri"] == MAGNET_LINK_1
         assert item["magnet_xt"] == "urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c"
         assert item["magnet_dn"] == "Big Buck Bunny"
 
     @pytest.mark.parametrize(
-        "magnet_link",
+        "magnet_uri",
         [
             "https://example.com",
             "https://example.com?foo=bar",
@@ -163,14 +163,14 @@ class TestProcessRawItemMagnetLink:
         ],
     )
     @pytest.mark.asyncio
-    async def test_invalid_magnet_link(
-        self, process_raw_item_service: ProcessRawItemService, magnet_link: str
+    async def test_invalid_magnet_uri(
+        self, process_raw_item_service: ProcessRawItemService, magnet_uri: str
     ):
         raw_item = mock.MagicMock(spec=RawItem)
         base_item = mock.MagicMock(spec=BaseItem)
-        result = await process_raw_item_service.process_raw_item_magnet_link(
+        result = await process_raw_item_service.process_raw_item_magnet_uri(
             raw_item,
             base_item,
-            magnet_link,
+            magnet_uri,
         )
         assert result is None

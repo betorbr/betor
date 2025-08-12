@@ -20,7 +20,7 @@ def raw_item(request: pytest.FixtureRequest, fake: Faker) -> RawItem:
         provider_url=fake.url(),
         imdb_id=None,
         tmdb_id=None,
-        magnet_links=[],
+        magnet_uris=[],
         languages=[],
         qualitys=[],
         title=None,

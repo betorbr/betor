@@ -36,7 +36,7 @@ class ComandoTorrentsSpider(ProviderSpider, scrapy.Spider):
         for field, value in extract_fields(informacoes_text):
             loader.add_value(field, value)
         loader.add_xpath("raw_title", "//article//header//h1//a/text()")
-        loader.add_xpath("magnet_links", "//a[starts-with(@href, 'magnet')]/@href")
+        loader.add_xpath("magnet_uris", "//a[starts-with(@href, 'magnet')]/@href")
         loader.add_xpath(
             "imdb_id", "//article//a[starts-with(@href, 'https://www.imdb.com')]/@href"
         )

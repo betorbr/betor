@@ -67,7 +67,7 @@ class ItemsRepository:
             hash=result.get(ItemsRepository.HASH_FIELD),
             inserted_at=result.get(ItemsRepository.INSERTED_AT_FIELD),
             updated_at=result.get(ItemsRepository.UPDATED_AT_FIELD),
-            magnet_link=result["magnet_link"],
+            magnet_uri=result["magnet_uri"],
             magnet_xt=result["magnet_xt"],
             magnet_dn=result.get("magnet_dn"),
         )

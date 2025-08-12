@@ -12,7 +12,7 @@ class ScrapyItem(scrapy.Item):
     year = scrapy.Field(serializer=int)
     qualitys = scrapy.Field()
     languages = scrapy.Field()
-    magnet_links = scrapy.Field()
+    magnet_uris = scrapy.Field()
     imdb_id = scrapy.Field()
     tmdb_id = scrapy.Field()
 
@@ -31,7 +31,7 @@ class ScrapyItem(scrapy.Item):
             "provider_url": provider_url,
             "imdb_id": self.get("imdb_id"),
             "tmdb_id": self.get("tmdb_id"),
-            "magnet_links": self.get("magnet_links", []),
+            "magnet_uris": self.get("magnet_uris", []),
             "languages": list(self.get("languages", set())),
             "qualitys": list(self.get("qualitys", set())),
             "title": self.get("title"),

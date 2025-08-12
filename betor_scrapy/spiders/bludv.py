@@ -58,7 +58,7 @@ class BludvSpider(ProviderSpider, scrapy.Spider):
         loader.add_xpath(
             "raw_title", "//div[@class='post']//div[@class='title']//h1/text()"
         )
-        loader.add_xpath("magnet_links", "//a[starts-with(@href, 'magnet')]/@href")
+        loader.add_xpath("magnet_uris", "//a[starts-with(@href, 'magnet')]/@href")
         loader.add_xpath(
             "imdb_id",
             "//div[@class='post']//a[starts-with(@href, 'https://www.imdb.com')]/@href",
@@ -68,7 +68,7 @@ class BludvSpider(ProviderSpider, scrapy.Spider):
         ).getall():
             try:
                 unlocked = BludvSpider.unlock_protected_link(protected_url)
-                loader.add_value("magnet_links", unlocked)
+                loader.add_value("magnet_uris", unlocked)
             except ValueError:
                 self.logger.debug("Can't not unlock URL: %s", protected_url)
         yield loader.load_item()

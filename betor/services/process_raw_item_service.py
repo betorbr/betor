@@ -39,8 +39,8 @@ class ProcessRawItemService:
         if not base_item["imdb_id"] and not base_item["tmdb_id"]:
             return ProcessRawItemReturn(base_item=base_item, items=[])
         tasks = [
-            self.process_raw_item_magnet_link(raw_item, base_item, magnet_link)
-            for magnet_link in raw_item["magnet_links"]
+            self.process_raw_item_magnet_uri(raw_item, base_item, magnet_uri)
+            for magnet_uri in raw_item["magnet_uris"]
         ]
         results = await asyncio.gather(*tasks)
         return ProcessRawItemReturn(
@@ -48,11 +48,11 @@ class ProcessRawItemService:
             items=[result for result in results if result is not None],
         )
 
-    async def process_raw_item_magnet_link(
-        self, raw_item: RawItem, base_item: BaseItem, magnet_link: str
+    async def process_raw_item_magnet_uri(
+        self, raw_item: RawItem, base_item: BaseItem, magnet_uri: str
     ) -> Optional[Item]:
         try:
-            magnet = torf.Magnet.from_string(magnet_link)
+            magnet = torf.Magnet.from_string(magnet_uri)
         except torf.MagnetError:
             return None
         item = Item(
@@ -61,7 +61,7 @@ class ProcessRawItemService:
             hash=None,
             inserted_at=None,
             updated_at=None,
-            magnet_link=magnet_link,
+            magnet_uri=magnet_uri,
             magnet_xt=magnet.xt,
             magnet_dn=magnet.dn,
         )

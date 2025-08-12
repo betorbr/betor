@@ -17,6 +17,6 @@ class Item(BaseItem):
     hash: Optional[int]
     inserted_at: Optional[datetime]
     updated_at: Optional[datetime]
-    magnet_link: str
+    magnet_uri: str
     magnet_xt: str
     magnet_dn: Optional[str]

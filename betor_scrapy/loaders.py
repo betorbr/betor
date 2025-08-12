@@ -23,7 +23,7 @@ class ProviderLoader(scrapy.loader.ItemLoader):
     qualitys_out = SetIdentity[QualityEnum]()
     languages_in = MapCompose(Language())
     languages_out = SetIdentity[str]()
-    magnet_links_out = Identity()
+    magnet_uris_out = Identity()
     imdb_id_in = MapCompose(IMDbIDs())
 
     def __init__(

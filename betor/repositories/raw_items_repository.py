@@ -60,7 +60,7 @@ class RawItemsRepository:
             updated_at=result.get(RawItemsRepository.UPDATED_AT_FIELD),
             imdb_id=result.get("imdb_id"),
             tmdb_id=result.get("tmdb_id"),
-            magnet_links=result.get("magnet_links", []),
+            magnet_uris=result.get("magnet_uris", []),
             languages=result.get("languages", []),
             qualitys=result.get("qualitys", []),
             title=result.get("title"),
