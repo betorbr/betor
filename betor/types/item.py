@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, TypedDict
 
 from .item_type import ItemType
@@ -13,6 +14,9 @@ class BaseItem(TypedDict):
 
 class Item(BaseItem):
     id: Optional[str]
+    hash: Optional[int]
+    inserted_at: Optional[datetime]
+    updated_at: Optional[datetime]
     magnet_link: str
     magnet_xt: str
     magnet_dn: Optional[str]
