@@ -14,4 +14,4 @@ def _process_raw_item(provider_slug: str, provider_url: str):
     return asyncio.run(service.process(provider_slug, provider_url))
 
 
-process_raw_item: Task = celery_app.task(_process_raw_item)
+process_raw_item: Task = celery_app.task(_process_raw_item, name="process_raw_item")
