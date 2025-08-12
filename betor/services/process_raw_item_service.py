@@ -64,6 +64,10 @@ class ProcessRawItemService:
             magnet_uri=magnet_uri,
             magnet_xt=magnet.xt,
             magnet_dn=magnet.dn,
+            torrent_name=None,
+            torrent_num_peers=None,
+            torrent_num_seeds=None,
+            torrent_files=None,
         )
         await self.items_repository.insert_or_update(item)
         return await self.items_repository.get(

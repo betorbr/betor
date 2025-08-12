@@ -70,6 +70,10 @@ class ItemsRepository:
             magnet_uri=result["magnet_uri"],
             magnet_xt=result["magnet_xt"],
             magnet_dn=result.get("magnet_dn"),
+            torrent_name=None,
+            torrent_num_peers=None,
+            torrent_num_seeds=None,
+            torrent_files=None,
         )
 
     async def insert_or_update(

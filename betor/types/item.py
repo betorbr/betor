@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional, TypedDict
 
 from .item_type import ItemType
+from .torrent_info import TorrentInfo
 
 
 class BaseItem(TypedDict):
@@ -12,7 +13,7 @@ class BaseItem(TypedDict):
     item_type: Optional[ItemType]
 
 
-class Item(BaseItem):
+class Item(BaseItem, TorrentInfo):
     id: Optional[str]
     hash: Optional[int]
     inserted_at: Optional[datetime]
