@@ -1,4 +1,4 @@
-from betor.celery import celery_app
+from betor.celery.app import celery_app
 from betor_scrapy.items import ScrapyItem
 
 
