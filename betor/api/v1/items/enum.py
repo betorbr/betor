@@ -1,10 +1,8 @@
 import enum
 
-from betor.repositories import ItemsRepository
-
 
 class ItemsSortEnum(enum.StrEnum):
-    inserted_at_asc = ItemsRepository.INSERTED_AT_FIELD
-    inserted_at_desc = f"-{ItemsRepository.INSERTED_AT_FIELD}"
-    updated_at_asc = ItemsRepository.UPDATED_AT_FIELD
-    updated_at_desc = f"-{ItemsRepository.UPDATED_AT_FIELD}"
+    inserted_at_asc = "inserted_at"
+    inserted_at_desc = "-inserted_at"
+    updated_at_asc = "updated_at"
+    updated_at_desc = "-updated_at"
