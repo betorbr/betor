@@ -20,5 +20,6 @@ async def list_items(
     repository = ItemsRepository(mongodb_client)
     return await apaginate(
         repository.collection,
+        sort=f"-{ItemsRepository.INSERTED_AT_FIELD}",
         transformer=ItemsRepository.parse_results,
     )
