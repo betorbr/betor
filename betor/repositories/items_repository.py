@@ -2,7 +2,7 @@ import hashlib
 import json
 from collections import OrderedDict
 from datetime import datetime
-from typing import Dict, List, Literal, Optional
+from typing import Dict, Literal, Optional, Sequence
 
 import motor.motor_asyncio
 
@@ -64,7 +64,7 @@ class ItemsRepository:
         )
 
     @classmethod
-    def parse_results(cls, results: List[Dict]) -> List[Item]:
+    def parse_results(cls, results: Sequence[Dict]) -> Sequence[Item]:
         return [ItemsRepository.parse_result(r) for r in results]
 
     def __init__(self, mongodb_client: motor.motor_asyncio.AsyncIOMotorClient):
