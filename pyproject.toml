@@ -21,6 +21,7 @@ dependencies = [
     "libtorrent (>=2.0.11,<3.0.0)",
     "fastapi-pagination (>=0.13.3,<0.14.0)",
     "pydantic (>=2.11.7,<3.0.0)",
+    "scrapyd (>=1.6.0,<2.0.0)",
 ]
 
 [project.urls]
@@ -30,22 +31,20 @@ Repository = "https://github.com/dougppaz/betor.git"
 "Bug Tracker" = "https://github.com/dougppaz/betor/issues"
 Changelog = "https://github.com/dougppaz/betor/releases"
 
+[project.entry-points.scrapy]
+settings = "betor_scrapy.settings"
+
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 
-[tool.setuptools]
-packages = ["betor", "betor_scrapy"]
-
-[[tool.mypy.overrides]]
-module = "celery"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "libtorrent"
-ignore_missing_imports = true
+[tool.poetry]
+packages = [
+    { include = "betor" },
+    { include = "betor_scrapy" },
+]
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^4.2.0"
@@ -59,3 +58,14 @@ pytest-asyncio = "^1.1.0"
 pytest-cov = "^6.2.1"
 flower = "^2.0.1"
 faker = "^37.5.3"
+
+[tool.setuptools]
+packages = ["betor", "betor_scrapy"]
+
+[[tool.mypy.overrides]]
+module = "celery"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "libtorrent"
+ignore_missing_imports = true
