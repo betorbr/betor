@@ -124,29 +124,6 @@ class TestDetermines:
                 ItemType.movie,
             )
 
-    @pytest.mark.asyncio
-    async def test_different_type(
-        self, determines_imdb_tmdb_ids_service: DeterminesIMDbTMDBIdsService
-    ):
-        with (
-            mock.patch(
-                "betor.services.determines_imdb_tmdb_ids_service.DeterminesIMDbTMDBIdsService.best_determines_option",
-                new_callable=mock.AsyncMock,
-                side_effect=[
-                    ("1234", ItemType.movie),
-                    ("5678", ItemType.tv),
-                ],
-            ),
-            mock.patch.object(determines_imdb_tmdb_ids_service, "determines_imdb_id"),
-            mock.patch.object(determines_imdb_tmdb_ids_service, "determines_tmdb_id"),
-        ):
-            raw_item = mock.MagicMock(spec=RawItem)
-            assert await determines_imdb_tmdb_ids_service.determines(raw_item) == (
-                "1234",
-                "5678",
-                None,
-            )
-
 
 class TestDeterminesImdbId:
     @pytest.mark.parametrize("raw_item", [{"title": "Foo Bar"}], indirect=["raw_item"])
@@ -236,8 +213,64 @@ class TestDeterminesTmdbId:
                     raw_item
                 )
             ]
+            assert len(result) == 2
             assert result[0] == (
                 1.0,
                 str(tmdb_id),
                 ItemType.movie,
+            )
+            assert result[1] == (
+                1.0,
+                mock.ANY,
+                ItemType.tv,
+            )
+
+    @pytest.mark.parametrize("raw_item", [{"title": "Foo Bar"}], indirect=["raw_item"])
+    @pytest.mark.asyncio
+    async def test_force_item_type(
+        self,
+        raw_item: RawItem,
+        fake: Faker,
+        determines_imdb_tmdb_ids_service: DeterminesIMDbTMDBIdsService,
+    ):
+        tmdb_id = fake.pyint(1000000, 9999999)
+        determines_imdb_tmdb_ids_service.tmdb_trending_api.execute.side_effect = [
+            TMDBTrendingAPIError,
+            {
+                "results": [
+                    {
+                        "id": fake.pyint(1000000, 9999999),
+                        "name": "Foo Bar",
+                        "media_type": "movie",
+                    },
+                    {
+                        "id": tmdb_id,
+                        "name": "Foo",
+                        "media_type": "tv",
+                    },
+                    "---",
+                ]
+            },
+        ]
+        with (
+            mock.patch(
+                "betor.services.determines_imdb_tmdb_ids_service.DeterminesIMDbTMDBIdsService.build_querys",
+                return_value=["foo 2025", "foo"],
+            ),
+            mock.patch(
+                "betor.services.determines_imdb_tmdb_ids_service.jaccard_similarity",
+                return_value=1.0,
+            ),
+        ):
+            result = [
+                item
+                async for item in determines_imdb_tmdb_ids_service.determines_tmdb_id(
+                    raw_item, ItemType.tv
+                )
+            ]
+            assert len(result) == 1
+            assert result[0] == (
+                1.0,
+                str(tmdb_id),
+                ItemType.tv,
             )

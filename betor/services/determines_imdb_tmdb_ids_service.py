@@ -48,13 +48,9 @@ class DeterminesIMDbTMDBIdsService:
                 self.determines_imdb_id(raw_item)
             )
         )
-        tmdb_id, tmdb_item_type = (
-            await DeterminesIMDbTMDBIdsService.best_determines_option(
-                self.determines_tmdb_id(raw_item)
-            )
+        tmdb_id, _ = await DeterminesIMDbTMDBIdsService.best_determines_option(
+            self.determines_tmdb_id(raw_item, imdb_item_type)
         )
-        if imdb_item_type != tmdb_item_type:
-            return imdb_id, tmdb_id, None
         return imdb_id, tmdb_id, imdb_item_type
 
     async def determines_imdb_id(self, raw_item: RawItem) -> DeterminesGenerator:
@@ -76,7 +72,9 @@ class DeterminesIMDbTMDBIdsService:
                 if qid == "tvSeries":
                     yield similarity, item["id"], ItemType.tv
 
-    async def determines_tmdb_id(self, raw_item: RawItem) -> DeterminesGenerator:
+    async def determines_tmdb_id(
+        self, raw_item: RawItem, force_item_type: Optional[ItemType] = None
+    ) -> DeterminesGenerator:
         for query in DeterminesIMDbTMDBIdsService.build_querys(raw_item):
             try:
                 data = await self.tmdb_trending_api.execute(query)
@@ -89,7 +87,11 @@ class DeterminesIMDbTMDBIdsService:
                     result["name"],
                     raw_item["title"] or raw_item["translated_title"] or "",
                 )
-                if result["media_type"] == "movie":
+                if result["media_type"] == "movie" and (
+                    not force_item_type or force_item_type == ItemType.movie
+                ):
                     yield similarity, str(result["id"]), ItemType.movie
-                if result["media_type"] == "tv":
+                if result["media_type"] == "tv" and (
+                    not force_item_type or force_item_type == ItemType.tv
+                ):
                     yield similarity, str(result["id"]), ItemType.tv
