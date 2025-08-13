@@ -57,10 +57,10 @@ class ItemsRepository:
             magnet_uri=result["magnet_uri"],
             magnet_xt=result["magnet_xt"],
             magnet_dn=result.get("magnet_dn"),
-            torrent_name=None,
-            torrent_num_peers=None,
-            torrent_num_seeds=None,
-            torrent_files=None,
+            torrent_name=result.get("torrent_name"),
+            torrent_num_peers=result.get("torrent_num_peers"),
+            torrent_num_seeds=result.get("torrent_num_seeds"),
+            torrent_files=result.get("torrent_files"),
         )
 
     @classmethod
