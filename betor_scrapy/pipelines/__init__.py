@@ -1,4 +1,3 @@
-from .dispatch_process_raw_item_pipeline import DispatchProcessRawItemPipeline
-from .raw_items_repository_pipeline import RawItemsRepositoryPipeline
+from .raw_items_pipeline import RawItemsPipeline
 
-__all__ = ["RawItemsRepositoryPipeline", "DispatchProcessRawItemPipeline"]
+__all__ = ["RawItemsPipeline"]
