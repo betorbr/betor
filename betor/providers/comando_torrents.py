@@ -4,5 +4,6 @@ comando_torrents = Provider(
     "comando-torrents",
     "https://comando.la",
     "{base_url}/page/{page}/",
-    "{base_url}/?q={qs}",
+    "{base_url}/?s={qs}",
+    "{base_url}/page/{page}/?s={qs}",
 )
