@@ -2,7 +2,7 @@ import hashlib
 import json
 from collections import OrderedDict
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Dict, List, Literal, Optional
 
 import motor.motor_asyncio
 
@@ -42,6 +42,31 @@ class ItemsRepository:
             ]
         )
 
+    @classmethod
+    def parse_result(cls, result: Dict) -> Item:
+        return Item(
+            provider_slug=result["provider_slug"],
+            provider_url=result["provider_url"],
+            imdb_id=result.get("imdb_id"),
+            tmdb_id=result.get("tmdb_id"),
+            item_type=result.get("item_type"),
+            id=str(result["_id"]),
+            hash=result.get(ItemsRepository.HASH_FIELD),
+            inserted_at=result.get(ItemsRepository.INSERTED_AT_FIELD),
+            updated_at=result.get(ItemsRepository.UPDATED_AT_FIELD),
+            magnet_uri=result["magnet_uri"],
+            magnet_xt=result["magnet_xt"],
+            magnet_dn=result.get("magnet_dn"),
+            torrent_name=None,
+            torrent_num_peers=None,
+            torrent_num_seeds=None,
+            torrent_files=None,
+        )
+
+    @classmethod
+    def parse_results(cls, results: List[Dict]) -> List[Item]:
+        return [ItemsRepository.parse_result(r) for r in results]
+
     def __init__(self, mongodb_client: motor.motor_asyncio.AsyncIOMotorClient):
         self.mongodb_client = mongodb_client
 
@@ -67,24 +92,7 @@ class ItemsRepository:
         )
         if not result:
             return None
-        return Item(
-            provider_slug=result["provider_slug"],
-            provider_url=result["provider_url"],
-            imdb_id=result.get("imdb_id"),
-            tmdb_id=result.get("tmdb_id"),
-            item_type=result.get("item_type"),
-            id=str(result["_id"]),
-            hash=result.get(ItemsRepository.HASH_FIELD),
-            inserted_at=result.get(ItemsRepository.INSERTED_AT_FIELD),
-            updated_at=result.get(ItemsRepository.UPDATED_AT_FIELD),
-            magnet_uri=result["magnet_uri"],
-            magnet_xt=result["magnet_xt"],
-            magnet_dn=result.get("magnet_dn"),
-            torrent_name=None,
-            torrent_num_peers=None,
-            torrent_num_seeds=None,
-            torrent_files=None,
-        )
+        return ItemsRepository.parse_result(result)
 
     async def insert_or_update(
         self, item: Item
