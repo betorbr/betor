@@ -4,9 +4,9 @@ from fastapi_pagination import Page
 from fastapi_pagination.ext.motor import apaginate
 
 from betor.api.fast_api import BetorRequest
+from betor.enum import ItemsSortEnum
 from betor.repositories import ItemsRepository
 
-from .enum import ItemsSortEnum
 from .schemas import ItemSchema
 
 items_router = APIRouter()

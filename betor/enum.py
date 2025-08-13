@@ -24,3 +24,10 @@ class QualityEnum(StrEnum):
     webdl_2160p = "WEBDL-2160p"
     bluray_2160p = "Bluray-2160p"
     bluray_2160p_remux = "Bluray-2160p Remux"
+
+
+class ItemsSortEnum(StrEnum):
+    inserted_at_asc = "inserted_at"
+    inserted_at_desc = "-inserted_at"
+    updated_at_asc = "updated_at"
+    updated_at_desc = "-updated_at"
