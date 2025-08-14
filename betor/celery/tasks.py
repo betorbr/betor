@@ -20,7 +20,17 @@ def _update_item_torrent_info(magnet_uri: str):
     return asyncio.run(service.update(magnet_uri))
 
 
-process_raw_item: Task = celery_app.task(_process_raw_item, name="process_raw_item")
+process_raw_item: Task = celery_app.task(
+    _process_raw_item,
+    name="process_raw_item",
+    priority=9,
+    default_retry_delay=15,
+    autoretry_for=(Exception,),
+    retry_kwargs={"max_retries": 3},
+)
 update_item_torrent_info: Task = celery_app.task(
-    _update_item_torrent_info, name="update_item_torrent_info"
+    _update_item_torrent_info,
+    name="update_item_torrent_info",
+    priority=0,
+    soft_time_limit=(5 * 60),
 )
