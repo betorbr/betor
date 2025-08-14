@@ -5,8 +5,8 @@ from unittest import mock
 import motor.motor_asyncio
 import pytest
 
+from betor.entities import RawItem
 from betor.repositories import ItemsRepository
-from betor.types import RawItem
 
 
 @pytest.fixture()

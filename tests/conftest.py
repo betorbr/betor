@@ -1,7 +1,7 @@
 import pytest
 from faker import Faker
 
-from betor.types import RawItem
+from betor.entities import RawItem
 
 
 @pytest.fixture

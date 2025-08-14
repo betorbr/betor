@@ -5,8 +5,8 @@ import motor.motor_asyncio
 import torf
 
 from betor.celery.app import celery_app
+from betor.entities import BaseItem, Item, RawItem
 from betor.repositories import ItemsRepository, RawItemsRepository
-from betor.types import BaseItem, Item, RawItem
 
 from .determines_imdb_tmdb_ids_service import DeterminesIMDbTMDBIdsService
 

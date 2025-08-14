@@ -1,12 +1,13 @@
 from typing import AsyncGenerator, Generator, Optional, Tuple
 
+from betor.entities import RawItem
+from betor.enum import ItemType
 from betor.external_apis import (
     IMDbSuggestionAPI,
     IMDbSuggestionAPIError,
     TMDBTrendingAPI,
     TMDBTrendingAPIError,
 )
-from betor.types import ItemType, RawItem
 from betor.utils import jaccard_similarity
 
 DeterminesOption = Tuple[float, Optional[str], Optional[ItemType]]

@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from betor.types import ItemType
+from betor.enum import ItemType
 
 
 class ItemSchema(BaseModel):

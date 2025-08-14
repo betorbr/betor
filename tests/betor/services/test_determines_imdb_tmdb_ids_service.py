@@ -4,6 +4,8 @@ from unittest import mock
 import pytest
 from faker import Faker
 
+from betor.entities import RawItem
+from betor.enum import ItemType
 from betor.external_apis import (
     IMDbSuggestionAPI,
     IMDbSuggestionAPIError,
@@ -11,7 +13,6 @@ from betor.external_apis import (
     TMDBTrendingAPIError,
 )
 from betor.services import DeterminesIMDbTMDBIdsService
-from betor.types import ItemType, RawItem
 
 
 @pytest.fixture

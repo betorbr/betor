@@ -6,8 +6,8 @@ from typing import Dict, Literal, Optional, Sequence
 
 import motor.motor_asyncio
 
+from betor.entities import Item, TorrentInfo
 from betor.settings import database_mongodb_settings
-from betor.types import Item, TorrentInfo
 
 
 class ItemsRepository:

@@ -3,8 +3,8 @@ import tempfile
 import libtorrent as lt
 import motor.motor_asyncio
 
+from betor.entities import TorrentInfo
 from betor.repositories import ItemsRepository
-from betor.types import TorrentInfo
 
 
 class UpdateItemTorrentInfoService:

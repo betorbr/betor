@@ -6,8 +6,8 @@ from typing import Literal, Optional
 
 import motor.motor_asyncio
 
+from betor.entities import RawItem
 from betor.settings import database_mongodb_settings
-from betor.types import RawItem
 
 
 class RawItemsRepository:

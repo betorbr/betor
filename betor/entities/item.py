@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import Optional, TypedDict
 
-from .item_type import ItemType
+from betor.enum import ItemType
+
 from .torrent_info import TorrentInfo
 
 

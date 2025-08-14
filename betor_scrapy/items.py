@@ -1,6 +1,6 @@
 import scrapy
 
-from betor.types import RawItem
+from betor.entities import RawItem
 
 
 class ScrapyItem(scrapy.Item):

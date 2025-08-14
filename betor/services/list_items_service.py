@@ -2,9 +2,9 @@ from typing import Callable, Dict, Sequence, Tuple, TypeAlias, Union
 
 import motor.motor_asyncio
 
+from betor.entities import Item
 from betor.enum import ItemsSortEnum
 from betor.repositories import ItemsRepository
-from betor.types import Item
 
 CursorSort: TypeAlias = Union[str, Tuple[str, int]]
 

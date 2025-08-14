@@ -1,8 +1,8 @@
 import motor.motor_asyncio
 
 from betor.celery.app import celery_app
+from betor.entities import RawItem
 from betor.repositories import RawItemsRepository
-from betor.types.raw_item import RawItem
 
 
 class InsertOrUpdateRawItemService:
