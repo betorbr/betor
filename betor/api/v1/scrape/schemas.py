@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, Field
 
 from betor.services import ScrapeReturn
@@ -5,7 +7,7 @@ from betor.services import ScrapeReturn
 
 class ScrapePayload(BaseModel):
     deep: int = Field(3)
-    q: str = Field(None)
+    q: Optional[str] = Field(None)
 
 
 class ScrapeResponse(BaseModel):
