@@ -10,5 +10,5 @@ scrape_router = APIRouter()
 @scrape_router.post("/")
 async def scrape(payload: ScrapePayload) -> ScrapeResponse:
     service = ScrapeService()
-    scrape_return = await service.scrape(deep=payload.deep)
+    scrape_return = await service.scrape(deep=payload.deep, q=payload.q)
     return ScrapeResponse(scrape_return=scrape_return)
