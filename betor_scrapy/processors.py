@@ -4,7 +4,7 @@ from typing import Generator, List, Optional, Set, TypeVar
 import langcodes
 from slugify import slugify
 
-from betor.enum import QualityEnum
+from betor.enums import QualityEnum
 
 T = TypeVar("T")
 

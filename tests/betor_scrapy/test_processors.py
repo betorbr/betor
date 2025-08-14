@@ -2,7 +2,7 @@ from typing import List
 
 import pytest
 
-from betor.enum import QualityEnum
+from betor.enums import QualityEnum
 from betor_scrapy.processors import IMDbIDs, Language, Quality, Title
 
 

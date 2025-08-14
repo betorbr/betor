@@ -5,7 +5,7 @@ import pytest
 from faker import Faker
 
 from betor.entities import BaseItem, RawItem
-from betor.enum import ItemType
+from betor.enums import ItemType
 from betor.repositories import ItemsRepository, RawItemsRepository
 from betor.services import DeterminesIMDbTMDBIdsService, ProcessRawItemService
 

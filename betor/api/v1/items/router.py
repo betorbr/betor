@@ -3,7 +3,7 @@ from fastapi_pagination import Page
 from fastapi_pagination.ext.motor import apaginate
 
 from betor.api.fast_api import BetorRequest
-from betor.enum import ItemsSortEnum
+from betor.enums import ItemsSortEnum
 from betor.services import ListItemsService
 
 from .schemas import ItemSchema

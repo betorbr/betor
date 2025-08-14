@@ -4,7 +4,7 @@ import scrapy.http
 import scrapy.loader
 from itemloaders.processors import Identity, MapCompose, TakeFirst
 
-from betor.enum import QualityEnum
+from betor.enums import QualityEnum
 from betor.providers.provider import Provider
 from betor_scrapy.items import ScrapyItem
 

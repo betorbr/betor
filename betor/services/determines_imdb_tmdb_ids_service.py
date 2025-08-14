@@ -1,7 +1,7 @@
 from typing import AsyncGenerator, Generator, Optional, Tuple
 
 from betor.entities import RawItem
-from betor.enum import ItemType
+from betor.enums import ItemType
 from betor.external_apis import (
     IMDbSuggestionAPI,
     IMDbSuggestionAPIError,

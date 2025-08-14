@@ -5,7 +5,7 @@ import pytest
 from faker import Faker
 
 from betor.entities import RawItem
-from betor.enum import ItemType
+from betor.enums import ItemType
 from betor.external_apis import (
     IMDbSuggestionAPI,
     IMDbSuggestionAPIError,
