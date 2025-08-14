@@ -22,6 +22,7 @@ dependencies = [
     "fastapi-pagination (>=0.13.3,<0.14.0)",
     "pydantic (>=2.11.7,<3.0.0)",
     "scrapyd (>=1.6.0,<2.0.0)",
+    "setuptools (>=80.9.0,<81.0.0)",
 ]
 
 [project.urls]
@@ -58,6 +59,7 @@ pytest-asyncio = "^1.1.0"
 pytest-cov = "^6.2.1"
 flower = "^2.0.1"
 faker = "^37.5.3"
+types-setuptools = "^80.9.0.20250809"
 
 [tool.setuptools]
 packages = ["betor", "betor_scrapy"]
