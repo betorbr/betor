@@ -19,7 +19,6 @@ class UpdateItemTorrentInfoService:
     def get_info_from_lt_session(self, magnet_uri: str) -> TorrentInfo:
         with tempfile.TemporaryDirectory() as save_path:
             lt_session = lt.session()
-            lt_session.pause()
             lt_add_torrent_params = lt.parse_magnet_uri(magnet_uri)
             lt_add_torrent_params.save_path = save_path
             lt_torrent_handler = lt_session.add_torrent(lt_add_torrent_params)
@@ -28,6 +27,7 @@ class UpdateItemTorrentInfoService:
                 lt_torrent_info = lt_torrent_handler.torrent_file()
                 if lt_torrent_info:
                     lt_file_storage = lt_torrent_info.orig_files()
+                    lt_session.pause()
                     return TorrentInfo(
                         torrent_name=lt_file_storage.name(),
                         torrent_num_peers=lt_torrent_status.num_peers,
