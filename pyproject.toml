@@ -23,6 +23,7 @@ dependencies = [
     "pydantic (>=2.11.7,<3.0.0)",
     "scrapyd (>=1.6.0,<2.0.0)",
     "setuptools (>=80.9.0,<81.0.0)",
+    "uuid (>=1.30,<2.0)",
 ]
 
 [project.urls]
