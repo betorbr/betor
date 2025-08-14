@@ -18,6 +18,6 @@ class ProviderSpider:
             return self.provider.get_search_url(self.q, page_n)
         return self.provider.get_page_url(page_n)
 
-    def start_requests(self):
+    async def start(self):
         for url in [self.page_url(page_n) for page_n in range(1, self.deep + 1)]:
             yield scrapy.Request(url, dont_filter=True, flags=["no-cache"])
