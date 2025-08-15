@@ -26,7 +26,7 @@ class JobMonitorRepository:
 
     @classmethod
     def redis_job_result_key(cls, job_monitor_id: str, job_index: str) -> str:
-        return f"{JobMonitorRepository.redis_job_monitor_key(job_monitor_id)}:{job_index}:results"
+        return f"{JobMonitorRepository.redis_job_monitor_key(job_monitor_id)}:results:{job_index}"
 
     def __init__(self, redis_client: redis.Redis):
         self.redis_client = redis_client
@@ -73,11 +73,8 @@ class JobMonitorRepository:
         self.redis_client.expireat(key, int(job_monitor["expired_at"].timestamp()))
         return job_index
 
-    def get_jobs(self, job_monitor: Union[str, JobMonitor]) -> Dict[str, Job]:
-        job_monitor = (
-            self.get(job_monitor) if isinstance(job_monitor, str) else job_monitor
-        )
-        key = JobMonitorRepository.redis_jobs_key(job_monitor["id"])
+    def get_jobs(self, job_monitor_id: str) -> Dict[str, Job]:
+        key = JobMonitorRepository.redis_jobs_key(job_monitor_id)
         jobs_raw_data = cast(Dict[bytes, bytes], self.redis_client.hgetall(key))
         jobs_data = {
             k.decode(): cast(Dict[str, Any], json.loads(v))
