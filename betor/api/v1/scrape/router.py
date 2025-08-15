@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from betor.api.fast_api import BetorRequest
-from betor.services.scrape_service import ScrapeService
+from betor.services import ScrapeService
 
 from .schemas import ScrapePayload, ScrapeResponse
 
