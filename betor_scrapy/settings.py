@@ -15,6 +15,7 @@ CONCURRENT_REQUESTS = 4
 FLARESOLVERR_BASE_URL = flaresolverr_settings.base_url
 ITEM_PIPELINES = {
     "betor_scrapy.pipelines.RawItemsPipeline": 300,
+    "betor_scrapy.pipelines.JobMonitorResultsPipeline": 301,
 }
 HTTPCACHE_ENABLED = True
 HTTPCACHE_EXPIRATION_SECS = 14400
