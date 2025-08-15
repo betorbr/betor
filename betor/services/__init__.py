@@ -1,3 +1,4 @@
+from .add_job_results_service import AddJobResultsService
 from .determines_imdb_tmdb_ids_service import DeterminesIMDbTMDBIdsService
 from .insert_or_update_raw_item_service import InsertOrUpdateRawItemService
 from .list_items_service import ListItemsService
@@ -13,4 +14,5 @@ __all__ = [
     "ListItemsService",
     "ScrapeService",
     "ScrapeReturn",
+    "AddJobResultsService",
 ]
