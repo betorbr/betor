@@ -1,4 +1,5 @@
 import json
+import pickle
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Union, cast
 from uuid import uuid4
@@ -34,7 +35,7 @@ class JobMonitorRepository:
         job_monitor_id = str(uuid4())
         expired_at = datetime.now() + timedelta(hours=2)
         key = JobMonitorRepository.redis_job_monitor_key(job_monitor_id)
-        job_monitor = JobMonitor(id=job_monitor_id, expired_at=expired_at, jobs=None)
+        job_monitor = JobMonitor(id=job_monitor_id, expired_at=expired_at)
         self.redis_client.set(
             key,
             json.dumps(
@@ -44,30 +45,16 @@ class JobMonitorRepository:
         )
         return job_monitor
 
-    def get(self, job_monitor_id: str, deep: bool = False) -> JobMonitor:
+    def get(self, job_monitor_id: str) -> JobMonitor:
         key = JobMonitorRepository.redis_job_monitor_key(job_monitor_id)
         value = cast(str, self.redis_client.get(key))
         if not value:
             raise JobMonitorNotFound(job_monitor_id)
         data = cast(dict, json.loads(value))
-        job_monitor = JobMonitor(
+        return JobMonitor(
             id=data["id"],
             expired_at=datetime.fromtimestamp(data["ea"]),
-            jobs=None,
         )
-        if deep:
-            jobs_key = JobMonitorRepository.redis_jobs_key(job_monitor["id"])
-            jobs_raw_data = cast(
-                Dict[bytes, bytes], self.redis_client.hgetall(jobs_key)
-            )
-            job_monitor["jobs"] = {
-                k.decode(): Job(  # type: ignore[typeddict-item]
-                    results=self._get_results(job_monitor_id, k.decode()),
-                    **json.loads(v),
-                )
-                for k, v in jobs_raw_data.items()
-            }
-        return job_monitor
 
     def add_job(
         self,
@@ -80,19 +67,36 @@ class JobMonitorRepository:
         )
         job_index = job_index or str(uuid4())
         key = JobMonitorRepository.redis_jobs_key(job_monitor["id"])
-        self.redis_client.hset(key, job_index, json.dumps(job))
+        self.redis_client.hset(
+            key, job_index, json.dumps({"id": job["id"], "tp": job["type"]})
+        )
         self.redis_client.expireat(key, int(job_monitor["expired_at"].timestamp()))
         return job_index
+
+    def get_jobs(self, job_monitor: Union[str, JobMonitor]) -> Dict[str, Job]:
+        job_monitor = (
+            self.get(job_monitor) if isinstance(job_monitor, str) else job_monitor
+        )
+        key = JobMonitorRepository.redis_jobs_key(job_monitor["id"])
+        jobs_raw_data = cast(Dict[bytes, bytes], self.redis_client.hgetall(key))
+        jobs_data = {
+            k.decode(): cast(Dict[str, Any], json.loads(v))
+            for k, v in jobs_raw_data.items()
+        }
+        return {
+            job_index: Job(id=job_data["id"], type=job_data["tp"])
+            for job_index, job_data in jobs_data.items()
+        }
 
     def add_result(self, job_monitor: Union[str, JobMonitor], job_index: str, *results):
         job_monitor = (
             self.get(job_monitor) if isinstance(job_monitor, str) else job_monitor
         )
         key = JobMonitorRepository.redis_job_result_key(job_monitor["id"], job_index)
-        self.redis_client.lpush(key, *[json.dumps(r) for r in results])
+        self.redis_client.lpush(key, *[pickle.dumps(r) for r in results])
         self.redis_client.expireat(key, int(job_monitor["expired_at"].timestamp()))
 
-    def _get_results(self, job_monitor_id: str, job_index: str) -> List[Any]:
+    def get_results(self, job_monitor_id: str, job_index: str) -> List[Any]:
         key = JobMonitorRepository.redis_job_result_key(job_monitor_id, job_index)
         results = cast(List[bytes], self.redis_client.lrange(key, 0, -1))
-        return [json.loads(r) for r in results]
+        return [pickle.loads(r) for r in results]
