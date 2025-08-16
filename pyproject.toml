@@ -70,5 +70,9 @@ module = "celery"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+module = "celery.result"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = "libtorrent"
 ignore_missing_imports = true
