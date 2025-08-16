@@ -22,9 +22,8 @@ class RawItemsPipeline:
 
     async def process_item(self, item: ScrapyItem, spider: scrapy.Spider):
         job_monitor_id: Optional[str] = getattr(spider, "job_monitor_id", None)
-        job_index: Optional[str] = getattr(spider, "job_index", None)
         raw_item = item.to_raw_item()
         await self.insert_or_update_raw_item_service.insert_or_update(
-            raw_item, job_monitor_id=job_monitor_id, job_index=job_index
+            raw_item, job_monitor_id=job_monitor_id
         )
         return item

@@ -22,13 +22,12 @@ class InsertOrUpdateRawItemService:
         self,
         raw_item: RawItem,
         job_monitor_id: Optional[str] = None,
-        job_index: Optional[str] = None,
     ):
         await self.raw_items_repository.insert_or_update(raw_item)
         result: celery.result.AsyncResult = celery_app.signature(
             "process_raw_item"
         ).delay(raw_item["provider_slug"], raw_item["provider_url"])
-        if job_monitor_id and job_index:
+        if job_monitor_id:
             self.job_monitor_repository.add_job(
                 job_monitor_id, Job(type="celery-task", id=result.id)
             )
