@@ -1,5 +1,7 @@
 from datetime import datetime
-from typing import Literal, TypedDict
+from typing import Literal, TypeAlias, TypedDict
+
+JobType: TypeAlias = Literal["scrapd-schedule", "celery-task"]
 
 
 class JobMonitor(TypedDict):
@@ -8,5 +10,5 @@ class JobMonitor(TypedDict):
 
 
 class Job(TypedDict):
-    type: Literal["scrapd-schedule", "celery-task"]
+    type: JobType
     id: str
