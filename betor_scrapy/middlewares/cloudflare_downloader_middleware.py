@@ -54,6 +54,7 @@ class CloudflareDownloaderMiddleware:
             meta={
                 "allow_offsite": True,
                 "flaresolverr_session": session,
+                "original_request": request,
                 **request.meta,
             },
             errback=request.errback,

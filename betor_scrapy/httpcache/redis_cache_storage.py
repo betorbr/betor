@@ -23,7 +23,10 @@ class RedisCacheStorage:
 
     def __init__(self, settings: scrapy.settings.Settings):
         self.redis_client = get_redis_client()
-        self.expiration_secs = settings.getint("HTTPCACHE_EXPIRATION_SECS")
+        self.expiration_secs = settings.getint("HTTPCACHE_EXPIRATION_SECS", 1800)
+        self.redis_key_prefix = settings.get(
+            "HTTPCACHE_REDIS_KEY_PREFIX", "scrapy_redis_cache:"
+        )
 
     def open_spider(self, spider: scrapy.Spider):
         try:
@@ -41,7 +44,10 @@ class RedisCacheStorage:
 
     def _get_request_key(self, spider: scrapy.Spider, request: scrapy.Request):
         assert spider.crawler.request_fingerprinter
-        return spider.crawler.request_fingerprinter.fingerprint(request).hex()
+        fingerprint = spider.crawler.request_fingerprinter.fingerprint(
+            request.meta.get("original_request") or request
+        ).hex()
+        return f"{self.redis_key_prefix}{fingerprint}"
 
     def store_response(
         self,
