@@ -40,7 +40,7 @@ class RedisCacheStorage:
             self.redis_available = False
 
     def close_spider(self, spider: scrapy.Spider):
-        pass
+        self.redis_client.close()
 
     def _get_request_key(self, spider: scrapy.Spider, request: scrapy.Request):
         assert spider.crawler.request_fingerprinter

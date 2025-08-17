@@ -36,19 +36,24 @@ def _process_raw_item(
     mongodb_client = get_mongodb_client()
     redis_client = get_redis_client()
     service = ProcessRawItemService(mongodb_client, redis_client)
-    return asyncio.run(
+    result = asyncio.run(
         service.process(
             provider_slug,
             provider_url,
             job_monitor_id=job_monitor_id,
         )
     )
+    mongodb_client.close()
+    redis_client.close()
+    return result
 
 
 def _update_item_torrent_info(magnet_uri: str, **kwargs):
     mongodb_client = get_mongodb_client()
     service = UpdateItemTorrentInfoService(mongodb_client)
-    return asyncio.run(service.update(magnet_uri))
+    result = asyncio.run(service.update(magnet_uri))
+    mongodb_client.close()
+    return result
 
 
 process_raw_item: Task = celery_app.task(
