@@ -68,7 +68,9 @@ class JobMonitorRepository:
         job_index = job_index or str(uuid4())
         key = JobMonitorRepository.redis_jobs_key(job_monitor["id"])
         self.redis_client.hset(
-            key, job_index, json.dumps({"id": job["id"], "tp": job["type"]})
+            key,
+            job_index,
+            json.dumps({"tp": job["type"], "nm": job["name"], "id": job["id"]}),
         )
         self.redis_client.expireat(key, int(job_monitor["expired_at"].timestamp()))
         return job_index
@@ -81,7 +83,7 @@ class JobMonitorRepository:
             for k, v in jobs_raw_data.items()
         }
         return {
-            job_index: Job(id=job_data["id"], type=job_data["tp"])
+            job_index: Job(type=job_data["tp"], name=job_data["nm"], id=job_data["id"])
             for job_index, job_data in jobs_data.items()
         }
 

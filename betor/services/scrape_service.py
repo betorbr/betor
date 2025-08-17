@@ -45,7 +45,10 @@ class ScrapeService:
         )
         self.job_monitor_repository.add_job(
             job_monitor,
-            Job(type="scrapd-schedule", id=scrapyd_schedule_response["jobid"]),
-            job_index=provider.slug,
+            Job(
+                type="scrapd-schedule",
+                name=provider.slug,
+                id=scrapyd_schedule_response["jobid"],
+            ),
         )
         return scrapyd_schedule_response

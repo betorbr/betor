@@ -29,5 +29,6 @@ class InsertOrUpdateRawItemService:
         ).delay(raw_item["provider_slug"], raw_item["provider_url"])
         if job_monitor_id:
             self.job_monitor_repository.add_job(
-                job_monitor_id, Job(type="celery-task", id=result.id)
+                job_monitor_id,
+                Job(type="celery-task", name="process_raw_item", id=result.id),
             )

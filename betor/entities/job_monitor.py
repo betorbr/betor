@@ -11,4 +11,5 @@ class JobMonitor(TypedDict):
 
 class Job(TypedDict):
     type: JobType
+    name: str
     id: str
