@@ -52,16 +52,29 @@ services:
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
 
-  celery-worker:
+  celery-worker-items:
     image: dougppaz/betor
     build:
       context: .
-    command: ["celery", "-A", "betor.celery.app", "worker"]
+    command: ["celery", "-A", "betor.celery.app", "worker", "-Q", "items"]
     depends_on:
       redis:
         condition: service_healthy
     env_file:
     - .docker.env
+
+  celery-worker-torrents:
+    image: dougppaz/betor
+    build:
+      context: .
+    command: ["celery", "-A", "betor.celery.app", "worker", "-Q", "torrents"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+    - .docker.env
+    ports:
+    - 6881:6881
 
   celery-flower:
     image: dougppaz/betor
