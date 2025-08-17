@@ -1,5 +1,6 @@
 import asyncio
 from typing import List, Optional, TypedDict
+from uuid import uuid4
 
 import redis
 
@@ -35,13 +36,14 @@ class ScrapeService:
     async def scrape_provider_and_add_job(
         self, provider: Provider, job_monitor: JobMonitor, deep: int, q: Optional[str]
     ) -> ScrapydScheduleResponse:
+        job_index = str(uuid4())
         scrapyd_schedule_response = await self.scrapyd_use_service.schedule(
             "betor",
             provider.slug,
             deep=deep,
             q=q,
             job_monitor_id=job_monitor["id"],
-            job_index=provider.slug,
+            job_index=job_index,
         )
         self.job_monitor_repository.add_job(
             job_monitor,
@@ -50,5 +52,6 @@ class ScrapeService:
                 name=provider.slug,
                 id=scrapyd_schedule_response["jobid"],
             ),
+            job_index=job_index,
         )
         return scrapyd_schedule_response
