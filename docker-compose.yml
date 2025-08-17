@@ -8,13 +8,13 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: betor
     healthcheck:
       test:
-        - CMD
-        - echo
-        - 'db.runCommand("ping").ok'
-        - "|"
-        - mongosh
-        - localhost:27017/test
-        - --quiet
+      - CMD
+      - echo
+      - 'db.runCommand("ping").ok'
+      - "|"
+      - mongosh
+      - localhost:27017/test
+      - --quiet
       interval: 5s
       timeout: 10s
       retries: 5
@@ -37,3 +37,87 @@ services:
     image: redis:8
     ports:
     - 6379:6379
+    healthcheck:
+      test:
+      - CMD
+      - redis-cli
+      - --raw
+      - incr
+      - ping
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+
+  celery-worker:
+    image: dougppaz/betor
+    build:
+      context: .
+    command: ["celery", "-A", "betor.celery.app", "worker"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+    - .docker.env
+
+  celery-flower:
+    image: dougppaz/betor
+    build:
+      context: .
+    command: ["celery", "-A", "betor.celery.app", "flower"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+    - .docker.env
+    ports:
+    - 5555:5555
+
+
+  scrapyd:
+    image: dougppaz/betor
+    build:
+      context: .
+    command: ["scrapyd"]
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      flaresolverr:
+        condition: service_started
+    env_file:
+    - .docker.env
+    healthcheck:
+      test:
+      - CMD
+      - scrapyd-client
+      - spiders
+      - -p
+      - betor
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    ports:
+    - 6800:6800
+
+  betor-api:
+    image: dougppaz/betor
+    build:
+      context: .
+    command: ["fastapi", "run", "betor/api/app.py"]
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      scrapyd:
+        condition: service_healthy
+    env_file:
+    - .docker.env
+    ports:
+    - 8000:8000
