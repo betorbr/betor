@@ -30,7 +30,7 @@ class DatabaseRedisSettings(BaseSettings):
 
 class CelerySettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env", env_prefix="database_redis_", extra="allow"
+        env_file=".env", env_prefix="betor_celery_", extra="allow"
     )
 
     backend_url: str = "redis://localhost:6379/1"
