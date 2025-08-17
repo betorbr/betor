@@ -5,6 +5,7 @@ import motor.motor_asyncio
 
 from betor.entities import TorrentInfo
 from betor.repositories import ItemsRepository
+from betor.settings import libtorrent_settings
 
 
 class UpdateItemTorrentInfoService:
@@ -18,7 +19,9 @@ class UpdateItemTorrentInfoService:
 
     def get_info_from_lt_session(self, magnet_uri: str) -> TorrentInfo:
         with tempfile.TemporaryDirectory() as save_path:
-            lt_session = lt.session()
+            lt_session = lt.session(
+                {"listen_interfaces": libtorrent_settings.listen_interfaces}
+            )
             lt_add_torrent_params = lt.parse_magnet_uri(magnet_uri)
             lt_add_torrent_params.save_path = save_path
             lt_torrent_handler = lt_session.add_torrent(lt_add_torrent_params)

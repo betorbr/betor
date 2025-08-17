@@ -45,8 +45,17 @@ class ScrapydSettings(BaseSettings):
     base_url: str = "http://localhost:6800"
 
 
+class LibtorrentSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env", env_prefix="libtorrent_", extra="allow"
+    )
+
+    listen_interfaces: str = "0.0.0.0:6881"
+
+
 flaresolverr_settings = FlareSolverrSettings()
 database_mongodb_settings = DatabaseMongoDBSettings()
 database_redis_settings = DatabaseRedisSettings()
 celery_settings = CelerySettings()
 scrapyd_settings = ScrapydSettings()
+libtorrent_settings = LibtorrentSettings()
