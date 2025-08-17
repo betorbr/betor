@@ -1,4 +1,5 @@
 import asyncio
+from typing import Optional
 
 from celery import Task
 
@@ -26,10 +27,22 @@ class BetorCeleryTask(Task):
             redis_client.close()
 
 
-def _process_raw_item(provider_slug: str, provider_url: str, **kwargs):
+def _process_raw_item(
+    provider_slug: str,
+    provider_url: str,
+    job_monitor_id: Optional[str] = None,
+    **kwargs,
+):
     mongodb_client = get_mongodb_client()
-    service = ProcessRawItemService(mongodb_client)
-    return asyncio.run(service.process(provider_slug, provider_url))
+    redis_client = get_redis_client()
+    service = ProcessRawItemService(mongodb_client, redis_client)
+    return asyncio.run(
+        service.process(
+            provider_slug,
+            provider_url,
+            job_monitor_id=job_monitor_id,
+        )
+    )
 
 
 def _update_item_torrent_info(magnet_uri: str, **kwargs):

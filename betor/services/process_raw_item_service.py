@@ -1,12 +1,15 @@
 import asyncio
 from typing import List, Optional, TypedDict
+from uuid import uuid4
 
+import celery.result
 import motor.motor_asyncio
+import redis
 import torf
 
 from betor.celery.app import celery_app
-from betor.entities import BaseItem, Item, RawItem
-from betor.repositories import ItemsRepository, RawItemsRepository
+from betor.entities import BaseItem, Item, Job, RawItem
+from betor.repositories import ItemsRepository, JobMonitorRepository, RawItemsRepository
 
 from .determines_imdb_tmdb_ids_service import DeterminesIMDbTMDBIdsService
 
@@ -17,13 +20,21 @@ class ProcessRawItemReturn(TypedDict):
 
 
 class ProcessRawItemService:
-    def __init__(self, mongodb_client: motor.motor_asyncio.AsyncIOMotorClient):
+    def __init__(
+        self,
+        mongodb_client: motor.motor_asyncio.AsyncIOMotorClient,
+        redis_client: redis.Redis,
+    ):
         self.raw_items_repository = RawItemsRepository(mongodb_client)
         self.items_repository = ItemsRepository(mongodb_client)
+        self.job_monitor_repository = JobMonitorRepository(redis_client)
         self.determines_imdb_tmdb_ids_service = DeterminesIMDbTMDBIdsService()
 
     async def process(
-        self, provider_slug: str, provider_url: str
+        self,
+        provider_slug: str,
+        provider_url: str,
+        job_monitor_id: Optional[str] = None,
     ) -> ProcessRawItemReturn:
         raw_item = await self.raw_items_repository.get(provider_slug, provider_url)
         assert raw_item, f"Raw Item not found {provider_slug=} {provider_url=}"
@@ -40,7 +51,12 @@ class ProcessRawItemService:
         if not base_item["imdb_id"] and not base_item["tmdb_id"]:
             return ProcessRawItemReturn(base_item=base_item, items=[])
         tasks = [
-            self.process_raw_item_magnet_uri(raw_item, base_item, magnet_uri)
+            self.process_raw_item_magnet_uri(
+                raw_item,
+                base_item,
+                magnet_uri,
+                job_monitor_id=job_monitor_id,
+            )
             for magnet_uri in raw_item["magnet_uris"]
         ]
         results = await asyncio.gather(*tasks)
@@ -50,7 +66,11 @@ class ProcessRawItemService:
         )
 
     async def process_raw_item_magnet_uri(
-        self, raw_item: RawItem, base_item: BaseItem, magnet_uri: str
+        self,
+        raw_item: RawItem,
+        base_item: BaseItem,
+        magnet_uri: str,
+        job_monitor_id: Optional[str] = None,
     ) -> Optional[Item]:
         try:
             magnet = torf.Magnet.from_string(magnet_uri)
@@ -71,7 +91,16 @@ class ProcessRawItemService:
             torrent_files=None,
         )
         await self.items_repository.insert_or_update(item)
-        celery_app.signature("update_item_torrent_info").delay(magnet_uri)
+        job_index = str(uuid4())
+        result: celery.result.AsyncResult = celery_app.signature(
+            "update_item_torrent_info"
+        ).delay(magnet_uri, job_monitor_id=job_monitor_id, job_index=job_index)
+        if job_monitor_id:
+            self.job_monitor_repository.add_job(
+                job_monitor_id,
+                Job(type="celery-task", name="update_item_torrent_info", id=result.id),
+                job_index=job_index,
+            )
         return await self.items_repository.get(
             item["provider_slug"], item["provider_url"], item["magnet_xt"]
         )
