@@ -2,7 +2,6 @@ from typing import List, Self, Set, TypedDict, cast
 from uuid import uuid4
 
 import httpx
-import redis
 import scrapy.crawler
 import scrapy.exceptions
 import scrapy.signals
@@ -24,25 +23,24 @@ class FlareSolverrExtension:
         base_url = crawler.settings.get("FLARESOLVERR_BASE_URL")
         if not base_url:
             raise scrapy.exceptions.NotConfigured
-        redis_client = get_redis_client()
         session_prefix = crawler.settings.get(
             "FLARESOLVERR_SESSION_PREFIX", "flaresolverr-extension:"
         )
         redis_locked_sessions_key = crawler.settings.get(
             "FLARESOLVERR_REDIS_LOCKED_SESSIONS_KEY", "flaresolverr:locked_sessions"
         )
-        obj = cls(redis_client, base_url, session_prefix, redis_locked_sessions_key)
+        obj = cls(base_url, session_prefix, redis_locked_sessions_key)
         crawler.signals.connect(obj.spider_opened, signal=scrapy.signals.spider_opened)
+        crawler.signals.connect(obj.spider_closed, signal=scrapy.signals.spider_closed)
         return obj
 
     def __init__(
         self,
-        redis_client: redis.Redis,
         base_url: str,
         session_prefix: str,
         redis_locked_sessions_key: str,
     ):
-        self.redis_client = redis_client
+        self.redis_client = get_redis_client()
         self.base_url = base_url
         self.session_prefix = session_prefix
         self.redis_locked_sessions_key = redis_locked_sessions_key
@@ -50,6 +48,9 @@ class FlareSolverrExtension:
     def spider_opened(self, spider: scrapy.Spider) -> None:
         self.redis_client.ping()
         spider.flaresolverr = self  # type: ignore[attr-defined]
+
+    def spider_closed(self, spider: scrapy.Spider) -> None:
+        self.redis_client.close()
 
     def get_available_sessions(self) -> Set[str]:
         response = httpx.post(
