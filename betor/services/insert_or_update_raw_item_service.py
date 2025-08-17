@@ -1,4 +1,5 @@
 from typing import Optional
+from uuid import uuid4
 
 import celery.result
 import motor.motor_asyncio
@@ -24,11 +25,18 @@ class InsertOrUpdateRawItemService:
         job_monitor_id: Optional[str] = None,
     ):
         await self.raw_items_repository.insert_or_update(raw_item)
+        job_index = str(uuid4())
         result: celery.result.AsyncResult = celery_app.signature(
             "process_raw_item"
-        ).delay(raw_item["provider_slug"], raw_item["provider_url"])
+        ).delay(
+            raw_item["provider_slug"],
+            raw_item["provider_url"],
+            job_monitor_id=job_monitor_id,
+            job_index=job_index,
+        )
         if job_monitor_id:
             self.job_monitor_repository.add_job(
                 job_monitor_id,
                 Job(type="celery-task", name="process_raw_item", id=result.id),
+                job_index=job_index,
             )
