@@ -22,4 +22,5 @@ async def detail_job_monitor(
         job_monitor=details["job_monitor"],
         jobs=details["jobs"],
         results=details["results"],
+        status=details["status"],
     )

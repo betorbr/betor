@@ -4,12 +4,14 @@ import scrapy
 from pydantic import BaseModel, field_serializer
 
 from betor.entities import Job, JobMonitor
+from betor.services import JobStatus
 
 
 class JobMonitorResponse(BaseModel):
     job_monitor: JobMonitor
     jobs: Dict[str, Job]
     results: Dict[str, Any]
+    status: Dict[str, JobStatus]
 
     @field_serializer("results", when_used="json")
     def results_serializer(self, results: Dict[str, Any]) -> Dict[str, Any]:
