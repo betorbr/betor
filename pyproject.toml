@@ -76,3 +76,7 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "libtorrent"
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "kombu"
+ignore_missing_imports = true
