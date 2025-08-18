@@ -1,6 +1,7 @@
 from .add_job_results_service import AddJobResultsService
 from .detail_job_monitor_service import DetailJobMonitorService
 from .determines_imdb_tmdb_ids_service import DeterminesIMDbTMDBIdsService
+from .get_job_status_service import GetJobStatusService, JobStatus
 from .insert_or_update_raw_item_service import InsertOrUpdateRawItemService
 from .list_items_service import ListItemsService
 from .process_raw_item_service import ProcessRawItemService
@@ -17,4 +18,6 @@ __all__ = [
     "ScrapeReturn",
     "AddJobResultsService",
     "DetailJobMonitorService",
+    "GetJobStatusService",
+    "JobStatus",
 ]
