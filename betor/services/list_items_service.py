@@ -1,6 +1,7 @@
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import motor.motor_asyncio
+from bson.objectid import ObjectId
 
 from betor.entities import Item
 from betor.enums import ItemsSortEnum, ItemType
@@ -31,6 +32,7 @@ class ListItemsService:
         imdb_id: Optional[str] = None,
         tmdb_id: Optional[str] = None,
         item_type: Optional[ItemType] = None,
+        items_id: Optional[List[str]] = None,
     ) -> ApaginateParams[Item]:
         cursor_sort = CURSOR_SORT_MAPPING.get(sort)
         assert cursor_sort
@@ -41,9 +43,21 @@ class ListItemsService:
             and_statements.append({"tmdb_id": tmdb_id})
         if item_type:
             and_statements.append({"item_type": item_type})
+        query_filter = (
+            {
+                **({"$and": and_statements} if and_statements else {}),
+                **(
+                    {"_id": {"$in": [ObjectId(item_id) for item_id in items_id]}}
+                    if items_id is not None
+                    else {}
+                ),
+            }
+            if and_statements or items_id is not None
+            else None
+        )
         return (
             self.items_repository.collection,
-            {"$and": and_statements} if and_statements else None,
+            query_filter,
             cursor_sort,
             ItemsRepository.parse_results,
         )
