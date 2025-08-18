@@ -17,8 +17,8 @@ class ScrapeReturn(TypedDict):
 
 class ScrapeService:
     def __init__(self, redis_client: redis.Redis):
-        self.scrapyd_use_service = ScrapydUseService()
         self.job_monitor_repository = JobMonitorRepository(redis_client)
+        self.scrapyd_use_service = ScrapydUseService()
 
     async def scrape(self, deep: int = 3, q: Optional[str] = None) -> ScrapeReturn:
         job_monitor = self.job_monitor_repository.create()
