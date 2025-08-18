@@ -85,7 +85,7 @@ class SearchService:
             providers_result=providers_result,
             processed_items=processed_items,
             apaginate_params=self.list_items_service.apaginate_params(
-                sort, items_id=[cast(str, i["id"]) for i in processed_items]
+                sort, items_id=[i["id"] for i in processed_items if i["id"]]
             ),
         )
 
