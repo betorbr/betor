@@ -1,12 +1,11 @@
-from typing import Callable, Dict, Optional, Sequence, Tuple, TypeAlias, Union
+from typing import Dict, Optional
 
 import motor.motor_asyncio
 
 from betor.entities import Item
 from betor.enums import ItemsSortEnum, ItemType
 from betor.repositories import ItemsRepository
-
-CursorSort: TypeAlias = Union[str, Tuple[str, int]]
+from betor.types import ApaginateParams, CursorSort
 
 CURSOR_SORT_MAPPING: Dict[ItemsSortEnum, CursorSort] = {
     ItemsSortEnum.inserted_at_asc: ItemsRepository.INSERTED_AT_FIELD,
@@ -29,15 +28,10 @@ class ListItemsService:
     def apaginate_params(
         self,
         sort: ItemsSortEnum,
-        imdb_id: Optional[str],
-        tmdb_id: Optional[str],
-        item_type: Optional[ItemType],
-    ) -> Tuple[
-        motor.motor_asyncio.AsyncIOMotorCollection,
-        Optional[Dict],
-        CursorSort,
-        Callable[[Sequence[Dict]], Sequence[Item]],
-    ]:
+        imdb_id: Optional[str] = None,
+        tmdb_id: Optional[str] = None,
+        item_type: Optional[ItemType] = None,
+    ) -> ApaginateParams[Item]:
         cursor_sort = CURSOR_SORT_MAPPING.get(sort)
         assert cursor_sort
         and_statements = []
