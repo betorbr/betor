@@ -38,10 +38,10 @@ class ScrapydUseService:
             raise ScrapydError() from e
         return cast(ScrapydScheduleResponse, response.json())
 
-    async def status(self, jobid: str) -> ScrapydStatusResponse:
-        qs = urlencode(OrderedDict(job=jobid))
+    async def status(self, id: str) -> ScrapydStatusResponse:
+        qs = urlencode(OrderedDict(job=id))
         async with httpx.AsyncClient(base_url=scrapyd_settings.base_url) as client:
-            response = await client.post(f"/schedule.json?{qs}")
+            response = await client.get(f"/status.json?{qs}")
         try:
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
