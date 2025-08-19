@@ -7,6 +7,6 @@ from betor.entities import JobMonitor
 T = TypeVar("T")
 
 
-class SearchPage(Generic[T], Page[T]):
+class SearchPage(Page[T], Generic[T]):
     q: str
     job_monitor: JobMonitor
