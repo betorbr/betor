@@ -6,22 +6,27 @@ from uuid import uuid4
 import motor.motor_asyncio
 import redis
 
-from betor.entities import Item, Job, JobMonitor
+from betor.entities import (
+    Item,
+    Job,
+    JobMonitor,
+    SearchJobMonitor,
+    SearchProviderResult,
+    SearchRequest,
+)
 from betor.enums import ItemsSortEnum
 from betor.providers import PROVIDERS, ProviderSlug
-from betor.repositories import JobMonitorRepository
-from betor.repositories.items_repository import ItemsRepository
+from betor.repositories import (
+    ItemsRepository,
+    JobMonitorRepository,
+    SearchJobMonitorRepository,
+)
 from betor.services.process_raw_item_service import ProcessRawItemReturn
 from betor.types import ApaginateParams
 from betor.use_services import ScrapydUseService
 
 from .get_job_status_service import GetJobStatusService
 from .list_items_service import ListItemsService
-
-
-class SearchProviderResult(TypedDict):
-    job_index: str
-    job: Job
 
 
 class SearchResult(TypedDict):
@@ -41,6 +46,7 @@ class SearchService:
     ):
         self.job_monitor_repository = JobMonitorRepository(redis_client)
         self.items_repository = ItemsRepository(mongodb_client)
+        self.search_job_monitor_repository = SearchJobMonitorRepository(redis_client)
         self.get_job_status_service = GetJobStatusService()
         self.scrapyd_use_service = ScrapydUseService()
         self.list_items_service = ListItemsService(mongodb_client)
@@ -54,40 +60,67 @@ class SearchService:
         scrape_timeout: int = 30,
         process_raw_item_timeout: int = 15,
     ) -> SearchResult:
-        job_monitor = self.job_monitor_repository.create()
-        providers: List[str] = cast(List[str], providers_slug) or [
-            p.slug for p in PROVIDERS
-        ]
-        providers_result = await asyncio.gather(
-            *[
-                self.search_provider_slug(q, deep, provider_slug, job_monitor)
-                for provider_slug in providers
-            ]
-        )
+        search_job_monitor = await self.request_search(q, providers_slug, deep)
         try:
             async with asyncio.timeout(scrape_timeout):
                 await self.waiting_completed(
-                    [result["job"] for result in providers_result]
+                    [result["job"] for result in search_job_monitor["providers_result"]]
                 )
         except asyncio.TimeoutError:
             pass
         try:
             async with asyncio.timeout(process_raw_item_timeout):
-                jobs = await self.get_process_raw_item_jobs(job_monitor["id"])
+                jobs = await self.get_process_raw_item_jobs(
+                    search_job_monitor["job_monitor"]["id"]
+                )
                 await self.waiting_completed(jobs.values())
         except asyncio.TimeoutError:
             pass
-        processed_items = await self.get_processed_items(job_monitor["id"])
+        processed_items = await self.get_processed_items(
+            search_job_monitor["job_monitor"]["id"]
+        )
         return SearchResult(
             q=q,
             deep=deep,
-            job_monitor=job_monitor,
-            providers_result=providers_result,
+            job_monitor=search_job_monitor["job_monitor"],
+            providers_result=search_job_monitor["providers_result"],
             processed_items=processed_items,
             apaginate_params=self.list_items_service.apaginate_params(
                 sort, items_id=[i["id"] for i in processed_items if i["id"]]
             ),
         )
+
+    async def request_search(
+        self, q: str, providers_slug: Optional[List[ProviderSlug]], deep: int
+    ) -> SearchJobMonitor:
+        search_request = SearchRequest(
+            q=q,
+            providers_slug=(
+                providers_slug
+                if providers_slug is not None
+                else cast(List[ProviderSlug], [p.slug for p in PROVIDERS])
+            ),
+            deep=deep,
+        )
+        if search_job_monitor := self.search_job_monitor_repository.get(search_request):
+            return search_job_monitor
+        job_monitor = self.job_monitor_repository.create()
+        providers_result = await asyncio.gather(
+            *[
+                self.search_provider_slug(
+                    search_request["q"],
+                    search_request["deep"],
+                    provider_slug,
+                    job_monitor,
+                )
+                for provider_slug in search_request["providers_slug"]
+            ]
+        )
+        search_job_monitor = SearchJobMonitor(
+            job_monitor=job_monitor, providers_result=providers_result
+        )
+        self.search_job_monitor_repository.set(search_request, search_job_monitor)
+        return search_job_monitor
 
     async def search_provider_slug(
         self, q: str, deep: int, provider_slug: str, job_monitor: JobMonitor
@@ -112,7 +145,7 @@ class SearchService:
     async def waiting_completed(self, jobs: Iterable[Job]):
         while True:
             jobs_status = [await self.get_job_status_service.get(j) for j in jobs]
-            if set(jobs_status) == {"completed"}:
+            if not set(jobs_status) - {"success", "fail"}:
                 break
             await asyncio.sleep(0.5)
 
