@@ -1,7 +1,6 @@
 from typing import Annotated, List, Optional
 
 from fastapi import APIRouter, Query
-from fastapi_pagination import Page
 from fastapi_pagination.ext.motor import apaginate
 
 from betor.api.fast_api import BetorRequest
@@ -9,6 +8,8 @@ from betor.api.v1.items.schemas import ItemSchema
 from betor.enums import ItemsSortEnum
 from betor.providers import ProviderSlug
 from betor.services import SearchService
+
+from .schemas import SearchPage
 
 search_router = APIRouter()
 
@@ -22,7 +23,7 @@ async def search(
     scrape_timeout: int = 30,
     process_raw_item_timeout: int = 30,
     provider: Annotated[Optional[List[ProviderSlug]], Query()] = None,
-) -> Page[ItemSchema]:
+) -> SearchPage[ItemSchema]:
     service = SearchService(request.app.mongodb_client, request.app.redis_client)
     result = await service.search(
         q,
@@ -38,4 +39,8 @@ async def search(
         query_filter=query_filter,
         sort=cursor_sort,
         transformer=transformer,
+        additional_data={
+            "q": result["q"],
+            "job_monitor": result["job_monitor"],
+        },
     )
