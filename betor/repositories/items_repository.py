@@ -61,6 +61,7 @@ class ItemsRepository:
             torrent_num_peers=result.get("torrent_num_peers"),
             torrent_num_seeds=result.get("torrent_num_seeds"),
             torrent_files=result.get("torrent_files"),
+            torrent_size=result.get("torrent_size"),
         )
 
     @classmethod

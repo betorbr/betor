@@ -6,3 +6,4 @@ class TorrentInfo(TypedDict):
     torrent_num_peers: Optional[int]
     torrent_num_seeds: Optional[int]
     torrent_files: Optional[List[str]]
+    torrent_size: Optional[int]

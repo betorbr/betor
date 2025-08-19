@@ -89,6 +89,7 @@ class ProcessRawItemService:
             torrent_num_peers=None,
             torrent_num_seeds=None,
             torrent_files=None,
+            torrent_size=None,
         )
         await self.items_repository.insert_or_update(item)
         job_index = str(uuid4())

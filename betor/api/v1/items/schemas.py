@@ -20,5 +20,6 @@ class ItemSchema(BaseModel):
     torrent_num_peers: Optional[int]
     torrent_num_seeds: Optional[int]
     torrent_files: Optional[List[str]]
+    torrent_size: Optional[int]
     inserted_at: Optional[datetime]
     updated_at: Optional[datetime]

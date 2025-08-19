@@ -39,4 +39,5 @@ class UpdateItemTorrentInfoService:
                             lt_file_storage.file_name(i)
                             for i in range(lt_file_storage.num_files())
                         ],
+                        torrent_size=lt_torrent_info.total_size(),
                     )
