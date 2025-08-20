@@ -19,7 +19,9 @@ jobs:
           python-version: "3.13"
           cache: pip
       - name: Install
-        run: poetry install
+        run: |
+          pip install poetry
+          poetry install
       - name: Linting, formatting and typing
         run: |
           poetry run flake8
