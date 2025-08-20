@@ -2,6 +2,7 @@ from unittest import mock
 
 import motor.motor_asyncio
 import pytest
+import redis
 from faker import Faker
 
 from betor.entities import BaseItem, RawItem
@@ -18,7 +19,12 @@ def mongodb_client_mock():
 
 
 @pytest.fixture
-def process_raw_item_service(mongodb_client_mock):
+def redis_client_mock():
+    return mock.MagicMock(spec=redis.Redis)
+
+
+@pytest.fixture
+def process_raw_item_service(mongodb_client_mock, redis_client_mock):
     with (
         mock.patch(
             "betor.services.process_raw_item_service.RawItemsRepository",
@@ -36,7 +42,7 @@ def process_raw_item_service(mongodb_client_mock):
             spec=DeterminesIMDbTMDBIdsService,
         ),
     ):
-        yield ProcessRawItemService(mongodb_client_mock)
+        yield ProcessRawItemService(mongodb_client_mock, redis_client_mock)
 
 
 class TestProcess:
@@ -156,7 +162,9 @@ class TestProcessRawItemMagnetURI:
         assert item["magnet_xt"] == "urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c"
         assert item["magnet_dn"] == "Big Buck Bunny"
         signature_mock.assert_called_once_with("update_item_torrent_info")
-        signature_mock.return_value.delay.assert_called_once_with(MAGNET_LINK_1)
+        signature_mock.return_value.delay.assert_called_once_with(
+            MAGNET_LINK_1, job_monitor_id=None, job_index=mock.ANY
+        )
 
     @pytest.mark.parametrize(
         "magnet_uri",
