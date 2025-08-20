@@ -2,19 +2,19 @@ services:
   mongodb:
     image: mongo:8
     ports:
-    - 27017:27017
+      - 27017:27017
     environment:
       MONGO_INITDB_ROOT_USERNAME: betor
       MONGO_INITDB_ROOT_PASSWORD: betor
     healthcheck:
       test:
-      - CMD
-      - echo
-      - 'db.runCommand("ping").ok'
-      - "|"
-      - mongosh
-      - localhost:27017/test
-      - --quiet
+        - CMD
+        - echo
+        - 'db.runCommand("ping").ok'
+        - "|"
+        - mongosh
+        - localhost:27017/test
+        - --quiet
       interval: 5s
       timeout: 10s
       retries: 5
@@ -23,7 +23,7 @@ services:
   mongo-express:
     image: mongo-express:1
     ports:
-    - 8081:8081
+      - 8081:8081
     depends_on:
       mongodb:
         condition: service_healthy
@@ -36,14 +36,14 @@ services:
   redis:
     image: redis:8
     ports:
-    - 6379:6379
+      - 6379:6379
     healthcheck:
       test:
-      - CMD
-      - redis-cli
-      - --raw
-      - incr
-      - ping
+        - CMD
+        - redis-cli
+        - --raw
+        - incr
+        - ping
       interval: 5s
       timeout: 10s
       retries: 5
@@ -61,7 +61,7 @@ services:
       redis:
         condition: service_healthy
     env_file:
-    - .docker.env
+      - .docker.env
 
   celery-worker-torrents:
     image: dougppaz/betor
@@ -72,9 +72,9 @@ services:
       redis:
         condition: service_healthy
     env_file:
-    - .docker.env
+      - .docker.env
     ports:
-    - 6881:6881
+      - 6881:6881
 
   celery-flower:
     image: dougppaz/betor
@@ -85,10 +85,9 @@ services:
       redis:
         condition: service_healthy
     env_file:
-    - .docker.env
+      - .docker.env
     ports:
-    - 5555:5555
-
+      - 5555:5555
 
   scrapyd:
     image: dougppaz/betor
@@ -103,20 +102,20 @@ services:
       flaresolverr:
         condition: service_started
     env_file:
-    - .docker.env
+      - .docker.env
     healthcheck:
       test:
-      - CMD
-      - scrapyd-client
-      - spiders
-      - -p
-      - betor
+        - CMD
+        - scrapyd-client
+        - spiders
+        - -p
+        - betor
       interval: 5s
       timeout: 10s
       retries: 5
       start_period: 10s
     ports:
-    - 6800:6800
+      - 6800:6800
 
   betor-api:
     image: dougppaz/betor
@@ -131,6 +130,6 @@ services:
       scrapyd:
         condition: service_healthy
     env_file:
-    - .docker.env
+      - .docker.env
     ports:
-    - 8000:8000
+      - 8000:8000
