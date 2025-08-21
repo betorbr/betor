@@ -11,6 +11,7 @@ class Provider:
         search_url: str,
         search_page_url: Optional[str] = None,
         append_domains: List[str] = [],
+        cf_clearance_domain: Optional[str] = None,
     ):
         self.slug = slug
         self.base_url = base_url
@@ -18,6 +19,7 @@ class Provider:
         self.search_url = search_url
         self.search_page_url = search_page_url
         self.append_domains = append_domains
+        self.cf_clearance_domain = cf_clearance_domain
 
     @property
     def domains(self):
