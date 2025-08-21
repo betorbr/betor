@@ -1,5 +1,5 @@
 import json
-from typing import Optional, TypedDict
+from typing import List, Optional, TypedDict, cast
 
 import scrapy
 import scrapy.http
@@ -7,9 +7,18 @@ import scrapy.http
 from betor_scrapy.extensions import FlareSolverrExtension
 
 
-class FlareSolverrSolutionType(TypedDict):
+class FlareSolverrSolutionCookie(TypedDict):
+    domain: str
+    expiry: int
+    name: str
+    value: str
+
+
+class FlareSolverrSolution(TypedDict):
     url: str
     status: int
+    cookies: List[FlareSolverrSolutionCookie]
+    userAgent: str
     headers: dict
     response: str
 
@@ -38,7 +47,26 @@ class CloudflareDownloaderMiddleware:
             spider.logger.warning("Skip FlareSolverr, base URL not setted!")
             return response
         flaresolverr: Optional[FlareSolverrExtension] = getattr(spider, "flaresolverr")
-        session = flaresolverr.get_free_session() if flaresolverr else None
+        assert flaresolverr, "Flaresolverr extension not initialized"
+        cf_clearance_domain = request.meta.get("cf_clearance_domain")
+        if cf_clearance_domain and (
+            requests_session := flaresolverr.get_cf_clearance_session(
+                cf_clearance_domain
+            )
+        ):
+            spider.logger.info("Try solve with CF clearance...")
+            res = requests_session.get(request.url)
+            if res.ok:
+                return scrapy.http.HtmlResponse(
+                    url=request.url,
+                    status=res.status_code,
+                    headers=res.headers,
+                    body=res.text,
+                    request=request,
+                    encoding="utf-8",
+                    flags=["cf_clearance", *response.flags],
+                )
+        session = flaresolverr.get_free_session()
         return scrapy.http.Request(
             f"{flaresolverr_base_url}/v1",
             request.callback,
@@ -48,7 +76,7 @@ class CloudflareDownloaderMiddleware:
                 {
                     "cmd": f"request.{request.method.lower()}",
                     "url": request.url,
-                    **({"session": session} if session else {}),
+                    "session": session,
                 }
             ),
             meta={
@@ -70,19 +98,26 @@ class CloudflareDownloaderResponseMiddleware:
         response: scrapy.http.Response,
         spider: scrapy.Spider,
     ):
-        if "flaresolverr" not in request.flags or "flaresolverr" in response.flags:
+        if "flaresolverr" not in request.flags and "flaresolverr" in response.flags:
             return response
+        flaresolverr: Optional[FlareSolverrExtension] = getattr(spider, "flaresolverr")
+        assert flaresolverr, "Flaresolverr extension not initialized"
         if session := request.meta.pop("flaresolverr_session", None):
-            flaresolverr: Optional[FlareSolverrExtension] = getattr(
-                spider, "flaresolverr"
-            )
-            if flaresolverr:
-                flaresolverr.free_session(session)
+            flaresolverr.free_session(session)
         if response.status != 200:
             return response
         data: dict = json.loads(response.body)
-        data_solution: Optional[FlareSolverrSolutionType] = data.get("solution")
+        data_solution = cast(Optional[FlareSolverrSolution], data.get("solution"))
         assert data_solution, "FlareSolverr solution empty"
+        for cookie in data_solution["cookies"]:
+            if cookie["name"] != "cf_clearance":
+                continue
+            flaresolverr.add_cf_clearance(
+                cookie["domain"],
+                cookie["value"],
+                data_solution["userAgent"],
+                expire_at=cookie["expiry"],
+            )
         return scrapy.http.HtmlResponse(
             url=data_solution["url"],
             status=data_solution["status"],
