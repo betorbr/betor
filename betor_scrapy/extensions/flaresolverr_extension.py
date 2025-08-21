@@ -1,7 +1,9 @@
-from typing import List, Self, Set, TypedDict, cast
+import functools
+from typing import Dict, List, Optional, Self, Set, TypedDict, cast
 from uuid import uuid4
 
 import httpx
+import requests
 import scrapy.crawler
 import scrapy.exceptions
 import scrapy.signals
@@ -29,7 +31,12 @@ class FlareSolverrExtension:
         redis_locked_sessions_key = crawler.settings.get(
             "FLARESOLVERR_REDIS_LOCKED_SESSIONS_KEY", "flaresolverr:locked_sessions"
         )
-        obj = cls(base_url, session_prefix, redis_locked_sessions_key)
+        redis_cf_clearance_key = crawler.settings.get(
+            "FLARESOLVERR_REDIS_CF_CLEARANCE_KEY", "flaresolverr:cf_clearance:{domain}"
+        )
+        obj = cls(
+            base_url, session_prefix, redis_locked_sessions_key, redis_cf_clearance_key
+        )
         crawler.signals.connect(obj.spider_opened, signal=scrapy.signals.spider_opened)
         crawler.signals.connect(obj.spider_closed, signal=scrapy.signals.spider_closed)
         return obj
@@ -39,11 +46,13 @@ class FlareSolverrExtension:
         base_url: str,
         session_prefix: str,
         redis_locked_sessions_key: str,
+        redis_cf_clearance_key: str,
     ):
         self.redis_client = get_redis_client()
         self.base_url = base_url
         self.session_prefix = session_prefix
         self.redis_locked_sessions_key = redis_locked_sessions_key
+        self.redis_cf_clearance_key = redis_cf_clearance_key
 
     def spider_opened(self, spider: scrapy.Spider) -> None:
         self.redis_client.ping()
@@ -97,3 +106,43 @@ class FlareSolverrExtension:
 
     def free_session(self, session: str):
         self.redis_client.srem(self.redis_locked_sessions_key, session)
+
+    def build_redis_cf_clearance_key(self, domain: str):
+        return self.redis_cf_clearance_key.format(domain=domain)
+
+    def add_cf_clearance(
+        self, domain: str, value: str, user_agent: str, expire_at: Optional[int] = None
+    ):
+        redis_key = self.build_redis_cf_clearance_key(domain)
+        self.redis_client.hset(redis_key, value, user_agent)
+        if expire_at:
+            self.redis_client.hexpireat(redis_key, expire_at, value)
+
+    def remove_cf_clearance(self, domain: str, value: str):
+        redis_key = self.build_redis_cf_clearance_key(domain)
+        self.redis_client.hdel(redis_key, value)
+
+    def cf_clearance_session_response_hook(
+        self,
+        response: requests.Response,
+        domain: str,
+        cf_clearance_value: str,
+        **kwargs,
+    ):
+        if not response.ok:
+            self.remove_cf_clearance(domain, cf_clearance_value)
+
+    def get_cf_clearance_session(self, domain: str) -> Optional[requests.Session]:
+        redis_key = self.build_redis_cf_clearance_key(domain)
+        domain_values = cast(Dict[bytes, bytes], self.redis_client.hgetall(redis_key))
+        for value, user_agent in domain_values.items():
+            session = requests.Session()
+            session.hooks["response"] = functools.partial(
+                self.cf_clearance_session_response_hook,
+                domain=domain,
+                cf_clearance_value=value.decode(),
+            )
+            session.cookies.set("cf_clearance", value.decode())
+            session.headers.update({"User-Agent": user_agent.decode()})
+            return session
+        return None
