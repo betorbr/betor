@@ -66,7 +66,7 @@ class CloudflareDownloaderMiddleware:
                     encoding="utf-8",
                     flags=["cf_clearance", *response.flags],
                 )
-        session = flaresolverr.get_free_session()
+        session, session_lock = flaresolverr.get_free_session()
         return scrapy.http.Request(
             f"{flaresolverr_base_url}/v1",
             request.callback,
@@ -82,6 +82,7 @@ class CloudflareDownloaderMiddleware:
             meta={
                 "allow_offsite": True,
                 "flaresolverr_session": session,
+                "flaresolverr_session_lock": session_lock,
                 "original_request": request,
                 **request.meta,
             },
@@ -102,8 +103,8 @@ class CloudflareDownloaderResponseMiddleware:
             return response
         flaresolverr: Optional[FlareSolverrExtension] = getattr(spider, "flaresolverr")
         assert flaresolverr, "Flaresolverr extension not initialized"
-        if session := request.meta.pop("flaresolverr_session", None):
-            flaresolverr.free_session(session)
+        if session_lock := request.meta.pop("flaresolverr_session_lock", None):
+            flaresolverr.free_session(session_lock)
         if response.status != 200:
             return response
         data: dict = json.loads(response.body)

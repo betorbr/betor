@@ -1,8 +1,9 @@
 import functools
-from typing import Dict, List, Optional, Self, Set, TypedDict, cast
+from typing import Dict, List, Optional, Self, Set, Tuple, TypedDict, cast
 from uuid import uuid4
 
 import httpx
+import redis.lock
 import requests
 import scrapy.crawler
 import scrapy.exceptions
@@ -28,14 +29,17 @@ class FlareSolverrExtension:
         session_prefix = crawler.settings.get(
             "FLARESOLVERR_SESSION_PREFIX", "flaresolverr-extension:"
         )
-        redis_locked_sessions_key = crawler.settings.get(
-            "FLARESOLVERR_REDIS_LOCKED_SESSIONS_KEY", "flaresolverr:locked_sessions"
+        redis_lock_session_key = crawler.settings.get(
+            "FLARESOLVERR_REDIS_LOCK_SESSION_KEY", "flaresolverr:lock_session:{session}"
         )
         redis_cf_clearance_key = crawler.settings.get(
             "FLARESOLVERR_REDIS_CF_CLEARANCE_KEY", "flaresolverr:cf_clearance:{domain}"
         )
         obj = cls(
-            base_url, session_prefix, redis_locked_sessions_key, redis_cf_clearance_key
+            base_url,
+            session_prefix,
+            redis_lock_session_key,
+            redis_cf_clearance_key,
         )
         crawler.signals.connect(obj.spider_opened, signal=scrapy.signals.spider_opened)
         crawler.signals.connect(obj.spider_closed, signal=scrapy.signals.spider_closed)
@@ -45,13 +49,13 @@ class FlareSolverrExtension:
         self,
         base_url: str,
         session_prefix: str,
-        redis_locked_sessions_key: str,
+        redis_lock_session_key: str,
         redis_cf_clearance_key: str,
     ):
         self.redis_client = get_redis_client()
         self.base_url = base_url
         self.session_prefix = session_prefix
-        self.redis_locked_sessions_key = redis_locked_sessions_key
+        self.redis_lock_session_key = redis_lock_session_key
         self.redis_cf_clearance_key = redis_cf_clearance_key
 
     def spider_opened(self, spider: scrapy.Spider) -> None:
@@ -76,21 +80,29 @@ class FlareSolverrExtension:
             ]
         )
 
+    def is_free_session(self, session: str) -> bool:
+        lock: redis.lock.Lock = self.redis_client.lock(
+            self.redis_lock_session_key.format(session=session),
+        )
+        return not lock.locked()
+
     def get_free_sessions(self) -> Set[str]:
         available_sessions = self.get_available_sessions()
-        locked_sessions = cast(
-            Set, self.redis_client.smembers(self.redis_locked_sessions_key)
+        return set(
+            [session for session in available_sessions if self.is_free_session(session)]
         )
-        return set(available_sessions - locked_sessions)
 
-    def get_free_session(self) -> str:
+    def get_free_session(self) -> Tuple[str, redis.lock.Lock]:
         free_sessions = self.get_free_sessions()
         try:
             session = free_sessions.pop()
         except KeyError:
             session = self.create_session()
-        self.redis_client.sadd(self.redis_locked_sessions_key, session)
-        return session
+        lock: redis.lock.Lock = self.redis_client.lock(
+            self.redis_lock_session_key.format(session=session),
+        )
+        lock.acquire(blocking=True)
+        return session, lock
 
     def create_session(self) -> str:
         response = httpx.post(
@@ -104,8 +116,8 @@ class FlareSolverrExtension:
         data = cast(FlareSolverrSessionsCreateResponse, response.json())
         return data["session"]
 
-    def free_session(self, session: str):
-        self.redis_client.srem(self.redis_locked_sessions_key, session)
+    def free_session(self, lock: redis.lock.Lock):
+        lock.release()
 
     def build_redis_cf_clearance_key(self, domain: str):
         return self.redis_cf_clearance_key.format(domain=domain)
