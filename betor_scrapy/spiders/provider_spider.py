@@ -20,4 +20,9 @@ class ProviderSpider:
 
     async def start(self):
         for url in [self.page_url(page_n) for page_n in range(1, self.deep + 1)]:
-            yield scrapy.Request(url, dont_filter=True, flags=["no-cache"])
+            yield scrapy.Request(
+                url,
+                dont_filter=True,
+                flags=["no-cache"],
+                meta={"cf_clearance_domain": self.provider.cf_clearance_domain},
+            )

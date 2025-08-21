@@ -21,7 +21,10 @@ class ComandoTorrentsSpider(ProviderSpider, scrapy.Spider):
 
     def parse_page(self, response: scrapy.http.Response):
         for item_url in response.xpath("//article//header//h2//a/@href").getall():
-            yield scrapy.Request(item_url)
+            yield scrapy.Request(
+                item_url,
+                meta={"cf_clearance_domain": self.provider.cf_clearance_domain},
+            )
 
     def parse_item(self, response: scrapy.http.Response):
         assert isinstance(response, scrapy.http.TextResponse)

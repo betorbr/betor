@@ -41,7 +41,10 @@ class BludvSpider(ProviderSpider, scrapy.Spider):
         for item_url in response.xpath(
             "//div[@class='posts']//div[@class='post']//div[@class='title']//a/@href"
         ).getall():
-            yield scrapy.Request(item_url)
+            yield scrapy.Request(
+                item_url,
+                meta={"cf_clearance_domain": self.provider.cf_clearance_domain},
+            )
 
     def parse_item(self, response: scrapy.http.Response):
         assert isinstance(response, scrapy.http.TextResponse)
