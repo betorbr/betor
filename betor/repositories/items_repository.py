@@ -39,6 +39,7 @@ class ItemsRepository:
                 "torrent_num_peers",
                 "torrent_num_seeds",
                 "torrent_files",
+                "languages",
             ]
         )
 
@@ -62,6 +63,7 @@ class ItemsRepository:
             torrent_num_seeds=result.get("torrent_num_seeds"),
             torrent_files=result.get("torrent_files"),
             torrent_size=result.get("torrent_size"),
+            languages=result.get("languages", []),
         )
 
     @classmethod

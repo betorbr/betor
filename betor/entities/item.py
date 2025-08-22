@@ -3,6 +3,7 @@ from typing import Optional, TypedDict
 
 from betor.enums import ItemType
 
+from .languages_info import LanguagesInfo
 from .torrent_info import TorrentInfo
 
 
@@ -14,7 +15,7 @@ class BaseItem(TypedDict):
     item_type: Optional[ItemType]
 
 
-class Item(BaseItem, TorrentInfo):
+class Item(BaseItem, TorrentInfo, LanguagesInfo):
     id: Optional[str]
     hash: Optional[int]
     inserted_at: Optional[datetime]

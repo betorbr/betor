@@ -1,4 +1,14 @@
-from typing import Callable, Dict, Optional, Sequence, Tuple, TypeAlias, TypeVar, Union
+from typing import (
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    TypeAlias,
+    TypeVar,
+    Union,
+)
 
 import motor.motor_asyncio
 
@@ -12,3 +22,5 @@ ApaginateParams: TypeAlias = Tuple[
     CursorSort,
     Callable[[Sequence[Dict]], Sequence[T]],
 ]
+
+Languages: TypeAlias = List[str]
