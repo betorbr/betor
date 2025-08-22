@@ -1,0 +1,93 @@
+---
+id: betor
+name: Betor
+description: "BeTor é o buscador P2P de filmes e séries com o jeitinho mais brasileiro da internet."
+language: pt-BR
+type: public
+encoding: UTF-8
+links:
+  - http://localhost:8000
+
+caps:
+  categories:
+    Movies: Movies
+    TV: TV
+
+  modes:
+    search: [q]
+    tv-search: [q, imdbid, tmdbid, season]
+    movie-search: [q, imdbid, tmdbid]
+
+settings: []
+
+search:
+  keywordsfilters:
+    - name: tolower
+    - name: re_replace
+      args: ["(?i)(S0)(\\d{1,2})$", "temporada $2"]
+    - name: re_replace
+      args: ["(?i)(S)(\\d{1,3})$", "temporada $2"]
+  paths:
+    - path: "{{ if .Keywords }}/v1/search/{{ else }}/v1/items/{{ end }}"
+      response:
+        type: json
+      item_type: movie
+    - categories: [Movies]
+      path: "{{ if .Keywords }}/v1/search/{{ else }}/v1/items/{{ end }}"
+      response:
+        type: json
+      inputs:
+        item_type: movie
+    - categories: [TV]
+      path: "{{ if .Keywords }}/v1/search/{{ else }}/v1/items/{{ end }}"
+      response:
+        type: json
+      inputs:
+        item_type: tv
+  inputs:
+    sort: -updated_at
+    tmdb_id: "{{ .Query.TMDBID }}"
+    imdb_id: "{{ .Query.IMDBID }}"
+    q: "{{ .Keywords }}"
+
+  rows:
+    selector: $.items
+    count:
+      selector: $.total
+
+  fields:
+    _torrent_name:
+      selector: torrent_name
+    _magnet_dn:
+      selector: magnet_dn
+    _torrent_size:
+      selector: torrent_size
+    _torrent_num_seeds:
+      selector: torrent_num_seeds
+    _torrent_num_peers:
+      selector: torrent_num_peers
+    download:
+      selector: magnet_uri
+    title:
+      text: "{{ if .Result._torrent_name }}{{ .Result._torrent_name }}{{ else }}{{ .Result._magnet_dn }}{{ end }}"
+    details:
+      selector: provider_url
+    infohash:
+      selector: magnet_xt
+    date:
+      selector: inserted_at
+    size:
+      text: "{{ if .Result._torrent_size }}{{ .Result._torrent_size }}{{ else }}0{{ end }}"
+    seeders:
+      text: "{{ if .Result._torrent_num_seeds }}{{ .Result._torrent_num_seeds }}{{ else }}0{{ end }}"
+    leechers:
+      text: "{{ if .Result._torrent_num_peers }}{{ .Result._torrent_num_peers }}{{ else }}0{{ end }}"
+    imdbid:
+      selector: imdb_id
+    tmdbid:
+      selector: tmdb_id
+    category:
+      selector: item_type
+      case:
+        tv: TV
+        movie: Movies
