@@ -46,17 +46,20 @@ class CloudflareDownloaderMiddleware:
             )
         ):
             spider.logger.info("Try solve with CF clearance...")
-            res = requests_session.get(request.url, headers=dict(request.headers))
-            if res.ok:
-                return scrapy.http.HtmlResponse(
-                    url=request.url,
-                    status=res.status_code,
-                    headers=res.headers,
-                    body=res.text,
-                    request=request,
-                    encoding="utf-8",
-                    flags=["cf_clearance", *response_flags],
-                )
+            try:
+                res = requests_session.get(request.url)
+                if res.ok:
+                    return scrapy.http.HtmlResponse(
+                        url=request.url,
+                        status=res.status_code,
+                        headers=res.headers,
+                        body=res.text,
+                        request=request,
+                        encoding="utf-8",
+                        flags=["cf_clearance", *response_flags],
+                    )
+            except Exception as e:
+                spider.logger.error("Failed to solve with CF clearance: %s", e)
         session, session_lock = flaresolverr.get_free_session()
         return scrapy.http.Request(
             f"{flaresolverr_base_url}/v1",
