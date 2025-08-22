@@ -14,7 +14,7 @@ from betor.entities import (
     SearchProviderResult,
     SearchRequest,
 )
-from betor.enums import ItemsSortEnum
+from betor.enums import ItemsSortEnum, ItemType
 from betor.providers import PROVIDERS, ProviderSlug
 from betor.repositories import (
     ItemsRepository,
@@ -55,6 +55,9 @@ class SearchService:
         self,
         q: str,
         sort: ItemsSortEnum,
+        imdb_id: Optional[str] = None,
+        tmdb_id: Optional[str] = None,
+        item_type: Optional[ItemType] = None,
         providers_slug: Optional[List[ProviderSlug]] = None,
         deep: int = 3,
         scrape_timeout: int = 30,
@@ -86,7 +89,11 @@ class SearchService:
             providers_result=search_job_monitor["providers_result"],
             processed_items=processed_items,
             apaginate_params=self.list_items_service.apaginate_params(
-                sort, items_id=[i["id"] for i in processed_items if i["id"]]
+                sort,
+                imdb_id=imdb_id,
+                tmdb_id=tmdb_id,
+                item_type=item_type,
+                items_id=[i["id"] for i in processed_items if i["id"]],
             ),
         )
 

@@ -5,7 +5,7 @@ from fastapi_pagination.ext.motor import apaginate
 
 from betor.api.fast_api import BetorRequest
 from betor.api.v1.items.schemas import ItemSchema
-from betor.enums import ItemsSortEnum
+from betor.enums import ItemsSortEnum, ItemType
 from betor.providers import ProviderSlug
 from betor.services import SearchService
 
@@ -19,6 +19,9 @@ async def search(
     request: BetorRequest,
     q: str,
     sort: ItemsSortEnum = ItemsSortEnum.inserted_at_desc,
+    imdb_id: Optional[str] = None,
+    tmdb_id: Optional[str] = None,
+    item_type: Optional[ItemType] = None,
     deep: int = 3,
     scrape_timeout: int = 30,
     process_raw_item_timeout: int = 30,
@@ -28,7 +31,10 @@ async def search(
     result = await service.search(
         q,
         sort,
+        imdb_id=imdb_id,
+        tmdb_id=tmdb_id,
         providers_slug=provider,
+        item_type=item_type,
         deep=deep,
         scrape_timeout=scrape_timeout,
         process_raw_item_timeout=process_raw_item_timeout,
