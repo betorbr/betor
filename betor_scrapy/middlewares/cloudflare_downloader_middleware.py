@@ -3,6 +3,7 @@ from typing import List, Optional, TypedDict, cast
 
 import scrapy
 import scrapy.http
+import twisted.internet.error
 
 from betor_scrapy.extensions import FlareSolverrExtension
 
@@ -24,28 +25,18 @@ class FlareSolverrSolution(TypedDict):
 
 
 class CloudflareDownloaderMiddleware:
-    def process_response(
+    def solves_cloudflare(
         self,
-        request: scrapy.http.Request,
-        response: scrapy.http.Response,
         spider: scrapy.Spider,
+        request: scrapy.Request,
+        response_flags: List[str] = [],
     ):
-        if "flaresolverr" in request.flags:
-            return response
-        if not (
-            response.status == 403
-            and response.xpath("//title/text()").get() == "Just a moment..."
-        ):
-            return response
-        spider.logger.info(
-            "Cloudflare detected. Using FlareSolverr on URL: %s", request.url
-        )
         flaresolverr_base_url: Optional[str] = spider.crawler.settings.get(
             "FLARESOLVERR_BASE_URL"
         )
         if not flaresolverr_base_url:
             spider.logger.warning("Skip FlareSolverr, base URL not setted!")
-            return response
+            return None
         flaresolverr: Optional[FlareSolverrExtension] = getattr(spider, "flaresolverr")
         assert flaresolverr, "Flaresolverr extension not initialized"
         cf_clearance_domain = request.meta.get("cf_clearance_domain")
@@ -55,7 +46,7 @@ class CloudflareDownloaderMiddleware:
             )
         ):
             spider.logger.info("Try solve with CF clearance...")
-            res = requests_session.get(request.url)
+            res = requests_session.get(request.url, headers=dict(request.headers))
             if res.ok:
                 return scrapy.http.HtmlResponse(
                     url=request.url,
@@ -64,7 +55,7 @@ class CloudflareDownloaderMiddleware:
                     body=res.text,
                     request=request,
                     encoding="utf-8",
-                    flags=["cf_clearance", *response.flags],
+                    flags=["cf_clearance", *response_flags],
                 )
         session, session_lock = flaresolverr.get_free_session()
         return scrapy.http.Request(
@@ -90,6 +81,36 @@ class CloudflareDownloaderMiddleware:
             flags=["flaresolverr", *request.flags],
             cb_kwargs=request.cb_kwargs,
         )
+
+    def process_response(
+        self,
+        request: scrapy.http.Request,
+        response: scrapy.http.Response,
+        spider: scrapy.Spider,
+    ):
+        if "flaresolverr" in request.flags:
+            return response
+        if not (
+            response.status == 403
+            and response.xpath("//title/text()").get() == "Just a moment..."
+        ):
+            return response
+        spider.logger.info(
+            "Cloudflare detected. Using FlareSolverr on URL: %s", request.url
+        )
+        if r := self.solves_cloudflare(spider, request, response_flags=response.flags):
+            return r
+        return response
+
+    def process_exception(
+        self, request: scrapy.Request, exception: Exception, spider: scrapy.Spider
+    ):
+        if isinstance(exception, twisted.internet.error.ConnectionRefusedError):
+            spider.logger.info(
+                "Trying solves with Cloudflare. Using FlareSolverr on URL: %s",
+                request.url,
+            )
+            return self.solves_cloudflare(spider, request)
 
 
 class CloudflareDownloaderResponseMiddleware:
