@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Dict, Literal, Optional, Sequence
 
 import motor.motor_asyncio
+from bson.objectid import ObjectId
 
 from betor.entities import Item, TorrentInfo
 from betor.settings import database_mongodb_settings
@@ -93,6 +94,12 @@ class ItemsRepository:
                 "magnet_xt": magnet_xt,
             }
         )
+        if not result:
+            return None
+        return ItemsRepository.parse_result(result)
+
+    async def get_by_id(self, item_id: str) -> Optional[Item]:
+        result = await self.collection.find_one({"_id": ObjectId(item_id)})
         if not result:
             return None
         return ItemsRepository.parse_result(result)
