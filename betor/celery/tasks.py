@@ -8,6 +8,7 @@ from betor.databases.redis import get_redis_client
 from betor.services import (
     AddJobResultsService,
     ProcessRawItemService,
+    UpdateItemLanguagesInfoService,
     UpdateItemTorrentInfoService,
 )
 
@@ -56,6 +57,14 @@ def _update_item_torrent_info(magnet_uri: str, **kwargs):
     return result
 
 
+def _update_item_languages_info(item_id: str, **kwargs):
+    mongodb_client = get_mongodb_client()
+    service = UpdateItemLanguagesInfoService(mongodb_client)
+    result = asyncio.run(service.update(item_id))
+    mongodb_client.close()
+    return result
+
+
 process_raw_item: Task = celery_app.task(
     _process_raw_item,
     base=BetorCeleryTask,
@@ -69,4 +78,9 @@ update_item_torrent_info: Task = celery_app.task(
     base=BetorCeleryTask,
     name="update_item_torrent_info",
     soft_time_limit=(5 * 60),
+)
+update_item_languages_info: Task = celery_app.task(
+    _update_item_languages_info,
+    base=BetorCeleryTask,
+    name="update_item_languages_info",
 )

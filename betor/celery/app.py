@@ -15,5 +15,6 @@ celery_app.conf.task_queues = [
 ]
 celery_app.conf.task_routes = {
     "process_raw_item": {"queue": "items"},
+    "update_item_languages_info": {"queue": "items"},
     "update_item_torrent_info": {"queue": "torrents"},
 }
