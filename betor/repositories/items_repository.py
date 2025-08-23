@@ -161,7 +161,7 @@ class ItemsRepository:
     async def update_languages_info(self, item_id: str, languages_info: LanguagesInfo):
         await self.collection.update_one(
             {
-                "item_id": ObjectId(item_id),
+                "_id": ObjectId(item_id),
             },
             {
                 "$set": {
