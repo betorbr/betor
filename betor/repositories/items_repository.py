@@ -172,5 +172,5 @@ class ItemsRepository:
         )
 
     async def get_all_by_magnet_uri(self, magnet_uri: str) -> List[Item]:
-        results = await self.collection.find({"magnet_uri": magnet_uri})
+        results = await self.collection.find({"magnet_uri": magnet_uri}).to_list()
         return [ItemsRepository.parse_result(result) for result in results]
