@@ -7,7 +7,7 @@ from typing import Dict, Literal, Optional, Sequence
 import motor.motor_asyncio
 from bson.objectid import ObjectId
 
-from betor.entities import Item, TorrentInfo
+from betor.entities import Item, LanguagesInfo, TorrentInfo
 from betor.settings import database_mongodb_settings
 
 
@@ -153,6 +153,19 @@ class ItemsRepository:
             {
                 "$set": {
                     **torrent_info,
+                    ItemsRepository.UPDATED_AT_FIELD: datetime.now(),
+                }
+            },
+        )
+
+    async def update_languages_info(self, item_id: str, languages_info: LanguagesInfo):
+        await self.collection.update_one(
+            {
+                "item_id": ObjectId(item_id),
+            },
+            {
+                "$set": {
+                    **languages_info,
                     ItemsRepository.UPDATED_AT_FIELD: datetime.now(),
                 }
             },
