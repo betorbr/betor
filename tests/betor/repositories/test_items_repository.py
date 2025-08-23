@@ -60,10 +60,6 @@ class TestBuildData:
                 {"provider_slug": "slug", "languages": ["pt"]},
                 [
                     (
-                        "languages",
-                        ["pt"],
-                    ),
-                    (
                         "provider_slug",
                         "slug",
                     ),
