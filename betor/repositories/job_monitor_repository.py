@@ -7,12 +7,7 @@ from uuid import uuid4
 import redis
 
 from betor.entities import Job, JobMonitor
-
-
-class JobMonitorNotFound(Exception):
-    def __init__(self, job_monitor_id: str, *args):
-        super().__init__(*args)
-        self.job_monitor_id = job_monitor_id
+from betor.exceptions import JobMonitorNotFound
 
 
 class JobMonitorRepository:
