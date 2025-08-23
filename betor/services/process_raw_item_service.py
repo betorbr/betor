@@ -109,4 +109,5 @@ class ProcessRawItemService:
             celery_app.signature("update_item_languages_info").delay(
                 retrieve_item["id"]
             )
+            return retrieve_item
         return item

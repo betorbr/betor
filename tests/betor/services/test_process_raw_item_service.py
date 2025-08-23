@@ -161,9 +161,17 @@ class TestProcessRawItemMagnetURI:
         assert item["magnet_uri"] == MAGNET_LINK_1
         assert item["magnet_xt"] == "urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c"
         assert item["magnet_dn"] == "Big Buck Bunny"
-        signature_mock.assert_called_once_with("update_item_torrent_info")
-        signature_mock.return_value.delay.assert_called_once_with(
-            MAGNET_LINK_1, job_monitor_id=None, job_index=mock.ANY
+        signature_mock.assert_has_calls(
+            [
+                mock.call("update_item_torrent_info"),
+                mock.call().delay(
+                    MAGNET_LINK_1, job_monitor_id=None, job_index=mock.ANY
+                ),
+                mock.call("update_item_languages_info"),
+                mock.call().delay(
+                    process_raw_item_service.items_repository.get.return_value["id"]  # type: ignore[attr-defined]
+                ),
+            ]
         )
 
     @pytest.mark.parametrize(
