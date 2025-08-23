@@ -19,7 +19,7 @@ class UpdateItemLanguagesInfoService:
         if not item:
             raise ItemNotFound()
         raw_item = await self.raw_items_repository.get(
-            item["provider_slug"], item["provider_slug"]
+            item["provider_slug"], item["provider_url"]
         )
         if not raw_item:
             raise RawItemNotFound()
