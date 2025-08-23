@@ -103,6 +103,10 @@ class ProcessRawItemService:
                 Job(type="celery-task", name="update_item_torrent_info", id=result.id),
                 job_index=job_index,
             )
-        return await self.items_repository.get(
+        if retrieve_item := await self.items_repository.get(
             item["provider_slug"], item["provider_url"], item["magnet_xt"]
-        )
+        ):
+            celery_app.signature("update_item_languages_info").delay(
+                retrieve_item["id"]
+            )
+        return item

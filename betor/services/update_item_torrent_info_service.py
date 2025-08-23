@@ -3,6 +3,7 @@ import tempfile
 import libtorrent as lt
 import motor.motor_asyncio
 
+from betor.celery.app import celery_app
 from betor.entities import TorrentInfo
 from betor.repositories import ItemsRepository
 from betor.settings import libtorrent_settings
@@ -15,6 +16,9 @@ class UpdateItemTorrentInfoService:
     async def update(self, magnet_uri: str):
         torrent_info = self.get_info_from_lt_session(magnet_uri)
         await self.items_repository.update_torrent_info(magnet_uri, torrent_info)
+        items = await self.items_repository.get_all_by_magnet_uri(magnet_uri)
+        for item in items:
+            celery_app.signature("update_item_languages_info").delay(item["id"])
         return torrent_info
 
     def get_info_from_lt_session(self, magnet_uri: str) -> TorrentInfo:
