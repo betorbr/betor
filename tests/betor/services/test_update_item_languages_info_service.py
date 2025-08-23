@@ -73,6 +73,17 @@ class TestDeterminesLanguagesInfo:
                 },
                 ["pt", "en"],
             ),
+            (
+                {
+                    "magnet_dn": "Jurassic World – O Mundo dos Dinossauros 2015 [BluRay] [1080p] [DUAL] comando.la"
+                },
+                {
+                    "title": "Jurassic World",
+                    "translated_title": "Jurassic World – O Mundo dos Dinossauros",
+                    "languages": ["pt", "en"],
+                },
+                ["pt", "en"],
+            ),
         ],
         indirect=["item", "raw_item"],
     )
