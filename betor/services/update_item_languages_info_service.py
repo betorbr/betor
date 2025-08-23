@@ -8,6 +8,8 @@ from betor.entities import Item, LanguagesInfo, RawItem
 from betor.exceptions import ItemNotFound, RawItemNotFound
 from betor.repositories import ItemsRepository, RawItemsRepository
 
+SPLIT_TOKEN_REGEX = r"[.\-_\[\] ]"
+
 
 class UpdateItemLanguagesInfoService:
     def __init__(self, mongodb_client: motor.motor_asyncio.AsyncIOMotorClient):
@@ -33,14 +35,16 @@ class UpdateItemLanguagesInfoService:
         languages: Set[str] = set()
         torrent_name = item["torrent_name"] or item["magnet_dn"] or ""
         title_tokens = set(
-            re.split(r"[.\-_\[\] ]", (raw_item["title"] or "").lower())
-            + re.split(r"[.\-_\[\] ]", (raw_item["translated_title"] or "").lower())
-            + re.split(r"[.\-_\[\] ]", (raw_item["raw_title"] or "").lower())
+            re.split(SPLIT_TOKEN_REGEX, (raw_item["title"] or "").lower())
+            + re.split(SPLIT_TOKEN_REGEX, (raw_item["translated_title"] or "").lower())
+            + re.split(SPLIT_TOKEN_REGEX, (raw_item["raw_title"] or "").lower())
         )
         for value in [torrent_name, *(item["torrent_files"] or [])]:
             if not raw_item["languages"]:
                 continue
-            tokens = set(re.split(r"[.\-_\[\] ]", value.lower())) - title_tokens - {""}
+            tokens = (
+                set(re.split(SPLIT_TOKEN_REGEX, value.lower())) - title_tokens - {""}
+            )
             for token in tokens:
                 language: Optional[langcodes.Language] = None
                 try:
