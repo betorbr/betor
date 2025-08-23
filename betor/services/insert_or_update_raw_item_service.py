@@ -7,6 +7,7 @@ import redis
 
 from betor.celery.app import celery_app
 from betor.entities import Job, RawItem
+from betor.exceptions import JobMonitorNotFound
 from betor.repositories import JobMonitorRepository, RawItemsRepository
 
 
@@ -35,8 +36,11 @@ class InsertOrUpdateRawItemService:
             job_index=job_index,
         )
         if job_monitor_id:
-            self.job_monitor_repository.add_job(
-                job_monitor_id,
-                Job(type="celery-task", name="process_raw_item", id=result.id),
-                job_index=job_index,
-            )
+            try:
+                self.job_monitor_repository.add_job(
+                    job_monitor_id,
+                    Job(type="celery-task", name="process_raw_item", id=result.id),
+                    job_index=job_index,
+                )
+            except JobMonitorNotFound:
+                pass

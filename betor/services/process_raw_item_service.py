@@ -9,6 +9,7 @@ import torf
 
 from betor.celery.app import celery_app
 from betor.entities import BaseItem, Item, Job, RawItem
+from betor.exceptions import JobMonitorNotFound
 from betor.repositories import ItemsRepository, JobMonitorRepository, RawItemsRepository
 
 from .determines_imdb_tmdb_ids_service import DeterminesIMDbTMDBIdsService
@@ -98,11 +99,18 @@ class ProcessRawItemService:
             "update_item_torrent_info"
         ).delay(magnet_uri, job_monitor_id=job_monitor_id, job_index=job_index)
         if job_monitor_id:
-            self.job_monitor_repository.add_job(
-                job_monitor_id,
-                Job(type="celery-task", name="update_item_torrent_info", id=result.id),
-                job_index=job_index,
-            )
+            try:
+                self.job_monitor_repository.add_job(
+                    job_monitor_id,
+                    Job(
+                        type="celery-task",
+                        name="update_item_torrent_info",
+                        id=result.id,
+                    ),
+                    job_index=job_index,
+                )
+            except JobMonitorNotFound:
+                pass
         if retrieve_item := await self.items_repository.get(
             item["provider_slug"], item["provider_url"], item["magnet_xt"]
         ):

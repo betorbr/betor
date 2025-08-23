@@ -1,5 +1,6 @@
 import redis
 
+from betor.exceptions import JobMonitorNotFound
 from betor.repositories import JobMonitorRepository
 
 
@@ -8,4 +9,7 @@ class AddJobResultsService:
         self.job_monitor_repository = JobMonitorRepository(redis_client)
 
     def add(self, job_monitor_id: str, job_index: str, *results):
-        self.job_monitor_repository.add_result(job_monitor_id, job_index, *results)
+        try:
+            self.job_monitor_repository.add_result(job_monitor_id, job_index, *results)
+        except JobMonitorNotFound:
+            pass
