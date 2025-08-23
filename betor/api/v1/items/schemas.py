@@ -4,6 +4,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 from betor.enums import ItemType
+from betor.types import Languages
 
 
 class ItemSchema(BaseModel):
@@ -21,5 +22,6 @@ class ItemSchema(BaseModel):
     torrent_num_seeds: Optional[int]
     torrent_files: Optional[List[str]]
     torrent_size: Optional[int]
+    languages: Languages
     inserted_at: Optional[datetime]
     updated_at: Optional[datetime]
