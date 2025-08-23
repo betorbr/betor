@@ -2,7 +2,7 @@ import hashlib
 import json
 from collections import OrderedDict
 from datetime import datetime
-from typing import Dict, Literal, Optional, Sequence
+from typing import Dict, List, Literal, Optional, Sequence
 
 import motor.motor_asyncio
 from bson.objectid import ObjectId
@@ -170,3 +170,7 @@ class ItemsRepository:
                 }
             },
         )
+
+    async def get_all_by_magnet_uri(self, magnet_uri: str) -> List[Item]:
+        results = await self.collection.find({"magnet_uri": magnet_uri})
+        return [ItemsRepository.parse_result(result) for result in results]
