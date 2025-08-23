@@ -37,7 +37,6 @@ class UpdateItemLanguagesInfoService:
         title_tokens = set(
             re.split(SPLIT_TOKEN_REGEX, (raw_item["title"] or "").lower())
             + re.split(SPLIT_TOKEN_REGEX, (raw_item["translated_title"] or "").lower())
-            + re.split(SPLIT_TOKEN_REGEX, (raw_item["raw_title"] or "").lower())
         )
         for value in [torrent_name, *(item["torrent_files"] or [])]:
             if not raw_item["languages"]:

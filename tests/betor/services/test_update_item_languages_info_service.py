@@ -65,6 +65,14 @@ class TestDeterminesLanguagesInfo:
                 },
                 ["pt-BR"],
             ),
+            (
+                {"magnet_dn": "Jurassic.World.Recomeço.2025.1080p.WEB-DL.DUAL.5.1"},
+                {
+                    "raw_title": "Jurassic World: Recomeço (2025) Dual Áudio 5.1 WEB-DL 720p | 1080p | 4K",
+                    "languages": ["pt", "en"],
+                },
+                ["pt", "en"],
+            ),
         ],
         indirect=["item", "raw_item"],
     )
