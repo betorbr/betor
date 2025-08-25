@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from betor.api.fast_api import BetorRequest
-from betor.repositories import JobMonitorNotFound
+from betor.exceptions import JobMonitorNotFound
 from betor.services import DetailJobMonitorService
 
 from .schemas import JobMonitorResponse
