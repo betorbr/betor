@@ -31,4 +31,4 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: dougppaz/betor:${{ github.ref_name }}
+          tags: dougppaz/betor:latest,dougppaz/betor:${{ github.ref_name }}
