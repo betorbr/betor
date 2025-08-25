@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Annotated, List, Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from fastapi_pagination import Page
 from fastapi_pagination.ext.motor import apaginate
 
@@ -19,11 +19,11 @@ async def list_items(
     sort: ItemsSortEnum = ItemsSortEnum.inserted_at_desc,
     imdb_id: Optional[str] = None,
     tmdb_id: Optional[str] = None,
-    item_type: Optional[ItemType] = None,
+    item_type: Annotated[Optional[List[ItemType]], Query()] = None,
 ) -> Page[ItemSchema]:
     service = ListItemsService(request.app.mongodb_client)
     collection, query_filter, cursor_sort, transformer = service.apaginate_params(
-        sort, imdb_id=imdb_id, tmdb_id=tmdb_id, item_type=item_type
+        sort, imdb_id=imdb_id, tmdb_id=tmdb_id, item_types=item_type
     )
     return await apaginate(
         collection,

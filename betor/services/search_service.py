@@ -57,7 +57,7 @@ class SearchService:
         sort: ItemsSortEnum,
         imdb_id: Optional[str] = None,
         tmdb_id: Optional[str] = None,
-        item_type: Optional[ItemType] = None,
+        item_types: Optional[List[ItemType]] = None,
         providers_slug: Optional[List[ProviderSlug]] = None,
         deep: int = 3,
         scrape_timeout: int = 30,
@@ -92,7 +92,7 @@ class SearchService:
                 sort,
                 imdb_id=imdb_id,
                 tmdb_id=tmdb_id,
-                item_type=item_type,
+                item_types=item_types,
                 items_id=[i["id"] for i in processed_items if i["id"]],
             ),
         )
