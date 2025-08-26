@@ -12,6 +12,7 @@ caps:
   categories:
     Movies: Movies
     TV: TV
+    Other: Other
 
   modes:
     search: [q]
@@ -31,9 +32,6 @@ search:
     - path: "{{ if .Keywords }}/v1/search/{{ else }}/v1/items/{{ end }}"
       response:
         type: json
-      item_type:
-        - movie
-        - tv
     - categories: [Movies]
       path: "{{ if .Keywords }}/v1/search/{{ else }}/v1/items/{{ end }}"
       response:
@@ -93,3 +91,4 @@ search:
       case:
         tv: TV
         movie: Movies
+        "*": Other
