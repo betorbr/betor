@@ -73,8 +73,11 @@ search:
     _is_portuguese:
       selector: languages:contains(pt)
       optional: true
+    _is_english:
+      selector: languages:contains(en)
+      optional: true
     _languages_tags:
-      text: "{{ if .Result._is_brazilian }}[brazilian]{{ else }}{{ end }}{{ if .Result._is_portuguese }}[portuguese]{{ else }}{{ end }}"
+      text: "{{ if .Result._is_brazilian }}[brazilian]{{ else }}{{ end }}{{ if .Result._is_portuguese }}[portuguese]{{ else }}{{ end }}{{ if .Result._is_english }}[english]{{ else }}{{ end }}"
     download:
       selector: magnet_uri
     title:
