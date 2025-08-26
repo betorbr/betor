@@ -49,6 +49,7 @@ search:
     tmdb_id: "{{ .Query.TMDBID }}"
     imdb_id: "{{ .Query.IMDBID }}"
     q: "{{ .Keywords }}"
+    size: 100
 
   rows:
     selector: $.items
