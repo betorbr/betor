@@ -67,10 +67,18 @@ search:
       selector: torrent_num_seeds
     _torrent_num_peers:
       selector: torrent_num_peers
+    _is_brazilian:
+      selector: languages:contains(pt-br)
+      optional: true
+    _is_portuguese:
+      selector: languages:contains(pt)
+      optional: true
+    _languages_tags:
+      text: "{{ if .Result._is_brazilian }}[brazilian]{{ else }}{{ end }}{{ if .Result._is_portuguese }}[portuguese]{{ else }}{{ end }}"
     download:
       selector: magnet_uri
     title:
-      text: "{{ if .Result._torrent_name }}{{ .Result._torrent_name }}{{ else }}{{ .Result._magnet_dn }}{{ end }}"
+      text: "{{ if .Result._torrent_name }}{{ .Result._torrent_name }}{{ else }}{{ .Result._magnet_dn }}{{ end }}{{ if .Result._languages_tags }} {{ .Result._languages_tags }}{{ else }}{{ end }}"
     details:
       selector: provider_url
     infohash:
