@@ -57,6 +57,7 @@ def item(request: pytest.FixtureRequest, fake: Faker) -> Item:
         torrent_files=None,
         torrent_size=None,
         languages=[],
+        episodes=[],
     )
     if request.param and isinstance(request.param, dict):
         item.update(request.param)

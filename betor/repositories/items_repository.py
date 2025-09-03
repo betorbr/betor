@@ -65,6 +65,7 @@ class ItemsRepository:
             torrent_files=result.get("torrent_files"),
             torrent_size=result.get("torrent_size"),
             languages=result.get("languages", []),
+            episodes=result.get("episodes", []),
         )
 
     @classmethod
