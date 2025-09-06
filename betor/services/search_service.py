@@ -58,6 +58,8 @@ class SearchService:
         imdb_id: Optional[str] = None,
         tmdb_id: Optional[str] = None,
         item_types: Optional[List[ItemType]] = None,
+        seasons: Optional[List[int]] = None,
+        episodes: Optional[List[int]] = None,
         providers_slug: Optional[List[ProviderSlug]] = None,
         deep: int = 3,
         scrape_timeout: int = 30,
@@ -94,6 +96,8 @@ class SearchService:
                 tmdb_id=tmdb_id,
                 item_types=item_types,
                 items_id=[i["id"] for i in processed_items if i["id"]],
+                seasons=seasons,
+                episodes=episodes,
             ),
         )
 
