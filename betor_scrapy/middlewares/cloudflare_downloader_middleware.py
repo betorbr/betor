@@ -125,7 +125,7 @@ class CloudflareDownloaderResponseMiddleware:
         response: scrapy.http.Response,
         spider: scrapy.Spider,
     ):
-        if "flaresolverr" not in request.flags and "flaresolverr" in response.flags:
+        if "flaresolverr" not in request.flags or "flaresolverr" in response.flags:
             return response
         flaresolverr: Optional[FlareSolverrExtension] = getattr(
             spider, "flaresolverr", None
