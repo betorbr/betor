@@ -7,6 +7,7 @@ type: public
 encoding: UTF-8
 links:
   - http://localhost:8000
+  - http://betor:8000
 
 caps:
   categories:
@@ -16,7 +17,7 @@ caps:
 
   modes:
     search: [q]
-    tv-search: [q, imdbid, tmdbid, season]
+    tv-search: [q, imdbid, tmdbid, season, ep]
     movie-search: [q, imdbid, tmdbid]
 
 settings: []
@@ -24,22 +25,18 @@ settings: []
 search:
   keywordsfilters:
     - name: tolower
-    - name: re_replace
-      args: ["(?i)(S0)(\\d{1,2})$", "temporada $2"]
-    - name: re_replace
-      args: ["(?i)(S)(\\d{1,3})$", "temporada $2"]
   paths:
-    - path: "{{ if .Keywords }}/v1/search/{{ else }}/v1/items/{{ end }}"
+    - path: "{{ if .Query.Q }}/v1/search/{{ else }}/v1/items/{{ end }}"
       response:
         type: json
     - categories: [Movies]
-      path: "{{ if .Keywords }}/v1/search/{{ else }}/v1/items/{{ end }}"
+      path: "{{ if .Query.Q }}/v1/search/{{ else }}/v1/items/{{ end }}"
       response:
         type: json
       inputs:
         item_type: movie
     - categories: [TV]
-      path: "{{ if .Keywords }}/v1/search/{{ else }}/v1/items/{{ end }}"
+      path: "{{ if .Query.Q }}/v1/search/{{ else }}/v1/items/{{ end }}"
       response:
         type: json
       inputs:
@@ -48,7 +45,9 @@ search:
     sort: -updated_at
     tmdb_id: "{{ .Query.TMDBID }}"
     imdb_id: "{{ .Query.IMDBID }}"
-    q: "{{ .Keywords }}"
+    season: "{{ .Query.Season }}"
+    episode: "{{ .Query.Ep }}"
+    q: "{{ .Query.Q }}"
     size: 100
 
   rows:
