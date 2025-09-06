@@ -188,3 +188,18 @@ class ItemsRepository:
                 }
             },
         )
+
+    async def update_item_episodes_info(
+        self, item_id: str, episodes_info: EpisodesInfo
+    ):
+        await self.collection.update_one(
+            {
+                "_id": ObjectId(item_id),
+            },
+            {
+                "$set": {
+                    **episodes_info,
+                    ItemsRepository.UPDATED_AT_FIELD: datetime.now(),
+                }
+            },
+        )
