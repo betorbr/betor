@@ -7,7 +7,7 @@ from typing import Dict, List, Literal, Optional, Sequence
 import motor.motor_asyncio
 from bson.objectid import ObjectId
 
-from betor.entities import Item, LanguagesInfo, TorrentInfo
+from betor.entities import EpisodesInfo, Item, LanguagesInfo, TorrentInfo
 from betor.settings import database_mongodb_settings
 
 
@@ -65,6 +65,8 @@ class ItemsRepository:
             torrent_files=result.get("torrent_files"),
             torrent_size=result.get("torrent_size"),
             languages=result.get("languages", []),
+            episodes=result.get("episodes", []),
+            seasons=result.get("seasons", []),
         )
 
     @classmethod
@@ -174,3 +176,31 @@ class ItemsRepository:
     async def get_all_by_magnet_uri(self, magnet_uri: str) -> List[Item]:
         results = await self.collection.find({"magnet_uri": magnet_uri}).to_list()
         return [ItemsRepository.parse_result(result) for result in results]
+
+    async def update_episodes_info(self, magnet_uri: str, episodes_info: EpisodesInfo):
+        await self.collection.update_many(
+            {
+                "magnet_uri": magnet_uri,
+            },
+            {
+                "$set": {
+                    **episodes_info,
+                    ItemsRepository.UPDATED_AT_FIELD: datetime.now(),
+                }
+            },
+        )
+
+    async def update_item_episodes_info(
+        self, item_id: str, episodes_info: EpisodesInfo
+    ):
+        await self.collection.update_one(
+            {
+                "_id": ObjectId(item_id),
+            },
+            {
+                "$set": {
+                    **episodes_info,
+                    ItemsRepository.UPDATED_AT_FIELD: datetime.now(),
+                }
+            },
+        )

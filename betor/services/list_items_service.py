@@ -33,16 +33,25 @@ class ListItemsService:
         tmdb_id: Optional[str] = None,
         item_types: Optional[List[ItemType]] = None,
         items_id: Optional[List[str]] = None,
+        seasons: Optional[List[int]] = None,
+        episodes: Optional[List[int]] = None,
     ) -> ApaginateParams[Item]:
         cursor_sort = CURSOR_SORT_MAPPING.get(sort)
         assert cursor_sort
-        filter_statements: List[Dict[str, Union[str, Dict]]] = []
-        if imdb_id is not None:
-            filter_statements.append({"imdb_id": imdb_id})
-        if tmdb_id is not None:
-            filter_statements.append({"tmdb_id": tmdb_id})
+        filter_statements: List[Dict[str, Union[str, Union[Dict, List]]]] = []
+        if imdb_id is not None or tmdb_id is not None:
+            id_statements = []
+            if imdb_id is not None:
+                id_statements.append({"imdb_id": imdb_id})
+            if tmdb_id is not None:
+                id_statements.append({"tmdb_id": tmdb_id})
+            filter_statements.append({"$or": id_statements})
         if item_types is not None:
             filter_statements.append({"item_type": {"$in": item_types}})
+        if seasons is not None:
+            filter_statements.append({"seasons": {"$in": seasons}})
+        if episodes is not None:
+            filter_statements.append({"episodes.episode": {"$in": episodes}})
         query_filter = (
             {
                 **({"$and": filter_statements} if filter_statements else {}),

@@ -5,9 +5,11 @@ from celery import Task
 
 from betor.databases.mongodb import get_mongodb_client
 from betor.databases.redis import get_redis_client
+from betor.entities import TorrentInfo
 from betor.services import (
     AddJobResultsService,
     ProcessRawItemService,
+    UpdateItemEpisodesInfoService,
     UpdateItemLanguagesInfoService,
     UpdateItemTorrentInfoService,
 )
@@ -65,6 +67,23 @@ def _update_item_languages_info(item_id: str, **kwargs):
     return result
 
 
+def _update_item_episodes_info(
+    item_id: Optional[str] = None,
+    magnet_uri: Optional[str] = None,
+    torrent_info: Optional[TorrentInfo] = None,
+    **kwargs,
+):
+    mongodb_client = get_mongodb_client()
+    service = UpdateItemEpisodesInfoService(mongodb_client)
+    result = None
+    if magnet_uri and torrent_info:
+        result = asyncio.run(service.update_magnet_uri(magnet_uri, torrent_info))
+    elif item_id:
+        result = asyncio.run(service.update_item(item_id))
+    mongodb_client.close()
+    return result
+
+
 process_raw_item: Task = celery_app.task(
     _process_raw_item,
     base=BetorCeleryTask,
@@ -83,4 +102,9 @@ update_item_languages_info: Task = celery_app.task(
     _update_item_languages_info,
     base=BetorCeleryTask,
     name="update_item_languages_info",
+)
+update_item_episodes_info = celery_app.task(
+    _update_item_episodes_info,
+    base=BetorCeleryTask,
+    name="update_item_episodes_info",
 )

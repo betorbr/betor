@@ -20,10 +20,17 @@ async def list_items(
     imdb_id: Optional[str] = None,
     tmdb_id: Optional[str] = None,
     item_type: Annotated[Optional[List[ItemType]], Query()] = None,
+    season: Annotated[Optional[List[int]], Query()] = None,
+    episode: Annotated[Optional[List[int]], Query()] = None,
 ) -> Page[ItemSchema]:
     service = ListItemsService(request.app.mongodb_client)
     collection, query_filter, cursor_sort, transformer = service.apaginate_params(
-        sort, imdb_id=imdb_id, tmdb_id=tmdb_id, item_types=item_type
+        sort,
+        imdb_id=imdb_id,
+        tmdb_id=tmdb_id,
+        item_types=item_type,
+        seasons=season,
+        episodes=episode,
     )
     return await apaginate(
         collection,

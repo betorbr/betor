@@ -1,3 +1,4 @@
+from .episodes_info import Episode, EpisodesInfo
 from .item import BaseItem, Item
 from .job_monitor import Job, JobMonitor
 from .languages_info import LanguagesInfo
@@ -16,4 +17,6 @@ __all__ = [
     "SearchProviderResult",
     "SearchJobMonitor",
     "LanguagesInfo",
+    "EpisodesInfo",
+    "Episode",
 ]
