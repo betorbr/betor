@@ -19,6 +19,9 @@ class UpdateItemTorrentInfoService:
         items = await self.items_repository.get_all_by_magnet_uri(magnet_uri)
         for item in items:
             celery_app.signature("update_item_languages_info").delay(item["id"])
+        celery_app.signature("update_item_episodes_info").delay(
+            magnet_uri, torrent_info
+        )
         return torrent_info
 
     def get_info_from_lt_session(self, magnet_uri: str) -> TorrentInfo:
