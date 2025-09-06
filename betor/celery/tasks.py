@@ -67,10 +67,19 @@ def _update_item_languages_info(item_id: str, **kwargs):
     return result
 
 
-def _update_item_episodes_info(magnet_uri: str, torrent_info: TorrentInfo, **kwargs):
+def _update_item_episodes_info(
+    item_id: Optional[str] = None,
+    magnet_uri: Optional[str] = None,
+    torrent_info: Optional[TorrentInfo] = None,
+    **kwargs,
+):
     mongodb_client = get_mongodb_client()
     service = UpdateItemEpisodesInfoService(mongodb_client)
-    result = asyncio.run(service.update(magnet_uri, torrent_info))
+    result = None
+    if magnet_uri and torrent_info:
+        result = asyncio.run(service.update_magnet_uri(magnet_uri, torrent_info))
+    elif item_id:
+        result = asyncio.run(service.update_item(item_id))
     mongodb_client.close()
     return result
 

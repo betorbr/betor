@@ -25,5 +25,6 @@ class ItemSchema(BaseModel):
     torrent_size: Optional[int]
     languages: Languages
     episodes: List[Episode]
+    seasons: List[int]
     inserted_at: Optional[datetime]
     updated_at: Optional[datetime]

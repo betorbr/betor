@@ -1,3 +1,4 @@
+from typing import List
 from unittest import mock
 
 import motor.motor_asyncio
@@ -67,5 +68,32 @@ class TestDeterminesEpisodes:
     ):
         assert (
             update_item_episodes_info_service.determines_episodes(torrent_info)
+            == expected
+        )
+
+
+class TestDeterminesSeasons:
+    @pytest.mark.parametrize(
+        (
+            "torrent_name",
+            "episodes",
+            "expected",
+        ),
+        [
+            ("", [], []),
+            ("round_6.s01", [], [1]),
+            ("foo", [Episode(season=1, episode=1)], [1]),
+            ("foo", [Episode(season=1, episode=1), Episode(season=1, episode=2)], [1]),
+        ],
+    )
+    def test_ok(
+        self,
+        update_item_episodes_info_service: UpdateItemEpisodesInfoService,
+        torrent_name: str,
+        episodes: List[Episode],
+        expected,
+    ):
+        assert (
+            update_item_episodes_info_service.determines_seasons(torrent_name, episodes)
             == expected
         )

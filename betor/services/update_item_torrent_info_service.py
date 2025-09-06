@@ -20,7 +20,7 @@ class UpdateItemTorrentInfoService:
         for item in items:
             celery_app.signature("update_item_languages_info").delay(item["id"])
         celery_app.signature("update_item_episodes_info").delay(
-            magnet_uri, torrent_info
+            magnet_uri=magnet_uri, torrent_info=torrent_info
         )
         return torrent_info
 

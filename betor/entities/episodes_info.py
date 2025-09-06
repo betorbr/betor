@@ -8,3 +8,4 @@ class Episode(TypedDict):
 
 class EpisodesInfo(TypedDict):
     episodes: List[Episode]
+    seasons: List[int]

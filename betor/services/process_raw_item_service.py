@@ -93,6 +93,7 @@ class ProcessRawItemService:
             torrent_size=None,
             languages=[],
             episodes=[],
+            seasons=[],
         )
         await self.items_repository.insert_or_update(item)
         job_index = str(uuid4())
@@ -117,6 +118,9 @@ class ProcessRawItemService:
         ):
             celery_app.signature("update_item_languages_info").delay(
                 retrieve_item["id"]
+            )
+            celery_app.signature("update_item_episodes_info").delay(
+                item_id=retrieve_item["id"]
             )
             return retrieve_item
         return item
