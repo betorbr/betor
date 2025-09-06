@@ -49,7 +49,7 @@ class ListItemsService:
         if item_types is not None:
             filter_statements.append({"item_type": {"$in": item_types}})
         if seasons is not None:
-            filter_statements.append({"episodes.season": {"$in": seasons}})
+            filter_statements.append({"seasons": {"$in": seasons}})
         if episodes is not None:
             filter_statements.append({"episodes.episode": {"$in": episodes}})
         query_filter = (
