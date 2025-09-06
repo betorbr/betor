@@ -37,7 +37,9 @@ class CloudflareDownloaderMiddleware:
         if not flaresolverr_base_url:
             spider.logger.warning("Skip FlareSolverr, base URL not setted!")
             return None
-        flaresolverr: Optional[FlareSolverrExtension] = getattr(spider, "flaresolverr")
+        flaresolverr: Optional[FlareSolverrExtension] = getattr(
+            spider, "flaresolverr", None
+        )
         assert flaresolverr, "Flaresolverr extension not initialized"
         cf_clearance_domain = request.meta.get("cf_clearance_domain")
         if cf_clearance_domain and (
@@ -125,7 +127,9 @@ class CloudflareDownloaderResponseMiddleware:
     ):
         if "flaresolverr" not in request.flags and "flaresolverr" in response.flags:
             return response
-        flaresolverr: Optional[FlareSolverrExtension] = getattr(spider, "flaresolverr")
+        flaresolverr: Optional[FlareSolverrExtension] = getattr(
+            spider, "flaresolverr", None
+        )
         assert flaresolverr, "Flaresolverr extension not initialized"
         if session_lock := request.meta.pop("flaresolverr_session_lock", None):
             flaresolverr.free_session(session_lock)
