@@ -176,6 +176,7 @@ class SearchService:
                             for r in self.job_monitor_repository.get_results(
                                 job_monitor_id, job_index
                             )
+                            if isinstance(r, dict)
                         ]
                     )
                     for job_index in process_raw_item_jobs.keys()
