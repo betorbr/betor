@@ -21,6 +21,7 @@ FIELD_TOKENS = {
     "audio-quality": ["qualidade-do-audio"],
     "video-quality": ["qualidade-de-video"],
     "server": ["servidor"],
+    "classificacao": ["classificacao"],
 }
 ALL_FIELD_TOKENS_VALUES = list(itertools.chain(*FIELD_TOKENS.values()))
 
