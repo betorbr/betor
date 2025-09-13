@@ -98,7 +98,10 @@ class FlareSolverrExtension:
 
     def create_sessions(self):
         while len(self.get_available_sessions()) < self.max_sessions:
-            self.create_session()
+            try:
+                self.create_session()
+            except FlareSolverrSessionsExceeded:
+                break
 
     def build_redis_cf_clearance_key(self, domain: str):
         return self.redis_cf_clearance_key.format(domain=domain)
