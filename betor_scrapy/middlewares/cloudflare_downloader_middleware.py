@@ -1,4 +1,5 @@
 import json
+import random
 from typing import List, Optional, TypedDict, cast
 
 import scrapy
@@ -62,7 +63,8 @@ class CloudflareDownloaderMiddleware:
                     )
             except Exception as e:
                 spider.logger.error("Failed to solve with CF clearance: %s", e)
-        session, session_lock = flaresolverr.get_free_session()
+        session = random.choice(list(flaresolverr.get_available_sessions()))
+        spider.logger.debug("selected session -> %s", session)
         return scrapy.http.Request(
             f"{flaresolverr_base_url}/v1",
             request.callback,
@@ -76,9 +78,8 @@ class CloudflareDownloaderMiddleware:
                 }
             ),
             meta={
+                "download_slot": session,
                 "allow_offsite": True,
-                "flaresolverr_session": session,
-                "flaresolverr_session_lock": session_lock,
                 "original_request": request,
                 **request.meta,
             },
@@ -125,14 +126,13 @@ class CloudflareDownloaderResponseMiddleware:
         response: scrapy.http.Response,
         spider: scrapy.Spider,
     ):
+        spider.logger.debug("process_response request.meta -> %s", request.meta)
         if "flaresolverr" not in request.flags or "flaresolverr" in response.flags:
             return response
         flaresolverr: Optional[FlareSolverrExtension] = getattr(
             spider, "flaresolverr", None
         )
         assert flaresolverr, "Flaresolverr extension not initialized"
-        if session_lock := request.meta.pop("flaresolverr_session_lock", None):
-            flaresolverr.free_session(session_lock)
         if response.status != 200:
             return response
         data: dict = json.loads(response.body)

@@ -1,9 +1,8 @@
 import functools
-from typing import Dict, List, Optional, Self, Set, Tuple, TypedDict, cast
+from typing import Dict, List, Optional, Self, Set, TypedDict, cast
 from uuid import uuid4
 
 import httpx
-import redis.lock
 import requests
 import scrapy.crawler
 import scrapy.exceptions
@@ -20,6 +19,10 @@ class FlareSolverrListSessionsResponse(TypedDict):
     sessions: List[str]
 
 
+class FlareSolverrSessionsExceeded(Exception):
+    pass
+
+
 class FlareSolverrExtension:
     @classmethod
     def from_crawler(cls, crawler: scrapy.crawler.Crawler) -> Self:
@@ -29,17 +32,15 @@ class FlareSolverrExtension:
         session_prefix = crawler.settings.get(
             "FLARESOLVERR_SESSION_PREFIX", "flaresolverr-extension:"
         )
-        redis_lock_session_key = crawler.settings.get(
-            "FLARESOLVERR_REDIS_LOCK_SESSION_KEY", "flaresolverr:lock_session:{session}"
-        )
         redis_cf_clearance_key = crawler.settings.get(
             "FLARESOLVERR_REDIS_CF_CLEARANCE_KEY", "flaresolverr:cf_clearance:{domain}"
         )
+        max_sessions = crawler.settings.get("FLARESOLVERR_MAX_SESSIONS", 3)
         obj = cls(
             base_url,
             session_prefix,
-            redis_lock_session_key,
             redis_cf_clearance_key,
+            max_sessions,
         )
         crawler.signals.connect(obj.spider_opened, signal=scrapy.signals.spider_opened)
         crawler.signals.connect(obj.spider_closed, signal=scrapy.signals.spider_closed)
@@ -49,17 +50,18 @@ class FlareSolverrExtension:
         self,
         base_url: str,
         session_prefix: str,
-        redis_lock_session_key: str,
         redis_cf_clearance_key: str,
+        max_sessions: int,
     ):
         self.redis_client = get_redis_client()
         self.base_url = base_url
         self.session_prefix = session_prefix
-        self.redis_lock_session_key = redis_lock_session_key
         self.redis_cf_clearance_key = redis_cf_clearance_key
+        self.max_sessions = max_sessions
 
     def spider_opened(self, spider: scrapy.Spider) -> None:
         self.redis_client.ping()
+        self.create_sessions()
         spider.flaresolverr = self  # type: ignore[attr-defined]
 
     def spider_closed(self, spider: scrapy.Spider) -> None:
@@ -80,31 +82,9 @@ class FlareSolverrExtension:
             ]
         )
 
-    def is_free_session(self, session: str) -> bool:
-        lock: redis.lock.Lock = self.redis_client.lock(
-            self.redis_lock_session_key.format(session=session),
-        )
-        return not lock.locked()
-
-    def get_free_sessions(self) -> Set[str]:
-        available_sessions = self.get_available_sessions()
-        return set(
-            [session for session in available_sessions if self.is_free_session(session)]
-        )
-
-    def get_free_session(self) -> Tuple[str, redis.lock.Lock]:
-        free_sessions = self.get_free_sessions()
-        try:
-            session = free_sessions.pop()
-        except KeyError:
-            session = self.create_session()
-        lock: redis.lock.Lock = self.redis_client.lock(
-            self.redis_lock_session_key.format(session=session),
-        )
-        lock.acquire(blocking=True)
-        return session, lock
-
     def create_session(self) -> str:
+        if len(self.get_available_sessions()) >= self.max_sessions:
+            raise FlareSolverrSessionsExceeded()
         response = httpx.post(
             f"{self.base_url}/v1",
             json={
@@ -116,8 +96,9 @@ class FlareSolverrExtension:
         data = cast(FlareSolverrSessionsCreateResponse, response.json())
         return data["session"]
 
-    def free_session(self, lock: redis.lock.Lock):
-        lock.release()
+    def create_sessions(self):
+        while len(self.get_available_sessions()) < self.max_sessions:
+            self.create_session()
 
     def build_redis_cf_clearance_key(self, domain: str):
         return self.redis_cf_clearance_key.format(domain=domain)
