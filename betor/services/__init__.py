@@ -1,4 +1,5 @@
 from .add_job_results_service import AddJobResultsService
+from .catalog_service import CatalogService
 from .detail_job_monitor_service import DetailJobMonitorService
 from .determines_imdb_tmdb_ids_service import DeterminesIMDbTMDBIdsService
 from .get_job_status_service import GetJobStatusService, JobStatus
@@ -26,4 +27,5 @@ __all__ = [
     "SearchService",
     "UpdateItemLanguagesInfoService",
     "UpdateItemEpisodesInfoService",
+    "CatalogService",
 ]
