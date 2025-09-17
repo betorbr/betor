@@ -57,7 +57,16 @@ class CatalogItemsRepository:
     @property
     def aggr_pipeline(self) -> List[Dict]:
         return [
-            {"$match": {"item_type": {"$ne": None}}},
+            {
+                "$match": {
+                    "item_type": {"$ne": None},
+                    "updated_at": {"$ne": None},
+                    "$or": [
+                        {"imdb_id": {"$ne": None}},
+                        {"tmdb_id": {"$ne": None}},
+                    ],
+                }
+            },
             {"$unwind": {"path": "$languages", "preserveNullAndEmptyArrays": True}},
             {
                 "$group": {
