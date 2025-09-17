@@ -6,10 +6,10 @@ BeTor é o buscador P2P de filmes e séries com o jeitinho mais brasileiro da in
 
 - [BLUDV](https://bludv.xyz/)
 - [Comando Torrents](https://comando.la/)
+- [Torrent Dos Filmes](https://torrentdosfilmes.se/)
 
 ### Por vir
 
-- [Torrent Dos Filmes](https://torrentdosfilmes.se/)
 - [Starck Filmes](https://www.starckfilmes.site/)
 - [Rede Torrent](https://redetorrent.com/)
 
