@@ -1,3 +1,4 @@
+from .catalog_item import CatalogItem, ProviderPage
 from .episodes_info import Episode, EpisodesInfo
 from .item import BaseItem, Item
 from .job_monitor import Job, JobMonitor
@@ -19,4 +20,6 @@ __all__ = [
     "LanguagesInfo",
     "EpisodesInfo",
     "Episode",
+    "CatalogItem",
+    "ProviderPage",
 ]
