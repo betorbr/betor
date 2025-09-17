@@ -1,3 +1,4 @@
+from .catalog_items_repository import CatalogItemsRepository
 from .items_repository import ItemsRepository
 from .job_monitor_repository import JobMonitorRepository
 from .raw_items_repository import RawItemsRepository
@@ -8,4 +9,5 @@ __all__ = [
     "ItemsRepository",
     "JobMonitorRepository",
     "SearchJobMonitorRepository",
+    "CatalogItemsRepository",
 ]

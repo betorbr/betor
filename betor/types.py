@@ -23,4 +23,10 @@ ApaginateParams: TypeAlias = Tuple[
     Callable[[Sequence[Dict]], Sequence[T]],
 ]
 
+ApaginateAggregateParams: TypeAlias = Tuple[
+    motor.motor_asyncio.AsyncIOMotorCollection,
+    List[Dict],
+    Callable[[Sequence[Dict]], Sequence[T]],
+]
+
 Languages: TypeAlias = List[str]

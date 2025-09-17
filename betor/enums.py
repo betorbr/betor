@@ -36,3 +36,8 @@ class ItemsSortEnum(StrEnum):
 class ItemType(StrEnum):
     movie = "movie"
     tv = "tv"
+
+
+class CatalogItemsSortEnum(StrEnum):
+    last_updated_asc = "last_updated"
+    last_updated_desc = "-last_updated"
