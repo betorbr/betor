@@ -91,6 +91,7 @@ def _tmdb_api_request(url: str):
     response = httpx.get(
         url, headers={"Authorization": f"Bearer {tmdb_api_settings.access_token}"}
     )
+    response.raise_for_status()
     return response.json()
 
 
