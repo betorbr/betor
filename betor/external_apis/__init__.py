@@ -10,8 +10,7 @@ from .tmdb_find_by_id_api import (
     TMDBFindByIdAPI,
     TMDBFindByIdAPIError,
     TMDBFindByIdResponse,
-    TMDBFindByIdResponseMovieResult,
-    TMDBFindByIdResponseTVResult,
+    TMDBFindByIdResponseResult,
 )
 from .tmdb_trending_api import (
     TMDBTrendingAPI,
@@ -34,6 +33,5 @@ __all__ = [
     "TMDBFindByIdAPI",
     "TMDBFindByIdAPIError",
     "TMDBFindByIdResponse",
-    "TMDBFindByIdResponseMovieResult",
-    "TMDBFindByIdResponseTVResult",
+    "TMDBFindByIdResponseResult",
 ]

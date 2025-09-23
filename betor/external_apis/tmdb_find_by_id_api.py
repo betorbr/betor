@@ -6,37 +6,13 @@ from betor.settings import tmdb_api_settings
 
 
 class TMDBFindByIdResponseResult(TypedDict):
-    adult: bool
-    backdrop_path: str
-    poster_path: str
     id: int
-    original_language: str
-    overview: str
-    genre_ids: List[int]
-    popularity: float
-    vote_average: float
-    vote_count: int
-
-
-class TMDBFindByIdResponseMovieResult(TMDBFindByIdResponseResult):
-    title: str
-    original_title: str
-    media_type: Literal["movie"]
-    release_date: str
-    video: bool
-
-
-class TMDBFindByIdResponseTVResult(TMDBFindByIdResponseResult):
-    name: str
-    original_name: str
-    media_type: Literal["tv"]
-    first_air_date: str
-    origin_country: List[str]
+    media_type: Literal["movie", "tv"]
 
 
 class TMDBFindByIdResponse(TypedDict):
-    movie_results: List[TMDBFindByIdResponseMovieResult]
-    tv_results: List[TMDBFindByIdResponseTVResult]
+    movie_results: List[TMDBFindByIdResponseResult]
+    tv_results: List[TMDBFindByIdResponseResult]
 
 
 class TMDBFindByIdAPIError(Exception):
