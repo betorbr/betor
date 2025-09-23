@@ -18,4 +18,5 @@ celery_app.conf.task_routes = {
     "update_item_languages_info": {"queue": "items"},
     "update_item_episodes_info": {"queue": "items"},
     "update_item_torrent_info": {"queue": "torrents"},
+    "tmdb_api_request": {"queue": "items"},
 }

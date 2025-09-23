@@ -1,6 +1,7 @@
 import asyncio
 from typing import Optional
 
+import httpx
 from celery import Task
 
 from betor.databases.mongodb import get_mongodb_client
@@ -13,6 +14,7 @@ from betor.services import (
     UpdateItemLanguagesInfoService,
     UpdateItemTorrentInfoService,
 )
+from betor.settings import tmdb_api_settings
 
 from .app import celery_app
 
@@ -84,6 +86,14 @@ def _update_item_episodes_info(
     return result
 
 
+def _tmdb_api_request(url: str):
+    assert tmdb_api_settings.access_token
+    response = httpx.get(
+        url, headers={"Authorization": f"Bearer {tmdb_api_settings.access_token}"}
+    )
+    return response.json()
+
+
 process_raw_item: Task = celery_app.task(
     _process_raw_item,
     base=BetorCeleryTask,
@@ -107,4 +117,9 @@ update_item_episodes_info = celery_app.task(
     _update_item_episodes_info,
     base=BetorCeleryTask,
     name="update_item_episodes_info",
+)
+tmdb_api_request = celery_app.task(
+    _tmdb_api_request,
+    name="tmdb_api_request",
+    rate_limit=tmdb_api_settings.rate_limit,
 )

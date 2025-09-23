@@ -67,6 +67,7 @@ class TMDBApiSettings(BaseSettings):
     )
 
     access_token: Optional[str] = None
+    rate_limit: str = "1/s"
 
 
 flaresolverr_settings = FlareSolverrSettings()
