@@ -63,7 +63,7 @@ class SearchJobMonitorSettings(BaseSettings):
 
 class TMDBApiSettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env", env_prefix="search_job_monitor_", extra="allow"
+        env_file=".env", env_prefix="tmdb_api_", extra="allow"
     )
 
     access_token: Optional[str] = None
