@@ -50,7 +50,9 @@ class TMDBFindByIdAPI:
     ):
         self.url = url
 
-    async def execute(self, external_id: str, external_source: Literal["imdb_id"]):
+    async def execute(
+        self, external_id: str, external_source: Literal["imdb_id"]
+    ) -> TMDBFindByIdResponse:
         assert tmdb_api_settings.access_token
         async with httpx.AsyncClient() as client:
             response = await client.get(
