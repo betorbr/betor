@@ -9,6 +9,9 @@ from betor.enums import ItemType
 from betor.external_apis import (
     IMDbSuggestionAPI,
     IMDbSuggestionAPIError,
+    TMDBFindByIdAPI,
+    TMDBFindByIdResponse,
+    TMDBFindByIdResponseResult,
     TMDBTrendingAPI,
     TMDBTrendingAPIError,
 )
@@ -27,6 +30,11 @@ def determines_imdb_tmdb_ids_service() -> Generator[DeterminesIMDbTMDBIdsService
             "betor.services.determines_imdb_tmdb_ids_service.TMDBTrendingAPI",
             new_callable=mock.MagicMock,
             spec=TMDBTrendingAPI,
+        ),
+        mock.patch(
+            "betor.services.determines_imdb_tmdb_ids_service.TMDBFindByIdAPI",
+            new_callable=mock.MagicMock,
+            spec=TMDBFindByIdAPI,
         ),
     ):
         yield DeterminesIMDbTMDBIdsService()
@@ -275,3 +283,94 @@ class TestDeterminesTmdbId:
                 str(tmdb_id),
                 ItemType.tv,
             )
+
+    @mock.patch(
+        "betor.services.determines_imdb_tmdb_ids_service.tmdb_api_settings.access_token",
+        return_value="123",
+    )
+    @pytest.mark.asyncio
+    async def test_imdb_id_with_tmdb_access_token_empty_result(
+        self,
+        raw_item: RawItem,
+        determines_imdb_tmdb_ids_service: DeterminesIMDbTMDBIdsService,
+        *mocks,
+    ):
+        determines_imdb_tmdb_ids_service.tmdb_find_by_id_api.execute.side_effect = [
+            TMDBFindByIdResponse(movie_results=[], tv_results=[])
+        ]
+        with mock.patch(
+            "betor.services.determines_imdb_tmdb_ids_service.DeterminesIMDbTMDBIdsService.build_querys",
+            return_value=[],
+        ) as build_querys_mock:
+            result = [
+                item
+                async for item in determines_imdb_tmdb_ids_service.determines_tmdb_id(
+                    raw_item, imdb_id="tt12345678"
+                )
+            ]
+            assert len(result) == 0
+            build_querys_mock.assert_called_once()
+
+    @mock.patch(
+        "betor.services.determines_imdb_tmdb_ids_service.tmdb_api_settings.access_token",
+        return_value="123",
+    )
+    @pytest.mark.asyncio
+    async def test_imdb_id_with_tmdb_access_token_ok(
+        self,
+        raw_item: RawItem,
+        determines_imdb_tmdb_ids_service: DeterminesIMDbTMDBIdsService,
+        *mocks,
+    ):
+        determines_imdb_tmdb_ids_service.tmdb_find_by_id_api.execute.side_effect = [
+            TMDBFindByIdResponse(
+                movie_results=[TMDBFindByIdResponseResult(id=123, media_type="movie")],
+                tv_results=[],
+            )
+        ]
+        with mock.patch(
+            "betor.services.determines_imdb_tmdb_ids_service.DeterminesIMDbTMDBIdsService.build_querys",
+            return_value=[],
+        ) as build_querys_mock:
+            result = [
+                item
+                async for item in determines_imdb_tmdb_ids_service.determines_tmdb_id(
+                    raw_item, imdb_id="tt12345678"
+                )
+            ]
+            assert len(result) == 1
+            assert result[0][0] == 1
+            assert result[0][1] == "123"
+            build_querys_mock.assert_not_called()
+
+    @mock.patch(
+        "betor.services.determines_imdb_tmdb_ids_service.tmdb_api_settings.access_token",
+        return_value="123",
+    )
+    @pytest.mark.asyncio
+    async def test_imdb_id_with_tmdb_access_token_force_item_type_ok(
+        self,
+        raw_item: RawItem,
+        determines_imdb_tmdb_ids_service: DeterminesIMDbTMDBIdsService,
+        *mocks,
+    ):
+        determines_imdb_tmdb_ids_service.tmdb_find_by_id_api.execute.side_effect = [
+            TMDBFindByIdResponse(
+                movie_results=[TMDBFindByIdResponseResult(id=123, media_type="movie")],
+                tv_results=[TMDBFindByIdResponseResult(id=321, media_type="tv")],
+            )
+        ]
+        with mock.patch(
+            "betor.services.determines_imdb_tmdb_ids_service.DeterminesIMDbTMDBIdsService.build_querys",
+            return_value=[],
+        ) as build_querys_mock:
+            result = [
+                item
+                async for item in determines_imdb_tmdb_ids_service.determines_tmdb_id(
+                    raw_item, force_item_type=ItemType.tv, imdb_id="tt12345678"
+                )
+            ]
+            assert len(result) == 1
+            assert result[0][0] == 1
+            assert result[0][1] == "321"
+            build_querys_mock.assert_not_called()
