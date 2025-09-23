@@ -61,6 +61,14 @@ class SearchJobMonitorSettings(BaseSettings):
     ttl: int = 30 * 60
 
 
+class TMDBApiSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env", env_prefix="search_job_monitor_", extra="allow"
+    )
+
+    access_token: Optional[str] = None
+
+
 flaresolverr_settings = FlareSolverrSettings()
 database_mongodb_settings = DatabaseMongoDBSettings()
 database_redis_settings = DatabaseRedisSettings()
@@ -68,3 +76,4 @@ celery_settings = CelerySettings()
 scrapyd_settings = ScrapydSettings()
 libtorrent_settings = LibtorrentSettings()
 search_job_monitor_settings = SearchJobMonitorSettings()
+tmdb_api_settings = TMDBApiSettings()
