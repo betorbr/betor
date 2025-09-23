@@ -1,8 +1,10 @@
 from typing import List, Literal, TypedDict, cast
 
 import httpx
+from celery import Task
+from celery.result import AsyncResult, allow_join_result
 
-from betor.settings import tmdb_api_settings
+from betor.celery.app import celery_app
 
 
 class TMDBFindByIdResponseResult(TypedDict):
@@ -29,16 +31,17 @@ class TMDBFindByIdAPI:
     async def execute(
         self, external_id: str, external_source: Literal["imdb_id"]
     ) -> TMDBFindByIdResponse:
-        assert tmdb_api_settings.access_token
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
+        task: Task = celery_app.signature("tmdb_api_request")
+        task_result: AsyncResult = task.apply_async(
+            args=(
                 self.url.format(
                     external_id=external_id, external_source=external_source
                 ),
-                headers={"Authorization": f"Bearer {tmdb_api_settings.access_token}"},
-            )
+            ),
+        )
         try:
-            response.raise_for_status()
+            with allow_join_result():
+                response = task_result.get()
         except httpx.HTTPStatusError as e:
             raise TMDBFindByIdAPIError() from e
-        return cast(TMDBFindByIdResponse, response.json())
+        return cast(TMDBFindByIdResponse, response)
