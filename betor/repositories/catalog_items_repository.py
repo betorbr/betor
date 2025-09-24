@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Sequence, cast
+from typing import Dict, List, Optional, Sequence, cast
 
 import motor.motor_asyncio
 
@@ -33,7 +33,20 @@ class CatalogItemsRepository:
             slug=cast(str, data.get("slug")),
             url=cast(str, data.get("url")),
             languages=cast(List[str], data.get("languages")),
-            torrents=cast(List[ProviderItemTorrent], data.get("torrents")),
+            torrents=[
+                CatalogItemsRepository.parse_provider_item_torrent(data)
+                for data in cast(List[dict], data.get("torrents"))
+            ],
+        )
+
+    @classmethod
+    def parse_provider_item_torrent(cls, data: Dict) -> ProviderItemTorrent:
+        return ProviderItemTorrent(
+            magnet_uri=cast(str, data.get("magnet_uri")),
+            languages=cast(List[str], data.get("languages")),
+            torrent_name=cast(Optional[str], data.get("torrent_name", None)),
+            torrent_size=cast(Optional[int], data.get("torrent_size", None)),
+            torrent_files=cast(Optional[List[str]], data.get("torrent_files", None)),
         )
 
     @classmethod
