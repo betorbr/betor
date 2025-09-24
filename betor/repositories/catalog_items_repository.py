@@ -43,7 +43,7 @@ class CatalogItemsRepository:
     def parse_provider_item_torrent(cls, data: Dict) -> ProviderItemTorrent:
         return ProviderItemTorrent(
             magnet_uri=cast(str, data.get("magnet_uri")),
-            languages=cast(List[str], data.get("languages")),
+            languages=cast(List[str], data.get("languages", [])),
             torrent_name=cast(Optional[str], data.get("torrent_name", None)),
             torrent_size=cast(Optional[int], data.get("torrent_size", None)),
             torrent_files=cast(Optional[List[str]], data.get("torrent_files", None)),
