@@ -56,7 +56,7 @@ services:
     image: dougppaz/betor
     build:
       context: .
-    command: ["celery", "-A", "betor.celery.app", "worker", "-Q", "items"]
+    command: ["celery", "-A", "betor.celery.app", "worker", "-Q", "items", "--concurrency=12"]
     depends_on:
       redis:
         condition: service_healthy
