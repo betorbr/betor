@@ -1,4 +1,8 @@
 from .add_job_results_service import AddJobResultsService
+from .admin_normalize_items_tmdb_id_service import (
+    AdminNormalizeItemsTMDBIdResult,
+    AdminNormalizeItemsTMDBIdService,
+)
 from .catalog_service import CatalogService
 from .detail_job_monitor_service import DetailJobMonitorService
 from .determines_imdb_tmdb_ids_service import DeterminesIMDbTMDBIdsService
@@ -28,4 +32,6 @@ __all__ = [
     "UpdateItemLanguagesInfoService",
     "UpdateItemEpisodesInfoService",
     "CatalogService",
+    "AdminNormalizeItemsTMDBIdService",
+    "AdminNormalizeItemsTMDBIdResult",
 ]
