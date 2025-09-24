@@ -1,4 +1,4 @@
-from .catalog_item import CatalogItem, ProviderPage
+from .catalog_item import CatalogItem, ProviderItem, ProviderItemTorrent
 from .episodes_info import Episode, EpisodesInfo
 from .item import BaseItem, Item
 from .job_monitor import Job, JobMonitor
@@ -21,5 +21,6 @@ __all__ = [
     "EpisodesInfo",
     "Episode",
     "CatalogItem",
-    "ProviderPage",
+    "ProviderItem",
+    "ProviderItemTorrent",
 ]
