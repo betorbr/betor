@@ -208,3 +208,16 @@ class ItemsRepository:
     async def list_empty_tmdb_id(self) -> List[Item]:
         results = await self.collection.find({"tmdb_id": None}).to_list()
         return [ItemsRepository.parse_result(result) for result in results]
+
+    async def update_tmdb_id(self, item_id: str, tmdb_id: str):
+        await self.collection.update_one(
+            {
+                "_id": ObjectId(item_id),
+            },
+            {
+                "$set": {
+                    "tmdb_id": tmdb_id,
+                    ItemsRepository.UPDATED_AT_FIELD: datetime.now(),
+                }
+            },
+        )
