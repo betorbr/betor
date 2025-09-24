@@ -204,3 +204,7 @@ class ItemsRepository:
                 }
             },
         )
+
+    async def list_empty_tmdb_id(self) -> List[Item]:
+        results = await self.collection.find({"tmdb_id": None}).to_list()
+        return [ItemsRepository.parse_result(result) for result in results]
