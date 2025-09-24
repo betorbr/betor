@@ -3,7 +3,7 @@ from typing import Dict, List, Sequence, cast
 
 import motor.motor_asyncio
 
-from betor.entities import CatalogItem, ProviderPage
+from betor.entities import CatalogItem, ProviderItem, ProviderItemTorrent
 from betor.enums import ItemType
 from betor.settings import database_mongodb_settings
 
@@ -16,25 +16,24 @@ class CatalogItemsRepository:
         imdb_id = id_value.get("imdb_id")
         tmdb_id = id_value.get("tmdb_id")
         last_updated = cast(datetime, result.get("last_updated"))
-        provider_pages = cast(Dict, result.get("provider_pages"))
+        providers = cast(Dict, result.get("providers"))
         return CatalogItem(
             item_type=item_type,
             imdb_id=imdb_id,
             tmdb_id=tmdb_id,
             last_updated=last_updated,
-            provider_pages=[
-                CatalogItemsRepository.parse_provider_page(data)
-                for data in provider_pages
+            providers=[
+                CatalogItemsRepository.parse_provider_item(data) for data in providers
             ],
         )
 
     @classmethod
-    def parse_provider_page(cls, data: Dict) -> ProviderPage:
-        return ProviderPage(
+    def parse_provider_item(cls, data: Dict) -> ProviderItem:
+        return ProviderItem(
             slug=cast(str, data.get("slug")),
             url=cast(str, data.get("url")),
-            languages=data.get("languages", []),
-            torrent_names=data.get("torrent_names", []),
+            languages=cast(List[str], data.get("languages")),
+            torrents=cast(List[ProviderItemTorrent], data.get("torrents")),
         )
 
     @classmethod
@@ -67,7 +66,6 @@ class CatalogItemsRepository:
                     ],
                 }
             },
-            {"$unwind": {"path": "$languages", "preserveNullAndEmptyArrays": True}},
             {
                 "$group": {
                     "_id": {
@@ -77,10 +75,30 @@ class CatalogItemsRepository:
                         "provider_slug": "$provider_slug",
                         "provider_url": "$provider_url",
                     },
-                    "languages": {"$addToSet": "$languages"},
-                    "torrent_names": {"$addToSet": "$torrent_name"},
                     "count": {"$sum": 1},
                     "last_updated": {"$max": "$updated_at"},
+                    "torrents": {
+                        "$push": {
+                            "magnet_uri": "$magnet_uri",
+                            "languages": "$languages",
+                            "torrent_name": {
+                                "$ifNull": ["$torrent_name", "$magnet_dn"]
+                            },
+                            "torrent_size": "$torrent_size",
+                            "torrent_files": "$torrent_files",
+                        }
+                    },
+                }
+            },
+            {
+                "$addFields": {
+                    "languages": {
+                        "$reduce": {
+                            "input": "$torrents.languages",
+                            "initialValue": [],
+                            "in": {"$setUnion": ["$$value", "$$this"]},
+                        }
+                    }
                 }
             },
             {
@@ -92,12 +110,12 @@ class CatalogItemsRepository:
                     },
                     "count": {"$sum": "$count"},
                     "last_updated": {"$max": "$last_updated"},
-                    "provider_pages": {
+                    "providers": {
                         "$push": {
                             "slug": "$_id.provider_slug",
                             "url": "$_id.provider_url",
                             "languages": "$languages",
-                            "torrent_names": "$torrent_names",
+                            "torrents": "$torrents",
                         }
                     },
                 }
