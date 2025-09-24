@@ -7,9 +7,9 @@ from betor.enums import ItemType
 class ProviderItemTorrent(TypedDict):
     magnet_uri: str
     languages: List[str]
-    torrent_name: str
-    torrent_size: int
-    torrent_files: List[str]
+    torrent_name: Optional[str]
+    torrent_size: Optional[int]
+    torrent_files: Optional[List[str]]
 
 
 class ProviderItem(TypedDict):
