@@ -56,7 +56,19 @@ services:
     image: dougppaz/betor
     build:
       context: .
-    command: ["celery", "-A", "betor.celery.app", "worker", "-Q", "items", "--concurrency=12"]
+    command: ["celery", "-A", "betor.celery.app", "worker", "-Q", "items"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .docker.env
+
+
+  celery-worker-api-requests:
+    image: dougppaz/betor
+    build:
+      context: .
+    command: ["celery", "-A", "betor.celery.app", "worker", "-Q", "api-requests"]
     depends_on:
       redis:
         condition: service_healthy
