@@ -44,9 +44,12 @@ class CatalogItemsRepository:
         return ProviderItemTorrent(
             magnet_uri=cast(str, data.get("magnet_uri")),
             languages=cast(List[str], data.get("languages", [])),
-            torrent_name=cast(Optional[str], data.get("torrent_name", None)),
-            torrent_size=cast(Optional[int], data.get("torrent_size", None)),
-            torrent_files=cast(Optional[List[str]], data.get("torrent_files", None)),
+            torrent_name=cast(Optional[str], data.get("torrent_name")),
+            torrent_size=cast(Optional[int], data.get("torrent_size")),
+            torrent_files=cast(Optional[List[str]], data.get("torrent_files")),
+            torrent_num_peers=cast(Optional[int], data.get("torrent_num_peers")),
+            torrent_num_seeds=cast(Optional[int], data.get("torrent_num_seeds")),
+            inserted_at=cast(Optional[datetime], data.get("inserted_at")),
         )
 
     @classmethod
@@ -99,6 +102,9 @@ class CatalogItemsRepository:
                             },
                             "torrent_size": "$torrent_size",
                             "torrent_files": "$torrent_files",
+                            "torrent_num_peers": "$torrent_num_peers",
+                            "torrent_num_seeds": "$torrent_num_seeds",
+                            "inserted_at": "$inserted_at",
                         }
                     },
                 }
