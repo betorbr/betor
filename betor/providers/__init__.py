@@ -3,15 +3,19 @@ from typing import Literal, TypeAlias
 from .bludv import bludv
 from .comando_torrents import comando_torrents
 from .provider import Provider
+from .starck_filmes import starck_filmes
 from .torrent_dos_filmes import torrent_dos_filmes
 
 PROVIDERS = [
     comando_torrents,
     bludv,
     torrent_dos_filmes,
+    starck_filmes,
 ]
 
-ProviderSlug: TypeAlias = Literal["comando-torrents", "bludv", "torrent-dos-filmes"]
+ProviderSlug: TypeAlias = Literal[
+    "comando-torrents", "bludv", "torrent-dos-filmes", "starck-filmes"
+]
 
 __all__ = [
     "Provider",
@@ -19,4 +23,5 @@ __all__ = [
     "bludv",
     "comando_torrents",
     "torrent_dos_filmes",
+    "starck_filmes",
 ]
