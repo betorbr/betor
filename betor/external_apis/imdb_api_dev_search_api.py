@@ -7,6 +7,7 @@ import httpx
 class IMDBAPIDevSearchAPIResponseTitle(TypedDict):
     id: str
     type: Literal["movie", "tvSeries", "tvMiniSeries"]
+    primaryTitle: str
     originalTitle: str
 
 

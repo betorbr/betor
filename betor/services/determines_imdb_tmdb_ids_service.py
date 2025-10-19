@@ -80,6 +80,14 @@ class DeterminesIMDbTMDBIdsService:
                 continue
             for title in data["titles"]:
                 similarity = jaccard_similarity(
+                    title["primaryTitle"],
+                    raw_item["title"] or raw_item["translated_title"] or "",
+                )
+                if title["type"] == "movie":
+                    yield similarity, title["id"], ItemType.movie
+                if title["type"] in ["tvSeries", "tvMiniSeries"]:
+                    yield similarity, title["id"], ItemType.tv
+                similarity = jaccard_similarity(
                     title["originalTitle"],
                     raw_item["title"] or raw_item["translated_title"] or "",
                 )

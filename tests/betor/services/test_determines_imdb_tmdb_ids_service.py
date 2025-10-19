@@ -153,11 +153,17 @@ class TestDeterminesImdbId:
         determines_imdb_tmdb_ids_service.imdb_api_dev_search_api.execute.side_effect = [
             {
                 "titles": [
-                    {"type": "movie", "id": imdb_id, "originalTitle": "Foo Bar"},
+                    {
+                        "type": "movie",
+                        "id": imdb_id,
+                        "originalTitle": "Foo Bar",
+                        "primaryTitle": "Foo Bar",
+                    },
                     {
                         "type": "tvSeries",
                         "id": fake.numerify("tt########"),
                         "originalTitle": "Foo",
+                        "primaryTitle": "Foo",
                     },
                 ]
             },
@@ -185,6 +191,16 @@ class TestDeterminesImdbId:
                 ItemType.movie,
             )
             assert result[1] == (
+                1.0,
+                imdb_id,
+                ItemType.movie,
+            )
+            assert result[2] == (
+                1.0,
+                mock.ANY,
+                ItemType.tv,
+            )
+            assert result[3] == (
                 1.0,
                 mock.ANY,
                 ItemType.tv,
