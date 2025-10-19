@@ -8,7 +8,7 @@ from betor_scrapy.items import ScrapyItem
 
 FIELD_TOKENS = {
     "translated_title": ["titulo-traduzido"],
-    "title": ["titulo-original"],
+    "title": ["titulo-original", "nome-original"],
     "imdb_rating": ["imdb"],
     "year": ["lancamento"],
     "qualitys": ["qualidade"],
@@ -29,6 +29,7 @@ ALL_FIELD_TOKENS_VALUES = list(itertools.chain(*FIELD_TOKENS.values()))
 def extract_fields(informacoes_text: List[str]) -> Generator[Tuple[str, str]]:
     current_field: Optional[str] = None
     for i, token_value in enumerate([slugify(t) for t in informacoes_text]):
+        print(token_value)
         if token_value in ALL_FIELD_TOKENS_VALUES:
             current_field = next(k for k, v in FIELD_TOKENS.items() if token_value in v)
             continue
