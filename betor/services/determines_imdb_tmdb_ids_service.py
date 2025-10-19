@@ -3,8 +3,8 @@ from typing import AsyncGenerator, Generator, Optional, Tuple
 from betor.entities import RawItem
 from betor.enums import ItemType
 from betor.external_apis import (
-    IMDbSuggestionAPI,
-    IMDbSuggestionAPIError,
+    IMDBAPIDevSearchAPI,
+    IMDBAPIDevSearchAPIError,
     TMDBFindByIdAPI,
     TMDBTrendingAPI,
     TMDBTrendingAPIError,
@@ -40,7 +40,7 @@ class DeterminesIMDbTMDBIdsService:
         return best_v, best_t
 
     def __init__(self):
-        self.imdb_suggestion_api = IMDbSuggestionAPI()
+        self.imdb_api_dev_search_api = IMDBAPIDevSearchAPI()
         self.tmdb_trending_api = TMDBTrendingAPI()
         self.tmdb_find_by_id_api = TMDBFindByIdAPI()
 
@@ -62,21 +62,18 @@ class DeterminesIMDbTMDBIdsService:
     async def determines_imdb_id(self, raw_item: RawItem) -> DeterminesGenerator:
         for query in DeterminesIMDbTMDBIdsService.build_querys(raw_item):
             try:
-                data = await self.imdb_suggestion_api.execute(query)
-            except IMDbSuggestionAPIError:
+                data = await self.imdb_api_dev_search_api.execute(query)
+            except IMDBAPIDevSearchAPIError:
                 continue
-            for item in data["d"]:
-                if "qid" not in item.keys():
-                    continue
+            for title in data["titles"]:
                 similarity = jaccard_similarity(
-                    item["l"],
+                    title["originalTitle"],
                     raw_item["title"] or raw_item["translated_title"] or "",
                 )
-                qid = item.get("qid")
-                if qid == "movie":
-                    yield similarity, item["id"], ItemType.movie
-                if qid == "tvSeries":
-                    yield similarity, item["id"], ItemType.tv
+                if title["type"] == "movie":
+                    yield similarity, title["id"], ItemType.movie
+                if title["type"] == "tvSeries":
+                    yield similarity, title["id"], ItemType.tv
 
     async def determines_tmdb_id(
         self,

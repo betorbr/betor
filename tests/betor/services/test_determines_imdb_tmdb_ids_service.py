@@ -7,8 +7,8 @@ from faker import Faker
 from betor.entities import RawItem
 from betor.enums import ItemType
 from betor.external_apis import (
-    IMDbSuggestionAPI,
-    IMDbSuggestionAPIError,
+    IMDBAPIDevSearchAPI,
+    IMDBAPIDevSearchAPIError,
     TMDBFindByIdAPI,
     TMDBFindByIdResponse,
     TMDBFindByIdResponseResult,
@@ -22,9 +22,9 @@ from betor.services import DeterminesIMDbTMDBIdsService
 def determines_imdb_tmdb_ids_service() -> Generator[DeterminesIMDbTMDBIdsService]:
     with (
         mock.patch(
-            "betor.services.determines_imdb_tmdb_ids_service.IMDbSuggestionAPI",
+            "betor.services.determines_imdb_tmdb_ids_service.IMDBAPIDevSearchAPI",
             new_callable=mock.MagicMock,
-            spec=IMDbSuggestionAPI,
+            spec=IMDBAPIDevSearchAPI,
         ),
         mock.patch(
             "betor.services.determines_imdb_tmdb_ids_service.TMDBTrendingAPI",
@@ -144,15 +144,18 @@ class TestDeterminesImdbId:
         determines_imdb_tmdb_ids_service: DeterminesIMDbTMDBIdsService,
     ):
         imdb_id = fake.numerify("tt########")
-        determines_imdb_tmdb_ids_service.imdb_suggestion_api.execute.side_effect = [
+        determines_imdb_tmdb_ids_service.imdb_api_dev_search_api.execute.side_effect = [
             {
-                "d": [
-                    {},
-                    {"qid": "movie", "id": imdb_id, "l": "Foo Bar"},
-                    {"qid": "tvSeries", "id": fake.numerify("tt########"), "l": "Foo"},
+                "titles": [
+                    {"type": "movie", "id": imdb_id, "originalTitle": "Foo Bar"},
+                    {
+                        "type": "tvSeries",
+                        "id": fake.numerify("tt########"),
+                        "originalTitle": "Foo",
+                    },
                 ]
             },
-            IMDbSuggestionAPIError,
+            IMDBAPIDevSearchAPIError,
         ]
         with (
             mock.patch(
