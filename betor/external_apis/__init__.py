@@ -1,3 +1,4 @@
+from .imdb_api_dev_search_api import IMDBAPIDevSearchAPI, IMDBAPIDevSearchAPIError
 from .imdb_suggestion_api import (
     IMDbSuggestionAPI,
     IMDbSuggestionAPIError,
@@ -34,4 +35,6 @@ __all__ = [
     "TMDBFindByIdAPIError",
     "TMDBFindByIdResponse",
     "TMDBFindByIdResponseResult",
+    "IMDBAPIDevSearchAPI",
+    "IMDBAPIDevSearchAPIError",
 ]
