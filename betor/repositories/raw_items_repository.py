@@ -2,7 +2,7 @@ import hashlib
 import json
 from collections import OrderedDict
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Dict, Literal, Optional, cast
 
 import motor.motor_asyncio
 
@@ -32,6 +32,26 @@ class RawItemsRepository:
             if k not in ["id", "hash", "inserted_at", "updated_at"]
         )
 
+    @classmethod
+    def parse_result(cls, result: Dict) -> RawItem:
+        return RawItem(
+            id=str(result["_id"]),
+            hash=result.get(RawItemsRepository.HASH_FIELD),
+            provider_slug=result["provider_slug"],
+            provider_url=result["provider_url"],
+            inserted_at=result.get(RawItemsRepository.INSERTED_AT_FIELD),
+            updated_at=result.get(RawItemsRepository.UPDATED_AT_FIELD),
+            imdb_id=result.get("imdb_id"),
+            tmdb_id=result.get("tmdb_id"),
+            magnet_uris=result.get("magnet_uris", []),
+            languages=result.get("languages", []),
+            qualitys=result.get("qualitys", []),
+            title=result.get("title"),
+            translated_title=result.get("translated_title"),
+            raw_title=result.get("raw_title"),
+            year=result.get("year"),
+        )
+
     def __init__(self, mongodb_client: motor.motor_asyncio.AsyncIOMotorClient):
         self.mongodb_client = mongodb_client
 
@@ -51,23 +71,15 @@ class RawItemsRepository:
         )
         if not result:
             return None
-        return RawItem(
-            id=str(result["_id"]),
-            hash=result.get(RawItemsRepository.HASH_FIELD),
-            provider_slug=result["provider_slug"],
-            provider_url=result["provider_url"],
-            inserted_at=result.get(RawItemsRepository.INSERTED_AT_FIELD),
-            updated_at=result.get(RawItemsRepository.UPDATED_AT_FIELD),
-            imdb_id=result.get("imdb_id"),
-            tmdb_id=result.get("tmdb_id"),
-            magnet_uris=result.get("magnet_uris", []),
-            languages=result.get("languages", []),
-            qualitys=result.get("qualitys", []),
-            title=result.get("title"),
-            translated_title=result.get("translated_title"),
-            raw_title=result.get("raw_title"),
-            year=result.get("year"),
-        )
+        result_dict = cast(Dict, result)
+        return RawItemsRepository.parse_result(result_dict)
+
+    async def get_by_provider_url(self, provider_url: str) -> Optional[RawItem]:
+        result = await self.collection.find_one({"provider_url": provider_url})
+        if not result:
+            return None
+        result_dict = cast(Dict, result)
+        return RawItemsRepository.parse_result(result_dict)
 
     async def insert_or_update(
         self, raw_item: RawItem

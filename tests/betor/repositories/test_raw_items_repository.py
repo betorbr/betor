@@ -104,6 +104,36 @@ class TestGet:
         assert await raw_items_repository.get("slug", "http://example.com") is None
 
 
+class TestGetByProviderUrl:
+    @pytest.mark.asyncio
+    async def test_ok(
+        self,
+        raw_items_repository: RawItemsRepository,
+        collection_mock,
+    ):
+        collection_mock.find_one = mock.AsyncMock(
+            return_value={
+                "_id": "1234",
+                "provider_slug": "slug",
+                "provider_url": "http://example.com",
+            }
+        )
+        result = await raw_items_repository.get_by_provider_url("http://example.com")
+        assert result
+        assert result["id"] == "1234"
+
+    @pytest.mark.asyncio
+    async def test_not_found(
+        self,
+        raw_items_repository: RawItemsRepository,
+        collection_mock,
+    ):
+        collection_mock.find_one = mock.AsyncMock(return_value=None)
+        assert (
+            await raw_items_repository.get_by_provider_url("http://example.com") is None
+        )
+
+
 class TestInsertOrUpdateItem:
     @pytest.mark.asyncio
     async def test_inserted_ok(self, raw_items_repository: RawItemsRepository):
