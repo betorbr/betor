@@ -111,7 +111,13 @@ class CloudflareDownloaderMiddleware:
     def process_exception(
         self, request: scrapy.Request, exception: Exception, spider: scrapy.Spider
     ):
-        if isinstance(exception, twisted.internet.error.ConnectionRefusedError):
+        if isinstance(
+            exception,
+            (
+                twisted.internet.error.ConnectionRefusedError,
+                twisted.internet.error.TCPTimedOutError,
+            ),
+        ):
             spider.logger.info(
                 "Trying solves with Cloudflare. Using FlareSolverr on URL: %s",
                 request.url,
