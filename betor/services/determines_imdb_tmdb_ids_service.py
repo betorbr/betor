@@ -5,6 +5,8 @@ from betor.enums import ItemType
 from betor.external_apis import (
     IMDBAPIDevSearchAPI,
     IMDBAPIDevSearchAPIError,
+    IMDBAPIDevTitleAPI,
+    IMDBAPIDevTitleAPIError,
     TMDBFindByIdAPI,
     TMDBTrendingAPI,
     TMDBTrendingAPIError,
@@ -41,6 +43,7 @@ class DeterminesIMDbTMDBIdsService:
 
     def __init__(self):
         self.imdb_api_dev_search_api = IMDBAPIDevSearchAPI()
+        self.imdb_api_dev_title_api = IMDBAPIDevTitleAPI()
         self.tmdb_trending_api = TMDBTrendingAPI()
         self.tmdb_find_by_id_api = TMDBFindByIdAPI()
 
@@ -60,6 +63,16 @@ class DeterminesIMDbTMDBIdsService:
         return imdb_id, tmdb_id, imdb_item_type
 
     async def determines_imdb_id(self, raw_item: RawItem) -> DeterminesGenerator:
+        if raw_item["imdb_id"]:
+            try:
+                title = await self.imdb_api_dev_title_api.execute(raw_item["imdb_id"])
+                if title["type"] == "movie":
+                    yield 1.0, title["id"], ItemType.movie
+                if title["type"] in ["tvSeries", "tvMiniSeries"]:
+                    yield 1.0, title["id"], ItemType.tv
+                return
+            except IMDBAPIDevTitleAPIError:
+                pass
         for query in DeterminesIMDbTMDBIdsService.build_querys(raw_item):
             try:
                 data = await self.imdb_api_dev_search_api.execute(query)
