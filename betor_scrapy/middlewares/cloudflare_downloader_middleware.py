@@ -50,7 +50,7 @@ class CloudflareDownloaderMiddleware:
         ):
             spider.logger.info("Try solve with CF clearance...")
             try:
-                res = requests_session.get(request.url)
+                res = requests_session.get(request.url, timeout=5)
                 if res.ok:
                     return scrapy.http.HtmlResponse(
                         url=request.url,
