@@ -72,7 +72,7 @@ class DeterminesIMDbTMDBIdsService:
                 )
                 if title["type"] == "movie":
                     yield similarity, title["id"], ItemType.movie
-                if title["type"] == "tvSeries":
+                if title["type"] in ["tvSeries", "tvMiniSeries"]:
                     yield similarity, title["id"], ItemType.tv
 
     async def determines_tmdb_id(
