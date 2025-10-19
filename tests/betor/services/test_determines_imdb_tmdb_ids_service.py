@@ -9,6 +9,7 @@ from betor.enums import ItemType
 from betor.external_apis import (
     IMDBAPIDevSearchAPI,
     IMDBAPIDevSearchAPIError,
+    IMDBAPIDevTitleAPI,
     TMDBFindByIdAPI,
     TMDBFindByIdResponse,
     TMDBFindByIdResponseResult,
@@ -25,6 +26,11 @@ def determines_imdb_tmdb_ids_service() -> Generator[DeterminesIMDbTMDBIdsService
             "betor.services.determines_imdb_tmdb_ids_service.IMDBAPIDevSearchAPI",
             new_callable=mock.MagicMock,
             spec=IMDBAPIDevSearchAPI,
+        ),
+        mock.patch(
+            "betor.services.determines_imdb_tmdb_ids_service.IMDBAPIDevTitleAPI",
+            new_callable=mock.MagicMock,
+            spec=IMDBAPIDevTitleAPI,
         ),
         mock.patch(
             "betor.services.determines_imdb_tmdb_ids_service.TMDBTrendingAPI",
@@ -147,11 +153,17 @@ class TestDeterminesImdbId:
         determines_imdb_tmdb_ids_service.imdb_api_dev_search_api.execute.side_effect = [
             {
                 "titles": [
-                    {"type": "movie", "id": imdb_id, "originalTitle": "Foo Bar"},
+                    {
+                        "type": "movie",
+                        "id": imdb_id,
+                        "originalTitle": "Foo Bar",
+                        "primaryTitle": "Foo Bar",
+                    },
                     {
                         "type": "tvSeries",
                         "id": fake.numerify("tt########"),
                         "originalTitle": "Foo",
+                        "primaryTitle": "Foo",
                     },
                 ]
             },
@@ -180,9 +192,47 @@ class TestDeterminesImdbId:
             )
             assert result[1] == (
                 1.0,
+                imdb_id,
+                ItemType.movie,
+            )
+            assert result[2] == (
+                1.0,
                 mock.ANY,
                 ItemType.tv,
             )
+            assert result[3] == (
+                1.0,
+                mock.ANY,
+                ItemType.tv,
+            )
+
+    @pytest.mark.parametrize(
+        "raw_item",
+        [{"title": "Foo Bar", "imdb_id": "tt12345678"}],
+        indirect=["raw_item"],
+    )
+    @pytest.mark.asyncio
+    async def test_with_imdb_id_ok(
+        self,
+        raw_item: RawItem,
+        determines_imdb_tmdb_ids_service: DeterminesIMDbTMDBIdsService,
+    ):
+        imdb_id = "tt12345678"
+        determines_imdb_tmdb_ids_service.imdb_api_dev_title_api.execute.return_value = {
+            "type": "movie",
+            "id": imdb_id,
+        }
+        result = [
+            item
+            async for item in determines_imdb_tmdb_ids_service.determines_imdb_id(
+                raw_item
+            )
+        ]
+        assert result[0] == (
+            1.0,
+            imdb_id,
+            ItemType.movie,
+        )
 
 
 class TestDeterminesTmdbId:

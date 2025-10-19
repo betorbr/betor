@@ -8,6 +8,7 @@ import motor.motor_asyncio
 from bson.objectid import ObjectId
 
 from betor.entities import EpisodesInfo, Item, LanguagesInfo, TorrentInfo
+from betor.enums import ItemType
 from betor.settings import database_mongodb_settings
 
 
@@ -217,6 +218,23 @@ class ItemsRepository:
             {
                 "$set": {
                     "tmdb_id": tmdb_id,
+                    ItemsRepository.UPDATED_AT_FIELD: datetime.now(),
+                }
+            },
+        )
+
+    async def update_provider_url_imdb_tmdb_id(
+        self, provider_url: str, imdb_id: str, tmdb_id: str, item_type: ItemType
+    ):
+        await self.collection.update_many(
+            {
+                "provider_url": provider_url,
+            },
+            {
+                "$set": {
+                    "imdb_id": imdb_id,
+                    "tmdb_id": tmdb_id,
+                    "item_type": item_type,
                     ItemsRepository.UPDATED_AT_FIELD: datetime.now(),
                 }
             },
