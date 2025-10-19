@@ -22,11 +22,9 @@ class StarckFilmesSpider(ProviderSpider, scrapy.Spider):
             yield from self.parse_item(response)
 
     def parse_page(self, response: scrapy.http.Response):
-        for item_url in set(
-            response.xpath(
-                "//section[@class='container']//div[@class='home post-catalog']//div[@class='item']//div[@class='sub-item']//a/@href"
-            ).getall()
-        ):
+        for item_url in response.xpath(
+            "//section[@class='container']//div[@class='home post-catalog']//div[@class='item']//div[@class='sub-item']//a[@title]/@href"
+        ).getall():
             yield scrapy.Request(item_url)
 
     def parse_item(self, response: scrapy.http.Response):
