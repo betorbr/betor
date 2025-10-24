@@ -12,6 +12,7 @@ class ProviderItemTorrent(TypedDict):
     torrent_files: Optional[List[str]]
     torrent_num_peers: Optional[int]
     torrent_num_seeds: Optional[int]
+    seasons: List[int]
     inserted_at: Optional[datetime]
 
 
