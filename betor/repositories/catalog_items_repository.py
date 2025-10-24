@@ -49,6 +49,7 @@ class CatalogItemsRepository:
             torrent_files=cast(Optional[List[str]], data.get("torrent_files")),
             torrent_num_peers=cast(Optional[int], data.get("torrent_num_peers")),
             torrent_num_seeds=cast(Optional[int], data.get("torrent_num_seeds")),
+            seasons=cast(List[int], data.get("seasons") or []),
             inserted_at=cast(Optional[datetime], data.get("inserted_at")),
         )
 
@@ -104,6 +105,7 @@ class CatalogItemsRepository:
                             "torrent_files": "$torrent_files",
                             "torrent_num_peers": "$torrent_num_peers",
                             "torrent_num_seeds": "$torrent_num_seeds",
+                            "seasons": "$seasons",
                             "inserted_at": "$inserted_at",
                         }
                     },
