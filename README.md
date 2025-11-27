@@ -8,10 +8,11 @@ BeTor é o buscador de filmes e séries com o jeitinho mais brasileiro da intern
 - [Comando Torrents](https://comando.la/)
 - [Torrent Dos Filmes](https://torrentdosfilmes.se/)
 - [Starck Filmes](https://www.starckfilmes.site/)
+- [Rede Torrent](https://redetorrent.com/)
 
 ### Por vir
 
-- [Rede Torrent](https://redetorrent.com/)
+- [Sem Torrent](https://semtorrent.com/)
 
 ## Documentação
 
