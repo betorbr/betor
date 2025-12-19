@@ -52,10 +52,12 @@ class CloudflareDownloaderMiddleware:
             try:
                 res = requests_session.get(request.url, timeout=5)
                 if res.ok:
+                    headers = res.headers
+                    headers.pop("Content-Encoding")
                     return scrapy.http.HtmlResponse(
                         url=request.url,
                         status=res.status_code,
-                        headers=res.headers,
+                        headers=headers,
                         body=res.text,
                         request=request,
                         encoding="utf-8",
@@ -153,10 +155,12 @@ class CloudflareDownloaderResponseMiddleware:
                 data_solution["userAgent"],
                 expire_at=cookie["expiry"],
             )
+        headers = data_solution["headers"]
+        headers.pop("Content-Encoding")
         return scrapy.http.HtmlResponse(
             url=data_solution["url"],
             status=data_solution["status"],
-            headers=data_solution["headers"],
+            headers=headers,
             body=data_solution["response"],
             request=request,
             encoding="utf-8",
