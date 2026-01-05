@@ -1,4 +1,5 @@
 import tempfile
+import time
 
 import libtorrent as lt
 import motor.motor_asyncio
@@ -10,6 +11,17 @@ from betor.settings import libtorrent_settings
 
 
 class UpdateItemTorrentInfoService:
+    @classmethod
+    def num_peers_seeds(cls, lt_torrent_handler):
+        num_peers = []
+        num_seeds = []
+        for _ in range(10):
+            lt_torrent_status = lt_torrent_handler.status()
+            num_peers.append(lt_torrent_status.num_peers)
+            num_seeds.append(lt_torrent_status.num_seeds)
+            time.sleep(2)
+        return max(num_peers), max(num_seeds)
+
     def __init__(self, mongodb_client: motor.motor_asyncio.AsyncIOMotorClient):
         self.items_repository = ItemsRepository(mongodb_client)
 
@@ -33,15 +45,15 @@ class UpdateItemTorrentInfoService:
             lt_add_torrent_params.save_path = save_path
             lt_torrent_handler = lt_session.add_torrent(lt_add_torrent_params)
             while True:
-                lt_torrent_status = lt_torrent_handler.status()
                 lt_torrent_info = lt_torrent_handler.torrent_file()
                 if lt_torrent_info:
                     lt_file_storage = lt_torrent_info.orig_files()
+                    num_peers, num_seeds = self.num_peers_seeds(lt_torrent_handler)
                     lt_session.pause()
                     return TorrentInfo(
                         torrent_name=lt_file_storage.name(),
-                        torrent_num_peers=lt_torrent_status.num_peers,
-                        torrent_num_seeds=lt_torrent_status.num_seeds,
+                        torrent_num_peers=num_peers,
+                        torrent_num_seeds=num_seeds,
                         torrent_files=[
                             lt_file_storage.file_name(i)
                             for i in range(lt_file_storage.num_files())
