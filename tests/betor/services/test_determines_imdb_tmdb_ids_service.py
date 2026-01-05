@@ -69,6 +69,10 @@ class TestBuildQuerys:
                 },
                 ["foo 2025", "bar 2025", "foo", "bar"],
             ),
+            (
+                {"title": "foo / bar"},
+                ["foo / bar", "foo", "bar"],
+            ),
         ],
         indirect=["raw_item"],
     )

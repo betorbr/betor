@@ -27,6 +27,8 @@ class DeterminesIMDbTMDBIdsService:
             yield f"{raw_item['translated_title']} {raw_item['year']}"
         if raw_item["title"]:
             yield raw_item["title"]
+            if "/" in raw_item["title"]:
+                yield from map(lambda v: v.strip(), raw_item["title"].split("/"))
         if raw_item["translated_title"]:
             yield raw_item["translated_title"]
 
