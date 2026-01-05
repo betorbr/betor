@@ -32,4 +32,7 @@ class IMDBAPIDevSearchAPI:
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
             raise IMDBAPIDevSearchAPIError() from e
-        return cast(IMDBAPIDevSearchAPIResponse, response.json())
+        data = response.json()
+        if "titles" not in data:
+            return IMDBAPIDevSearchAPIResponse(titles=[])
+        return cast(IMDBAPIDevSearchAPIResponse, data)
