@@ -15,6 +15,7 @@ class Title:
             return None
         value = " ".join(values).strip()
         value = re.sub(r"\s+", " ", value)
+        value = re.sub(r" - [CAM|TS|HD|WEB-DL]+$", "", value)
         return value
 
 
