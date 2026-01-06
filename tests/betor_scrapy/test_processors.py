@@ -37,6 +37,10 @@ class TestTitle:
                 ["", " Rick and ", "Morty: ", " Starts"],
                 "Rick and Morty: Starts",
             ),
+            (
+                ["Rebuilding - CAM"],
+                "Rebuilding",
+            ),
         ],
     )
     def test_ok(self, value: List[str], expected: str):
