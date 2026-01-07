@@ -4,6 +4,7 @@ from .bludv import bludv
 from .comando_torrents import comando_torrents
 from .provider import Provider
 from .rede_torrent import rede_torrent
+from .sem_torrent import sem_torrent
 from .starck_filmes import starck_filmes
 from .torrent_dos_filmes import torrent_dos_filmes
 
@@ -13,10 +14,16 @@ PROVIDERS = [
     torrent_dos_filmes,
     starck_filmes,
     rede_torrent,
+    sem_torrent,
 ]
 
 ProviderSlug: TypeAlias = Literal[
-    "comando-torrents", "bludv", "torrent-dos-filmes", "starck-filmes", "rede-torrent"
+    "comando-torrents",
+    "bludv",
+    "torrent-dos-filmes",
+    "starck-filmes",
+    "rede-torrent",
+    "sem-torrent",
 ]
 
 __all__ = [
@@ -27,4 +34,5 @@ __all__ = [
     "torrent_dos_filmes",
     "starck_filmes",
     "rede_torrent",
+    "sem_torrent",
 ]

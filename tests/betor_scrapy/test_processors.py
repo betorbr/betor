@@ -41,6 +41,10 @@ class TestTitle:
                 ["Rebuilding - CAM"],
                 "Rebuilding",
             ),
+            (
+                ["CUSTE O QUE CUSTAR - 1ª TEMPORADA"],
+                "CUSTE O QUE CUSTAR",
+            ),
         ],
     )
     def test_ok(self, value: List[str], expected: str):
@@ -138,6 +142,18 @@ class TestIMDbIDs:
             (
                 "10548174",
                 [],
+            ),
+            (
+                "https://www.opensubtitles.org/pb/search/sublanguageid-pob/imdbid-7042862",
+                ["tt7042862"],
+            ),
+            (
+                "https://opensubtitles.org/pb/search/sublanguageid-pob/imdbid-7042862",
+                ["tt7042862"],
+            ),
+            (
+                "https://yifysubtitles.ch/movie-imdb/tt7042862",
+                ["tt7042862"],
             ),
         ],
     )
