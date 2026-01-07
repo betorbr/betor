@@ -139,6 +139,18 @@ class TestIMDbIDs:
                 "10548174",
                 [],
             ),
+            (
+                "https://www.opensubtitles.org/pb/search/sublanguageid-pob/imdbid-7042862",
+                ["tt7042862"],
+            ),
+            (
+                "https://opensubtitles.org/pb/search/sublanguageid-pob/imdbid-7042862",
+                ["tt7042862"],
+            ),
+            (
+                "https://yifysubtitles.ch/movie-imdb/tt7042862",
+                ["tt7042862"],
+            ),
         ],
     )
     def test_ok(self, value: str, expected: str):

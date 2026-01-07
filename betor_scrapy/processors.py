@@ -44,11 +44,24 @@ class Language:
 
 
 class IMDbIDs:
-    URL_REGEX = r"http(s)?://(www.)?imdb.com/([\w]+/)?title/(?P<imdb_id>tt[\d]+)"
+    IMDB_URL_REGEX = r"http(s)?://(www.)?imdb.com/([\w]+/)?title/(?P<imdb_id>tt[\d]+)"
+    OPENSUBTITLES_URL_REGEX = r"http(s)?://(www.)?opensubtitles.org/pb/search/sublanguageid-pob/imdbid-(?P<imdb_id>[\d]+)"
+    YIFYSUBTITLES_URL_REGEX = (
+        r"http(s)?://(www.)?yifysubtitles.ch/movie-imdb/(?P<imdb_id>tt[\d]+)"
+    )
 
     def __call__(self, value: str) -> Generator[str]:
-        if url_search := re.search(IMDbIDs.URL_REGEX, value):
-            yield url_search.group("imdb_id")
+        if imdb_url_search := re.search(IMDbIDs.IMDB_URL_REGEX, value):
+            yield imdb_url_search.group("imdb_id")
+        if opensubtitles_url_search := re.search(
+            IMDbIDs.OPENSUBTITLES_URL_REGEX, value
+        ):
+            imdb_id = opensubtitles_url_search.group("imdb_id")
+            yield f"tt{imdb_id}"
+        if yifysubtitles_url_search := re.search(
+            IMDbIDs.YIFYSUBTITLES_URL_REGEX, value
+        ):
+            yield yifysubtitles_url_search.group("imdb_id")
         v = value.strip()
         if v.startswith("tt"):
             yield v
