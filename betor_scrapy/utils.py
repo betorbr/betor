@@ -37,7 +37,7 @@ def extract_fields(informacoes_text: List[str]) -> Generator[Tuple[str, str]]:
         value = informacoes_text[i]
         cleaned_value = re.sub(r"^(:\W)", "", value)
         if current_field == "languages":
-            for v in re.split(r"[,|]", cleaned_value):
+            for v in re.split(r"[,|/]", cleaned_value):
                 yield current_field, v
             continue
         yield current_field, cleaned_value
