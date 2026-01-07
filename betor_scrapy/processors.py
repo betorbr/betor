@@ -16,6 +16,7 @@ class Title:
         value = " ".join(values).strip()
         value = re.sub(r"\s+", " ", value)
         value = re.sub(r" - [CAM|TS|HD|WEB-DL]+$", "", value)
+        value = re.sub(r" - [\d]+ª [Temporada|TEMPORADA]+$", "", value)
         return value
 
 

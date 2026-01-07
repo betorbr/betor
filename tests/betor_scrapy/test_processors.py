@@ -41,6 +41,10 @@ class TestTitle:
                 ["Rebuilding - CAM"],
                 "Rebuilding",
             ),
+            (
+                ["CUSTE O QUE CUSTAR - 1ª TEMPORADA"],
+                "CUSTE O QUE CUSTAR",
+            ),
         ],
     )
     def test_ok(self, value: List[str], expected: str):
