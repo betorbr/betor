@@ -9,10 +9,11 @@ BeTor é o buscador de filmes e séries com o jeitinho mais brasileiro da intern
 - [Torrent Dos Filmes](https://torrentdosfilmes.se/)
 - [Starck Filmes](https://www.starckfilmes.site/)
 - [Rede Torrent](https://redetorrent.com/)
-
-### Por vir
-
 - [Sem Torrent](https://semtorrent.com/)
+
+### Solicitação de provedor
+
+- Abra uma issue para avaliação dos manetedores.
 
 ## Documentação
 
