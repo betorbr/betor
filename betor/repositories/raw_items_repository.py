@@ -50,6 +50,7 @@ class RawItemsRepository:
             translated_title=result.get("translated_title"),
             raw_title=result.get("raw_title"),
             year=result.get("year"),
+            cast=result.get("cast"),
         )
 
     def __init__(self, mongodb_client: motor.motor_asyncio.AsyncIOMotorClient):

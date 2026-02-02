@@ -7,6 +7,8 @@ from betor.external_apis import (
     IMDBAPIDevSearchAPIError,
     IMDBAPIDevTitleAPI,
     IMDBAPIDevTitleAPIError,
+    IMDbSuggestionAPI,
+    IMDbSuggestionAPIError,
     TMDBFindByIdAPI,
     TMDBTrendingAPI,
     TMDBTrendingAPIError,
@@ -48,6 +50,7 @@ class DeterminesIMDbTMDBIdsService:
         self.imdb_api_dev_title_api = IMDBAPIDevTitleAPI()
         self.tmdb_trending_api = TMDBTrendingAPI()
         self.tmdb_find_by_id_api = TMDBFindByIdAPI()
+        self.imdb_suggestion_api = IMDbSuggestionAPI()
 
     async def determines(
         self, raw_item: RawItem
@@ -74,6 +77,23 @@ class DeterminesIMDbTMDBIdsService:
                     yield 1.0, title["id"], ItemType.tv
                 return
             except IMDBAPIDevTitleAPIError:
+                pass
+        if raw_item["translated_title"] and raw_item["cast"] and not raw_item["title"]:
+            try:
+                suggestions = await self.imdb_suggestion_api.execute(
+                    raw_item["translated_title"]
+                )
+                for suggestion in suggestions["d"]:
+                    suggestion_cast = set(
+                        [v.strip() for v in suggestion["s"].split(",")]
+                    )
+                    raw_item_cast = set(raw_item["cast"])
+                    if suggestion_cast.intersection(raw_item_cast):
+                        if suggestion["qid"] == "movie":
+                            yield 1.0, suggestion["id"], ItemType.movie
+                        if suggestion["qid"] in ["tvSeries", "tvMiniSeries"]:
+                            yield 1.0, suggestion["id"], ItemType.tv
+            except IMDbSuggestionAPIError:
                 pass
         for query in DeterminesIMDbTMDBIdsService.build_querys(raw_item):
             try:

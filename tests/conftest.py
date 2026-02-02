@@ -28,6 +28,7 @@ def raw_item(request: pytest.FixtureRequest, fake: Faker) -> RawItem:
         translated_title=None,
         raw_title=None,
         year=None,
+        cast=None,
     )
     if request.param and isinstance(request.param, dict):
         raw_item.update(request.param)

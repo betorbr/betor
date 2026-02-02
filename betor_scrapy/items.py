@@ -15,6 +15,7 @@ class ScrapyItem(scrapy.Item):
     magnet_uris = scrapy.Field()
     imdb_id = scrapy.Field()
     tmdb_id = scrapy.Field()
+    cast = scrapy.Field()
 
     def to_raw_item(self) -> RawItem:
         provider_slug = self.get("provider_slug")
@@ -22,6 +23,7 @@ class ScrapyItem(scrapy.Item):
         assert (
             provider_slug and provider_url
         ), f"Required {provider_slug=} {provider_url=}"
+        cast = self.get("cast")
         return {
             "id": None,
             "hash": None,
@@ -38,4 +40,5 @@ class ScrapyItem(scrapy.Item):
             "translated_title": self.get("translated_title"),
             "raw_title": self.get("raw_title"),
             "year": self.get("year"),
+            "cast": list(cast) if cast is not None else None,
         }
