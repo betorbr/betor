@@ -21,7 +21,14 @@ class Title:
 
 
 class Quality:
+    ALIASES = {
+        "1080p / WEB-DL": QualityEnum.webdl_1080p,
+    }
+
     def __call__(self, value: str) -> QualityEnum:
+        for v, q in Quality.ALIASES.items():
+            if v.lower() == value.strip().lower():
+                return q
         for q in QualityEnum:
             if slugify(q) == slugify(value.strip()):
                 return q
