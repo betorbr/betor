@@ -18,3 +18,4 @@ class RawItem(TypedDict):
     translated_title: Optional[str]
     raw_title: Optional[str]
     year: Optional[int]
+    cast: Optional[List[str]]

@@ -25,6 +25,8 @@ class ProviderLoader(scrapy.loader.ItemLoader):
     languages_out = SetIdentity[str]()
     magnet_uris_out = Identity()
     imdb_id_in = MapCompose(IMDbIDs())
+    cast_in = MapCompose(str)
+    cast_out = SetIdentity[str]()
 
     def __init__(
         self,
