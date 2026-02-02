@@ -1,6 +1,6 @@
 FROM python:3.13-alpine AS build-requirements
 
-RUN pip install poetry==2.1.3 \
+RUN pip install poetry==2.1.4 \
         && poetry self add poetry-plugin-export
 
 WORKDIR /betor
