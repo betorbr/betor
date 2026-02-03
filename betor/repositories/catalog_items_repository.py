@@ -32,7 +32,6 @@ class CatalogItemsRepository:
         return ProviderItem(
             slug=cast(str, data.get("slug")),
             url=cast(str, data.get("url")),
-            languages=cast(List[str], data.get("languages")),
             torrents=[
                 CatalogItemsRepository.parse_provider_item_torrent(data)
                 for data in cast(List[dict], data.get("torrents"))
@@ -77,10 +76,8 @@ class CatalogItemsRepository:
                 "$match": {
                     "item_type": {"$ne": None},
                     "updated_at": {"$ne": None},
-                    "$or": [
-                        {"imdb_id": {"$ne": None}},
-                        {"tmdb_id": {"$ne": None}},
-                    ],
+                    "imdb_id": {"$ne": None},
+                    "tmdb_id": {"$ne": None},
                 }
             },
             {
@@ -112,17 +109,6 @@ class CatalogItemsRepository:
                 }
             },
             {
-                "$addFields": {
-                    "languages": {
-                        "$reduce": {
-                            "input": "$torrents.languages",
-                            "initialValue": [],
-                            "in": {"$setUnion": ["$$value", "$$this"]},
-                        }
-                    }
-                }
-            },
-            {
                 "$group": {
                     "_id": {
                         "item_type": "$_id.item_type",
@@ -135,7 +121,6 @@ class CatalogItemsRepository:
                         "$push": {
                             "slug": "$_id.provider_slug",
                             "url": "$_id.provider_url",
-                            "languages": "$languages",
                             "torrents": "$torrents",
                         }
                     },

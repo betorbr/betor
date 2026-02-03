@@ -19,7 +19,6 @@ class ProviderItemTorrent(TypedDict):
 class ProviderItem(TypedDict):
     slug: str
     url: str
-    languages: List[str]
     torrents: List[ProviderItemTorrent]
 
 
