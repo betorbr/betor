@@ -85,7 +85,7 @@ class DeterminesIMDbTMDBIdsService:
                 )
                 for suggestion in suggestions["d"]:
                     suggestion_cast = set(
-                        [v.strip() for v in suggestion.get("s").split(",")]
+                        [v.strip() for v in suggestion.get("s", "").split(",")]
                     )
                     raw_item_cast = set(raw_item["cast"])
                     if suggestion_cast.intersection(raw_item_cast):
