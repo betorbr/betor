@@ -6,6 +6,7 @@ from .languages_info import LanguagesInfo
 from .raw_item import RawItem
 from .search_job_monitor import SearchJobMonitor, SearchProviderResult, SearchRequest
 from .torrent_info import TorrentInfo
+from .torrent_trackers_info import TorrentTrackersInfo
 
 __all__ = [
     "RawItem",
@@ -23,4 +24,5 @@ __all__ = [
     "CatalogItem",
     "ProviderItem",
     "ProviderItemTorrent",
+    "TorrentTrackersInfo",
 ]

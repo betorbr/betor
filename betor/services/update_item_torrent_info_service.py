@@ -1,5 +1,4 @@
 import tempfile
-from typing import Tuple
 
 import libtorrent as lt
 import motor.motor_asyncio
@@ -11,17 +10,6 @@ from betor.settings import libtorrent_settings
 
 
 class UpdateItemTorrentInfoService:
-    @classmethod
-    def all_trackers_ready(cls, lt_torrent_handler) -> bool:
-        return all(map(lambda t: t["fails"] >= 1, lt_torrent_handler.trackers()))
-
-    @classmethod
-    def num_peers_seeds(cls, lt_torrent_handler) -> Tuple[int, int]:
-        while not cls.all_trackers_ready(lt_torrent_handler):
-            pass
-        lt_torrent_status = lt_torrent_handler.status()
-        return lt_torrent_status.list_peers, lt_torrent_status.list_seeds
-
     def __init__(self, mongodb_client: motor.motor_asyncio.AsyncIOMotorClient):
         self.items_repository = ItemsRepository(mongodb_client)
 
@@ -48,12 +36,8 @@ class UpdateItemTorrentInfoService:
                 lt_torrent_info = lt_torrent_handler.torrent_file()
                 if lt_torrent_info:
                     lt_file_storage = lt_torrent_info.orig_files()
-                    lt_torrent_handler.set_download_limit(8)
-                    num_peers, num_seeds = self.num_peers_seeds(lt_torrent_handler)
                     torrent_info = TorrentInfo(
                         torrent_name=lt_file_storage.name(),
-                        torrent_num_peers=num_peers,
-                        torrent_num_seeds=num_seeds,
                         torrent_files=[
                             lt_file_storage.file_name(i)
                             for i in range(lt_file_storage.num_files())

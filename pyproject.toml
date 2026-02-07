@@ -25,6 +25,7 @@ dependencies = [
     "setuptools (>=80.9.0,<81.0.0)",
     "uuid (>=1.30,<2.0)",
     "language-data (>=1.4.0,<2.0.0)",
+    "scrapeer (>=1.0.3,<2.0.0)",
 ]
 
 [project.urls]
@@ -80,4 +81,8 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "kombu"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "scrapeer"
 ignore_missing_imports = true

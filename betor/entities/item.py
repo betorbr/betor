@@ -6,6 +6,7 @@ from betor.enums import ItemType
 from .episodes_info import EpisodesInfo
 from .languages_info import LanguagesInfo
 from .torrent_info import TorrentInfo
+from .torrent_trackers_info import TorrentTrackersInfo
 
 
 class BaseItem(TypedDict):
@@ -16,7 +17,7 @@ class BaseItem(TypedDict):
     item_type: Optional[ItemType]
 
 
-class Item(BaseItem, TorrentInfo, LanguagesInfo, EpisodesInfo):
+class Item(BaseItem, TorrentInfo, TorrentTrackersInfo, LanguagesInfo, EpisodesInfo):
     id: Optional[str]
     hash: Optional[int]
     inserted_at: Optional[datetime]

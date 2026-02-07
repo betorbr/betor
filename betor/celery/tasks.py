@@ -13,6 +13,7 @@ from betor.services import (
     UpdateItemEpisodesInfoService,
     UpdateItemLanguagesInfoService,
     UpdateItemTorrentInfoService,
+    UpdateItemTorrentTrackersInfoService,
 )
 from betor.settings import tmdb_api_settings
 
@@ -95,6 +96,14 @@ def _tmdb_api_request(url: str):
     return response.json()
 
 
+def _update_item_torrent_trackers_info(magnet_uri: str, **kwargs):
+    mongodb_client = get_mongodb_client()
+    service = UpdateItemTorrentTrackersInfoService(mongodb_client)
+    result = asyncio.run(service.update(magnet_uri))
+    mongodb_client.close()
+    return result
+
+
 process_raw_item: Task = celery_app.task(
     _process_raw_item,
     base=BetorCeleryTask,
@@ -123,4 +132,9 @@ tmdb_api_request = celery_app.task(
     _tmdb_api_request,
     name="tmdb_api_request",
     rate_limit=tmdb_api_settings.rate_limit,
+)
+update_item_torrent_trackers_info = celery_app.task(
+    _update_item_torrent_trackers_info,
+    base=BetorCeleryTask,
+    name="update_item_torrent_trackers_info",
 )

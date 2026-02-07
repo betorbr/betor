@@ -87,40 +87,82 @@ class ProcessRawItemService:
             magnet_xt=magnet.xt,
             magnet_dn=magnet.dn,
             torrent_name=None,
-            torrent_num_peers=None,
-            torrent_num_seeds=None,
             torrent_files=None,
             torrent_size=None,
+            torrent_num_peers=None,
+            torrent_num_seeds=None,
             languages=[],
             episodes=[],
             seasons=[],
         )
         await self.items_repository.insert_or_update(item)
-        job_index = str(uuid4())
-        result: celery.result.AsyncResult = celery_app.signature(
-            "update_item_torrent_info"
-        ).delay(magnet_uri, job_monitor_id=job_monitor_id, job_index=job_index)
-        if job_monitor_id:
-            try:
-                self.job_monitor_repository.add_job(
-                    job_monitor_id,
-                    Job(
-                        type="celery-task",
-                        name="update_item_torrent_info",
-                        id=result.id,
-                    ),
-                    job_index=job_index,
-                )
-            except JobMonitorNotFound:
-                pass
         if retrieve_item := await self.items_repository.get(
             item["provider_slug"], item["provider_url"], item["magnet_xt"]
         ):
-            celery_app.signature("update_item_languages_info").delay(
-                retrieve_item["id"]
+            if (
+                not retrieve_item["torrent_name"]
+                or not retrieve_item["torrent_files"]
+                or not retrieve_item["torrent_size"]
+            ):
+                self.queue_update_item_torrent_info(
+                    retrieve_item, job_monitor_id=job_monitor_id
+                )
+            self.queue_update_item_torrent_trackers_info(
+                retrieve_item, job_monitor_id=job_monitor_id
             )
-            celery_app.signature("update_item_episodes_info").delay(
-                item_id=retrieve_item["id"]
-            )
+            self.queue_update_item_languages_info(retrieve_item)
+            self.queue_update_item_episodes_info(retrieve_item)
             return retrieve_item
         return item
+
+    def queue_update_item_languages_info(self, item: Item):
+        celery_app.signature("update_item_languages_info").delay(item["id"])
+
+    def queue_update_item_episodes_info(self, item: Item):
+        celery_app.signature("update_item_episodes_info").delay(item_id=item["id"])
+
+    def queue_update_item_torrent_info(
+        self, item: Item, job_monitor_id: Optional[str] = None
+    ) -> str:
+        job_index = str(uuid4())
+        result: celery.result.AsyncResult = celery_app.signature(
+            "update_item_torrent_info"
+        ).delay(item["magnet_uri"], job_monitor_id=job_monitor_id, job_index=job_index)
+        if not job_monitor_id:
+            return job_index
+        try:
+            self.job_monitor_repository.add_job(
+                job_monitor_id,
+                Job(
+                    type="celery-task",
+                    name="update_item_torrent_info",
+                    id=result.id,
+                ),
+                job_index=job_index,
+            )
+        except JobMonitorNotFound:
+            pass
+        return job_index
+
+    def queue_update_item_torrent_trackers_info(
+        self, item: Item, job_monitor_id: Optional[str] = None
+    ) -> str:
+        job_index = str(uuid4())
+        result: celery.result.AsyncResult = celery_app.signature(
+            "update_item_torrent_trackers_info"
+        ).delay(item["magnet_uri"], job_monitor_id=job_monitor_id, job_index=job_index)
+        if not job_monitor_id:
+            return job_index
+        try:
+            self.job_monitor_repository.add_job(
+                job_monitor_id,
+                Job(
+                    type="celery-task",
+                    name="update_item_torrent_trackers_info",
+                    id=result.id,
+                ),
+                job_index=job_index,
+            )
+        except JobMonitorNotFound:
+            pass
+        return job_index
