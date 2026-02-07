@@ -28,8 +28,6 @@ class TestDeterminesEpisodes:
             (
                 TorrentInfo(
                     torrent_name=None,
-                    torrent_num_peers=None,
-                    torrent_num_seeds=None,
                     torrent_files=None,
                     torrent_size=None,
                 ),
@@ -38,8 +36,6 @@ class TestDeterminesEpisodes:
             (
                 TorrentInfo(
                     torrent_name=None,
-                    torrent_num_peers=None,
-                    torrent_num_seeds=None,
                     torrent_files=["the.bear.s01e01.mkv"],
                     torrent_size=None,
                 ),
@@ -48,8 +44,6 @@ class TestDeterminesEpisodes:
             (
                 TorrentInfo(
                     torrent_name=None,
-                    torrent_num_peers=None,
-                    torrent_num_seeds=None,
                     torrent_files=[
                         "Foundation.S03E07.1080p.WEB-DL.DUAL.5.1.mkv",
                         "Foundation.S03E06.1080p.WEB-DL.DUAL.5.1.mkv",

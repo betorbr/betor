@@ -5,7 +5,7 @@ import pytest
 import redis
 from faker import Faker
 
-from betor.entities import BaseItem, RawItem
+from betor.entities import BaseItem, Item, RawItem
 from betor.enums import ItemType
 from betor.repositories import ItemsRepository, RawItemsRepository
 from betor.services import DeterminesIMDbTMDBIdsService, ProcessRawItemService
@@ -145,14 +145,25 @@ class TestProcessRawItemMagnetURI:
             tmdb_id=None,
             item_type=None,
         )
-        with mock.patch(
-            "betor.services.process_raw_item_service.celery_app.signature"
-        ) as signature_mock:
+        with (
+            mock.patch.object(
+                process_raw_item_service, "queue_update_item_torrent_info"
+            ) as queue_update_item_torrent_info_mock,
+            mock.patch.object(
+                process_raw_item_service, "queue_update_item_languages_info"
+            ) as queue_update_item_languages_info_mock,
+            mock.patch.object(
+                process_raw_item_service, "queue_update_item_episodes_info"
+            ) as queue_update_item_episodes_info_mock,
+        ):
             result = await process_raw_item_service.process_raw_item_magnet_uri(
                 raw_item,
                 base_item,
                 MAGNET_LINK_1,
             )
+        queue_update_item_torrent_info_mock.assert_not_called()
+        queue_update_item_languages_info_mock.assert_called_once()
+        queue_update_item_episodes_info_mock.assert_called_once()
         assert result == process_raw_item_service.items_repository.get.return_value  # type: ignore[attr-defined]
         item = process_raw_item_service.items_repository.insert_or_update.call_args[0][  # type: ignore[attr-defined]
             0
@@ -161,18 +172,52 @@ class TestProcessRawItemMagnetURI:
         assert item["magnet_uri"] == MAGNET_LINK_1
         assert item["magnet_xt"] == "urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c"
         assert item["magnet_dn"] == "Big Buck Bunny"
-        signature_mock.assert_has_calls(
-            [
-                mock.call("update_item_torrent_info"),
-                mock.call().delay(
-                    MAGNET_LINK_1, job_monitor_id=None, job_index=mock.ANY
-                ),
-                mock.call("update_item_languages_info"),
-                mock.call().delay(
-                    process_raw_item_service.items_repository.get.return_value["id"]  # type: ignore[attr-defined]
-                ),
-            ]
+
+    @pytest.mark.parametrize(
+        (
+            "raw_item",
+            "item",
+        ),
+        [
+            (
+                {"magnet_uris": [MAGNET_LINK_1]},
+                {"torrent_name": None, "torrent_files": None, "torrent_size": None},
+            )
+        ],
+        indirect=["raw_item", "item"],
+    )
+    @pytest.mark.asyncio
+    async def test_queue_update_item_torrent_info(
+        self,
+        raw_item: RawItem,
+        item: Item,
+        process_raw_item_service: ProcessRawItemService,
+    ):
+        process_raw_item_service.items_repository.get.return_value = item  # type: ignore[attr-defined]
+        base_item = BaseItem(
+            provider_slug=raw_item["provider_slug"],
+            provider_url=raw_item["provider_url"],
+            imdb_id=None,
+            tmdb_id=None,
+            item_type=None,
         )
+        with (
+            mock.patch.object(
+                process_raw_item_service, "queue_update_item_torrent_info"
+            ) as queue_update_item_torrent_info_mock,
+            mock.patch.object(
+                process_raw_item_service, "queue_update_item_languages_info"
+            ),
+            mock.patch.object(
+                process_raw_item_service, "queue_update_item_episodes_info"
+            ),
+        ):
+            await process_raw_item_service.process_raw_item_magnet_uri(
+                raw_item,
+                base_item,
+                MAGNET_LINK_1,
+            )
+        queue_update_item_torrent_info_mock.assert_called_once()
 
     @pytest.mark.parametrize(
         "magnet_uri",
