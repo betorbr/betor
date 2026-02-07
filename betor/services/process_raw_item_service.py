@@ -107,6 +107,9 @@ class ProcessRawItemService:
                 self.queue_update_item_torrent_info(
                     retrieve_item, job_monitor_id=job_monitor_id
                 )
+            self.queue_update_item_torrent_trackers_info(
+                retrieve_item, job_monitor_id=job_monitor_id
+            )
             self.queue_update_item_languages_info(retrieve_item)
             self.queue_update_item_episodes_info(retrieve_item)
             return retrieve_item
@@ -133,6 +136,29 @@ class ProcessRawItemService:
                 Job(
                     type="celery-task",
                     name="update_item_torrent_info",
+                    id=result.id,
+                ),
+                job_index=job_index,
+            )
+        except JobMonitorNotFound:
+            pass
+        return job_index
+
+    def queue_update_item_torrent_trackers_info(
+        self, item: Item, job_monitor_id: Optional[str] = None
+    ) -> str:
+        job_index = str(uuid4())
+        result: celery.result.AsyncResult = celery_app.signature(
+            "update_item_torrent_trackers_info"
+        ).delay(item["magnet_uri"], job_monitor_id=job_monitor_id, job_index=job_index)
+        if not job_monitor_id:
+            return job_index
+        try:
+            self.job_monitor_repository.add_job(
+                job_monitor_id,
+                Job(
+                    type="celery-task",
+                    name="update_item_torrent_trackers_info",
                     id=result.id,
                 ),
                 job_index=job_index,
