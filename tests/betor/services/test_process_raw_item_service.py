@@ -210,6 +210,9 @@ class TestProcessRawItemMagnetURI:
                 process_raw_item_service, "queue_update_item_torrent_info"
             ) as queue_update_item_torrent_info_mock,
             mock.patch.object(
+                process_raw_item_service, "queue_update_item_torrent_trackers_info"
+            ),
+            mock.patch.object(
                 process_raw_item_service, "queue_update_item_languages_info"
             ),
             mock.patch.object(
