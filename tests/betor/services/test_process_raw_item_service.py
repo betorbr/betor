@@ -150,6 +150,9 @@ class TestProcessRawItemMagnetURI:
                 process_raw_item_service, "queue_update_item_torrent_info"
             ) as queue_update_item_torrent_info_mock,
             mock.patch.object(
+                process_raw_item_service, "queue_update_item_torrent_trackers_info"
+            ) as queue_update_item_torrent_trackers_info_mock,
+            mock.patch.object(
                 process_raw_item_service, "queue_update_item_languages_info"
             ) as queue_update_item_languages_info_mock,
             mock.patch.object(
@@ -162,6 +165,7 @@ class TestProcessRawItemMagnetURI:
                 MAGNET_LINK_1,
             )
         queue_update_item_torrent_info_mock.assert_not_called()
+        queue_update_item_torrent_trackers_info_mock.assert_called_once()
         queue_update_item_languages_info_mock.assert_called_once()
         queue_update_item_episodes_info_mock.assert_called_once()
         assert result == process_raw_item_service.items_repository.get.return_value  # type: ignore[attr-defined]
