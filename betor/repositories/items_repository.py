@@ -7,7 +7,13 @@ from typing import Dict, List, Literal, Optional, Sequence
 import motor.motor_asyncio
 from bson.objectid import ObjectId
 
-from betor.entities import EpisodesInfo, Item, LanguagesInfo, TorrentInfo
+from betor.entities import (
+    EpisodesInfo,
+    Item,
+    LanguagesInfo,
+    TorrentInfo,
+    TorrentTrackersInfo,
+)
 from betor.enums import ItemType
 from betor.settings import database_mongodb_settings
 
@@ -235,6 +241,21 @@ class ItemsRepository:
                     "imdb_id": imdb_id,
                     "tmdb_id": tmdb_id,
                     "item_type": item_type,
+                    ItemsRepository.UPDATED_AT_FIELD: datetime.now(),
+                }
+            },
+        )
+
+    async def update_torrent_trackers_info(
+        self, magnet_uri: str, torrent_trackers_info: TorrentTrackersInfo
+    ):
+        await self.collection.update_many(
+            {
+                "magnet_uri": magnet_uri,
+            },
+            {
+                "$set": {
+                    **torrent_trackers_info,
                     ItemsRepository.UPDATED_AT_FIELD: datetime.now(),
                 }
             },

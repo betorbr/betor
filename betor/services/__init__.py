@@ -19,6 +19,9 @@ from .search_service import SearchService
 from .update_item_episodes_info_service import UpdateItemEpisodesInfoService
 from .update_item_languages_info_service import UpdateItemLanguagesInfoService
 from .update_item_torrent_info_service import UpdateItemTorrentInfoService
+from .update_item_torrent_trackers_info_service import (
+    UpdateItemTorrentTrackersInfoService,
+)
 
 __all__ = [
     "DeterminesIMDbTMDBIdsService",
@@ -40,4 +43,5 @@ __all__ = [
     "AdminNormalizeItemsTMDBIdResult",
     "AdminDeterminesIMDBTMDBIdService",
     "AdminDeterminesIMDBTMDBIdResult",
+    "UpdateItemTorrentTrackersInfoService",
 ]
