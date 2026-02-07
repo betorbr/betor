@@ -1,4 +1,4 @@
-from typing import List, Optional, TypedDict
+from typing import Optional, TypedDict
 
 
 class TorrentTrackerInfo(TypedDict):
@@ -11,4 +11,3 @@ class TorrentTrackerInfo(TypedDict):
 class TorrentTrackersInfo(TypedDict):
     torrent_num_peers: Optional[int]
     torrent_num_seeds: Optional[int]
-    torrent_trackers_info: Optional[List[TorrentTrackerInfo]]

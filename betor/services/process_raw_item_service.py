@@ -91,7 +91,6 @@ class ProcessRawItemService:
             torrent_size=None,
             torrent_num_peers=None,
             torrent_num_seeds=None,
-            torrent_trackers_info=None,
             languages=[],
             episodes=[],
             seasons=[],

@@ -65,7 +65,6 @@ class ItemsRepository:
             torrent_size=result.get("torrent_size"),
             torrent_num_peers=result.get("torrent_num_peers"),
             torrent_num_seeds=result.get("torrent_num_seeds"),
-            torrent_trackers_info=result.get("torrent_trackers_info"),
             languages=result.get("languages", []),
             episodes=result.get("episodes", []),
             seasons=result.get("seasons", []),
