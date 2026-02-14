@@ -18,3 +18,8 @@ class AdminDeterminesIMDBTMDBIdRawItemNotFoundError(AdminDeterminesIMDBTMDBIdErr
 class AdminDeterminesIMDBTMDBIdValueError(AdminDeterminesIMDBTMDBIdError):
     error_code: Literal["value-error"] = "value-error"
     message: str
+
+
+class AdminMapsProviderURLIMDBPayload(BaseModel):
+    provider_url: str
+    imdb_id: str
