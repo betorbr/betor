@@ -86,3 +86,7 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "scrapeer"
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disable_error_code = ["attr-defined"]
