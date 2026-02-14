@@ -2,6 +2,7 @@ from typing import (
     Callable,
     Dict,
     List,
+    Literal,
     Optional,
     Sequence,
     Tuple,
@@ -30,3 +31,5 @@ ApaginateAggregateParams: TypeAlias = Tuple[
 ]
 
 Languages: TypeAlias = List[str]
+
+InsertOrUpdateResult: TypeAlias = Literal["inserted", "updated", "no_change"]

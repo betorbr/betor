@@ -2,7 +2,7 @@ import hashlib
 import json
 from collections import OrderedDict
 from datetime import datetime
-from typing import Dict, List, Literal, Optional, Sequence
+from typing import Dict, List, Optional, Sequence
 
 import motor.motor_asyncio
 from bson.objectid import ObjectId
@@ -16,6 +16,7 @@ from betor.entities import (
 )
 from betor.enums import ItemType
 from betor.settings import database_mongodb_settings
+from betor.types import InsertOrUpdateResult
 
 
 class ItemsRepository:
@@ -113,9 +114,7 @@ class ItemsRepository:
             return None
         return ItemsRepository.parse_result(result)
 
-    async def insert_or_update(
-        self, item: Item
-    ) -> Literal["inserted", "updated", "no_change"]:
+    async def insert_or_update(self, item: Item) -> InsertOrUpdateResult:
         retrieved = await self.get(
             item["provider_slug"], item["provider_url"], item["magnet_xt"]
         )

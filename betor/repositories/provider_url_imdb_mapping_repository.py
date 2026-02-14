@@ -1,11 +1,12 @@
 from collections import OrderedDict
 from datetime import datetime
-from typing import Dict, Literal, Optional, cast
+from typing import Dict, Optional, cast
 
 import motor.motor_asyncio
 
 from betor.entities import ProviderURLIMDBMapping
 from betor.settings import database_mongodb_settings
+from betor.types import InsertOrUpdateResult
 
 
 class ProviderURLIMDBMappingRepository:
@@ -79,7 +80,7 @@ class ProviderURLIMDBMappingRepository:
 
     async def insert_or_update(
         self, provider_url_imdb_mapping: ProviderURLIMDBMapping
-    ) -> Literal["inserted", "updated", "no_change"]:
+    ) -> InsertOrUpdateResult:
         retrieved = await self.get(provider_url_imdb_mapping["provider_url"])
         if not retrieved:
             await self.insert(provider_url_imdb_mapping)
