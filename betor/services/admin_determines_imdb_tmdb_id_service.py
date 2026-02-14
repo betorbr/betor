@@ -21,7 +21,9 @@ class AdminDeterminesIMDBTMDBIdService:
     def __init__(self, mongodb_client: motor.motor_asyncio.AsyncIOMotorClient):
         self.raw_items_repository = RawItemsRepository(mongodb_client)
         self.items_repository = ItemsRepository(mongodb_client)
-        self.determines_imdb_tmdb_ids_service = DeterminesIMDbTMDBIdsService()
+        self.determines_imdb_tmdb_ids_service = DeterminesIMDbTMDBIdsService(
+            mongodb_client
+        )
 
     async def determines(self, provider_url: str) -> AdminDeterminesIMDBTMDBIdResult:
         raw_item = await self.raw_items_repository.get_by_provider_url(provider_url)

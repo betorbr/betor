@@ -2,12 +2,13 @@ import hashlib
 import json
 from collections import OrderedDict
 from datetime import datetime
-from typing import Dict, Literal, Optional, cast
+from typing import Dict, Optional, cast
 
 import motor.motor_asyncio
 
 from betor.entities import RawItem
 from betor.settings import database_mongodb_settings
+from betor.types import InsertOrUpdateResult
 
 
 class RawItemsRepository:
@@ -82,9 +83,7 @@ class RawItemsRepository:
         result_dict = cast(Dict, result)
         return RawItemsRepository.parse_result(result_dict)
 
-    async def insert_or_update(
-        self, raw_item: RawItem
-    ) -> Literal["inserted", "updated", "no_change"]:
+    async def insert_or_update(self, raw_item: RawItem) -> InsertOrUpdateResult:
         retrieved = await self.get(raw_item["provider_slug"], raw_item["provider_url"])
         if not retrieved:
             await self.insert(raw_item)

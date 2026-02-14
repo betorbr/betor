@@ -3,6 +3,7 @@ from .episodes_info import Episode, EpisodesInfo
 from .item import BaseItem, Item
 from .job_monitor import Job, JobMonitor
 from .languages_info import LanguagesInfo
+from .provider_url_imdb_mapping import ProviderURLIMDBMapping
 from .raw_item import RawItem
 from .search_job_monitor import SearchJobMonitor, SearchProviderResult, SearchRequest
 from .torrent_info import TorrentInfo
@@ -25,4 +26,5 @@ __all__ = [
     "ProviderItem",
     "ProviderItemTorrent",
     "TorrentTrackersInfo",
+    "ProviderURLIMDBMapping",
 ]

@@ -1,10 +1,12 @@
+from datetime import datetime
 from typing import Generator, List
 from unittest import mock
 
+import motor.motor_asyncio
 import pytest
 from faker import Faker
 
-from betor.entities import RawItem
+from betor.entities import ProviderURLIMDBMapping, RawItem
 from betor.enums import ItemType
 from betor.external_apis import (
     IMDBAPIDevSearchAPI,
@@ -16,11 +18,19 @@ from betor.external_apis import (
     TMDBTrendingAPI,
     TMDBTrendingAPIError,
 )
+from betor.repositories import ProviderURLIMDBMappingRepository
 from betor.services import DeterminesIMDbTMDBIdsService
 
 
 @pytest.fixture
-def determines_imdb_tmdb_ids_service() -> Generator[DeterminesIMDbTMDBIdsService]:
+def mongodb_client_mock():
+    return mock.AsyncMock(spec=motor.motor_asyncio.AsyncIOMotorClient)
+
+
+@pytest.fixture
+def determines_imdb_tmdb_ids_service(
+    mongodb_client_mock: motor.motor_asyncio.AsyncIOMotorClient,
+) -> Generator[DeterminesIMDbTMDBIdsService]:
     with (
         mock.patch(
             "betor.services.determines_imdb_tmdb_ids_service.IMDBAPIDevSearchAPI",
@@ -42,8 +52,13 @@ def determines_imdb_tmdb_ids_service() -> Generator[DeterminesIMDbTMDBIdsService
             new_callable=mock.MagicMock,
             spec=TMDBFindByIdAPI,
         ),
+        mock.patch(
+            "betor.services.determines_imdb_tmdb_ids_service.ProviderURLIMDBMappingRepository",
+            new_callable=mock.MagicMock,
+            spec=ProviderURLIMDBMappingRepository,
+        ),
     ):
-        yield DeterminesIMDbTMDBIdsService()
+        yield DeterminesIMDbTMDBIdsService(mongodb_client_mock)
 
 
 class TestBuildQuerys:
@@ -145,7 +160,11 @@ class TestDetermines:
 
 
 class TestDeterminesImdbId:
-    @pytest.mark.parametrize("raw_item", [{"title": "Foo Bar"}], indirect=["raw_item"])
+    @pytest.mark.parametrize(
+        "raw_item",
+        [{"provider_url": "https://example.com", "title": "Foo Bar"}],
+        indirect=["raw_item"],
+    )
     @pytest.mark.asyncio
     async def test_ok(
         self,
@@ -173,6 +192,9 @@ class TestDeterminesImdbId:
             },
             IMDBAPIDevSearchAPIError,
         ]
+        determines_imdb_tmdb_ids_service.provider_url_imdb_mapping_repository.get.return_value = (
+            None
+        )
         with (
             mock.patch(
                 "betor.services.determines_imdb_tmdb_ids_service.DeterminesIMDbTMDBIdsService.build_querys",
@@ -209,6 +231,42 @@ class TestDeterminesImdbId:
                 mock.ANY,
                 ItemType.tv,
             )
+
+    @pytest.mark.parametrize(
+        "raw_item",
+        [{"provider_url": "https://example.com", "title": "Foo Bar"}],
+        indirect=["raw_item"],
+    )
+    @pytest.mark.asyncio
+    async def test_with_provider_url_imdb_mapping(
+        self,
+        raw_item: RawItem,
+        fake: Faker,
+        determines_imdb_tmdb_ids_service: DeterminesIMDbTMDBIdsService,
+    ):
+        imdb_id = fake.numerify("tt########")
+        determines_imdb_tmdb_ids_service.imdb_api_dev_title_api.execute.return_value = {
+            "type": "movie",
+            "id": imdb_id,
+        }
+        determines_imdb_tmdb_ids_service.provider_url_imdb_mapping_repository.get.return_value = ProviderURLIMDBMapping(
+            id="foo",
+            inserted_at=datetime.now(),
+            updated_at=None,
+            provider_url="https://example.com",
+            imdb_id=imdb_id,
+        )
+        result = [
+            item
+            async for item in determines_imdb_tmdb_ids_service.determines_imdb_id(
+                raw_item
+            )
+        ]
+        assert result[0] == (
+            1.0,
+            imdb_id,
+            ItemType.movie,
+        )
 
     @pytest.mark.parametrize(
         "raw_item",

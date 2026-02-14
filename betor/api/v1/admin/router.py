@@ -7,6 +7,8 @@ from betor.exceptions import RawItemNotFound
 from betor.services import (
     AdminDeterminesIMDBTMDBIdResult,
     AdminDeterminesIMDBTMDBIdService,
+    AdminMapsProviderURLIMDBResult,
+    AdminMapsProviderURLIMDBService,
     AdminNormalizeItemsTMDBIdResult,
     AdminNormalizeItemsTMDBIdService,
 )
@@ -15,6 +17,7 @@ from .schemas import (
     AdminDeterminesIMDBTMDBIdPayload,
     AdminDeterminesIMDBTMDBIdRawItemNotFoundError,
     AdminDeterminesIMDBTMDBIdValueError,
+    AdminMapsProviderURLIMDBPayload,
 )
 
 admin_router = APIRouter()
@@ -44,3 +47,11 @@ async def determines_imdb_tmdb_id(
         return AdminDeterminesIMDBTMDBIdRawItemNotFoundError()
     except ValueError as e:
         return AdminDeterminesIMDBTMDBIdValueError(message=str(e))
+
+
+@admin_router.post("/maps-provider-url-imdb")
+async def maps_provider_url_imdb(
+    request: BetorRequest, payload: AdminMapsProviderURLIMDBPayload
+) -> AdminMapsProviderURLIMDBResult:
+    service = AdminMapsProviderURLIMDBService(request.app.mongodb_client)
+    return await service.maps(payload.provider_url, payload.imdb_id)

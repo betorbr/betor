@@ -1,4 +1,6 @@
-from typing import AsyncGenerator, Generator, Optional, Tuple
+from typing import AsyncGenerator, Generator, Optional, Tuple, cast
+
+import motor.motor_asyncio
 
 from betor.entities import RawItem
 from betor.enums import ItemType
@@ -9,10 +11,12 @@ from betor.external_apis import (
     IMDBAPIDevTitleAPIError,
     IMDbSuggestionAPI,
     IMDbSuggestionAPIError,
+    IMDbSuggestionResponseTitle,
     TMDBFindByIdAPI,
     TMDBTrendingAPI,
     TMDBTrendingAPIError,
 )
+from betor.repositories import ProviderURLIMDBMappingRepository
 from betor.settings import tmdb_api_settings
 from betor.utils import jaccard_similarity
 
@@ -45,12 +49,15 @@ class DeterminesIMDbTMDBIdsService:
             best_s, best_v, best_t = s, v, t
         return best_v, best_t
 
-    def __init__(self):
+    def __init__(self, mongodb_client: motor.motor_asyncio.AsyncIOMotorClient):
         self.imdb_api_dev_search_api = IMDBAPIDevSearchAPI()
         self.imdb_api_dev_title_api = IMDBAPIDevTitleAPI()
         self.tmdb_trending_api = TMDBTrendingAPI()
         self.tmdb_find_by_id_api = TMDBFindByIdAPI()
         self.imdb_suggestion_api = IMDbSuggestionAPI()
+        self.provider_url_imdb_mapping_repository = ProviderURLIMDBMappingRepository(
+            mongodb_client
+        )
 
     async def determines(
         self, raw_item: RawItem
@@ -68,6 +75,20 @@ class DeterminesIMDbTMDBIdsService:
         return imdb_id, tmdb_id, imdb_item_type
 
     async def determines_imdb_id(self, raw_item: RawItem) -> DeterminesGenerator:
+        if provider_url_mapping := await self.provider_url_imdb_mapping_repository.get(
+            raw_item["provider_url"]
+        ):
+            try:
+                title = await self.imdb_api_dev_title_api.execute(
+                    provider_url_mapping["imdb_id"]
+                )
+                if title["type"] == "movie":
+                    yield 1.0, title["id"], ItemType.movie
+                if title["type"] in ["tvSeries", "tvMiniSeries"]:
+                    yield 1.0, title["id"], ItemType.tv
+                return
+            except IMDBAPIDevTitleAPIError:
+                pass
         if raw_item["imdb_id"]:
             try:
                 title = await self.imdb_api_dev_title_api.execute(raw_item["imdb_id"])
@@ -84,15 +105,18 @@ class DeterminesIMDbTMDBIdsService:
                     raw_item["translated_title"]
                 )
                 for suggestion in suggestions["d"]:
+                    if not suggestion.get("qid"):
+                        continue
+                    s = cast(IMDbSuggestionResponseTitle, suggestion)
                     suggestion_cast = set(
-                        [v.strip() for v in suggestion.get("s", "").split(",")]
+                        [v.strip() for v in s.get("s", "").split(",")]
                     )
                     raw_item_cast = set(raw_item["cast"])
                     if suggestion_cast.intersection(raw_item_cast):
-                        if suggestion["qid"] == "movie":
-                            yield 1.0, suggestion["id"], ItemType.movie
-                        if suggestion["qid"] in ["tvSeries", "tvMiniSeries"]:
-                            yield 1.0, suggestion["id"], ItemType.tv
+                        if s["qid"] == "movie":
+                            yield 1.0, s["id"], ItemType.movie
+                        if s["qid"] in ["tvSeries", "tvMiniSeries"]:
+                            yield 1.0, s["id"], ItemType.tv
             except IMDbSuggestionAPIError:
                 pass
         for query in DeterminesIMDbTMDBIdsService.build_querys(raw_item):
@@ -143,7 +167,8 @@ class DeterminesIMDbTMDBIdsService:
                     or result["media_type"] == "tv"
                     and ItemType.tv
                 )
-                yield 1, tmdb_id, item_type
+                assert tmdb_id and item_type
+                yield 1.0, tmdb_id, item_type
                 return
         for query in DeterminesIMDbTMDBIdsService.build_querys(raw_item):
             try:

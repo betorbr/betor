@@ -29,7 +29,9 @@ class ProcessRawItemService:
         self.raw_items_repository = RawItemsRepository(mongodb_client)
         self.items_repository = ItemsRepository(mongodb_client)
         self.job_monitor_repository = JobMonitorRepository(redis_client)
-        self.determines_imdb_tmdb_ids_service = DeterminesIMDbTMDBIdsService()
+        self.determines_imdb_tmdb_ids_service = DeterminesIMDbTMDBIdsService(
+            mongodb_client
+        )
 
     async def process(
         self,
