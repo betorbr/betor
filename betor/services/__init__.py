@@ -3,6 +3,7 @@ from .admin_determines_imdb_tmdb_id_service import (
     AdminDeterminesIMDBTMDBIdResult,
     AdminDeterminesIMDBTMDBIdService,
 )
+from .admin_maps_provider_url_imdb_service import AdminMapsProviderURLIMDBService
 from .admin_normalize_items_tmdb_id_service import (
     AdminNormalizeItemsTMDBIdResult,
     AdminNormalizeItemsTMDBIdService,
@@ -44,4 +45,5 @@ __all__ = [
     "AdminDeterminesIMDBTMDBIdService",
     "AdminDeterminesIMDBTMDBIdResult",
     "UpdateItemTorrentTrackersInfoService",
+    "AdminMapsProviderURLIMDBService",
 ]
