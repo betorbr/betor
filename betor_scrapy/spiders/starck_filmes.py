@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 import scrapy
 import scrapy.http
 
@@ -12,6 +14,21 @@ class StarckFilmesSpider(ProviderSpider, scrapy.Spider):
     provider = starck_filmes
     name = starck_filmes.slug
     allowed_domains = starck_filmes.domains
+
+    @classmethod
+    def unshuffle_string(cls, shuffled: str) -> str:
+        length = len(shuffled)
+        original: List[Optional[str]] = [None] * length
+        used = [False] * length
+        step = 3
+        index = 0
+        for i in range(length):
+            while used[index]:
+                index = (index + 1) % length
+            used[index] = True
+            original[i] = shuffled[index]
+            index = (index + step) % length
+        return "".join(map(str, original))
 
     def parse(self, response: scrapy.http.Response):
         if response.xpath(
@@ -41,4 +58,12 @@ class StarckFilmesSpider(ProviderSpider, scrapy.Spider):
             loader.add_value(field, value)
         loader.add_xpath("raw_title", "//div[@class='main-title']//h1//text()")
         loader.add_xpath("magnet_uris", "//a[starts-with(@href, 'magnet')]/@href")
+        for shuffled_magnet_link in response.xpath("//@data-u").getall():
+            try:
+                magnet_link = StarckFilmesSpider.unshuffle_string(shuffled_magnet_link)
+                loader.add_value("magnet_uris", magnet_link)
+            except ValueError:
+                self.logger.debug(
+                    "Failed to unshuffle magnet link: %s", shuffled_magnet_link
+                )
         yield loader.load_item()
