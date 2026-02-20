@@ -1,12 +1,14 @@
 import tempfile
+from time import sleep
 
+import fsspec
 import libtorrent as lt
 import motor.motor_asyncio
 
 from betor.celery.app import celery_app
 from betor.entities import TorrentInfo
 from betor.repositories import ItemsRepository
-from betor.settings import libtorrent_settings
+from betor.settings import libtorrent_settings, store_torrent_file_settings
 
 
 class UpdateItemTorrentInfoService:
@@ -32,18 +34,26 @@ class UpdateItemTorrentInfoService:
             lt_add_torrent_params = lt.parse_magnet_uri(magnet_uri)
             lt_add_torrent_params.save_path = save_path
             lt_torrent_handler = lt_session.add_torrent(lt_add_torrent_params)
-            while True:
-                lt_torrent_info = lt_torrent_handler.torrent_file()
-                if lt_torrent_info:
-                    lt_file_storage = lt_torrent_info.orig_files()
-                    torrent_info = TorrentInfo(
-                        torrent_name=lt_file_storage.name(),
-                        torrent_files=[
-                            lt_file_storage.file_name(i)
-                            for i in range(lt_file_storage.num_files())
-                        ],
-                        torrent_size=lt_torrent_info.total_size(),
-                        download_path=None,
-                    )
-                    lt_session.remove_torrent(lt_torrent_handler)
-                    return torrent_info
+            while not lt_torrent_handler.has_metadata():
+                sleep(1)
+            lt_torrent_info = lt_torrent_handler.torrent_file()
+            lt_file_storage = lt_torrent_info.orig_files()
+            torrent_file = lt.create_torrent(lt_torrent_info)
+            download_path = None
+            if store_torrent_file_settings.enabled:
+                download_path = f"{lt_torrent_info.info_hash()}.torrent"
+                with fsspec.open(
+                    f"{store_torrent_file_settings.save_url}/{download_path}", "wb"
+                ) as f:
+                    f.write(lt.bencode(torrent_file.generate()))
+            torrent_info = TorrentInfo(
+                torrent_name=lt_file_storage.name(),
+                torrent_files=[
+                    lt_file_storage.file_name(i)
+                    for i in range(lt_file_storage.num_files())
+                ],
+                torrent_size=lt_torrent_info.total_size(),
+                download_path=download_path,
+            )
+            lt_session.remove_torrent(lt_torrent_handler)
+            return torrent_info

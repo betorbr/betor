@@ -11,6 +11,7 @@ from betor.celery.app import celery_app
 from betor.entities import BaseItem, Item, Job, RawItem
 from betor.exceptions import JobMonitorNotFound
 from betor.repositories import ItemsRepository, JobMonitorRepository, RawItemsRepository
+from betor.settings import store_torrent_file_settings
 
 from .determines_imdb_tmdb_ids_service import DeterminesIMDbTMDBIdsService
 
@@ -106,6 +107,10 @@ class ProcessRawItemService:
                 not retrieve_item["torrent_name"]
                 or not retrieve_item["torrent_files"]
                 or not retrieve_item["torrent_size"]
+                or (
+                    store_torrent_file_settings.enabled
+                    and not retrieve_item["download_path"]
+                )
             ):
                 self.queue_update_item_torrent_info(
                     retrieve_item, job_monitor_id=job_monitor_id
