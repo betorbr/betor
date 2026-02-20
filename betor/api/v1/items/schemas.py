@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 
 from betor.entities import Episode
 from betor.enums import ItemType
@@ -31,7 +31,7 @@ class ItemSchema(BaseModel):
     inserted_at: Optional[datetime]
     updated_at: Optional[datetime]
 
-    @property
+    @computed_field
     def download_url(self) -> Optional[str]:
         if store_torrent_file_settings.public_download_base_url and self.download_path:
             return f"{store_torrent_file_settings.public_download_base_url}/{self.download_path}"
