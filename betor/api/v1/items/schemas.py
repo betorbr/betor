@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from betor.entities import Episode
 from betor.enums import ItemType
+from betor.settings import store_torrent_file_settings
 from betor.types import Languages
 
 
@@ -23,8 +24,15 @@ class ItemSchema(BaseModel):
     torrent_num_seeds: Optional[int]
     torrent_files: Optional[List[str]]
     torrent_size: Optional[int]
+    download_path: Optional[str]
     languages: Languages
     episodes: List[Episode]
     seasons: List[int]
     inserted_at: Optional[datetime]
     updated_at: Optional[datetime]
+
+    @property
+    def download_url(self) -> Optional[str]:
+        if store_torrent_file_settings.public_download_base_url and self.download_path:
+            return f"{store_torrent_file_settings.public_download_base_url}/{self.download_path}"
+        return None

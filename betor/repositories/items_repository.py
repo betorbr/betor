@@ -45,9 +45,11 @@ class ItemsRepository:
                 "inserted_at",
                 "updated_at",
                 "torrent_name",
+                "torrent_size",
                 "torrent_num_peers",
                 "torrent_num_seeds",
                 "torrent_files",
+                "download_path",
                 "languages",
             ]
         )
@@ -70,6 +72,7 @@ class ItemsRepository:
             torrent_name=result.get("torrent_name"),
             torrent_files=result.get("torrent_files"),
             torrent_size=result.get("torrent_size"),
+            download_path=result.get("download_path"),
             torrent_num_peers=result.get("torrent_num_peers"),
             torrent_num_seeds=result.get("torrent_num_seeds"),
             languages=result.get("languages", []),

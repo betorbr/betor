@@ -5,3 +5,4 @@ class TorrentInfo(TypedDict):
     torrent_name: Optional[str]
     torrent_files: Optional[List[str]]
     torrent_size: Optional[int]
+    download_path: Optional[str]
