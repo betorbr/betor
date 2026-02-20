@@ -70,6 +70,19 @@ class TMDBApiSettings(BaseSettings):
     rate_limit: str = "1/s"
 
 
+class StoreTorrentFileSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env", env_prefix="store_torrent_file_", extra="allow"
+    )
+
+    save_url: Optional[str] = None
+    public_download_base_url: Optional[str] = None
+
+    @property
+    def enabled(self) -> bool:
+        return self.save_url is not None
+
+
 flaresolverr_settings = FlareSolverrSettings()
 database_mongodb_settings = DatabaseMongoDBSettings()
 database_redis_settings = DatabaseRedisSettings()
@@ -78,3 +91,4 @@ scrapyd_settings = ScrapydSettings()
 libtorrent_settings = LibtorrentSettings()
 search_job_monitor_settings = SearchJobMonitorSettings()
 tmdb_api_settings = TMDBApiSettings()
+store_torrent_file_settings = StoreTorrentFileSettings()
