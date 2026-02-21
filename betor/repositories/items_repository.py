@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Sequence
 
 import motor.motor_asyncio
+from bson.errors import InvalidId
 from bson.objectid import ObjectId
 
 from betor.entities import (
@@ -112,7 +113,11 @@ class ItemsRepository:
         return ItemsRepository.parse_result(result)
 
     async def get_by_id(self, item_id: str) -> Optional[Item]:
-        result = await self.collection.find_one({"_id": ObjectId(item_id)})
+        try:
+            object_id = ObjectId(item_id)
+        except InvalidId:
+            return None
+        result = await self.collection.find_one({"_id": object_id})
         if not result:
             return None
         return ItemsRepository.parse_result(result)
