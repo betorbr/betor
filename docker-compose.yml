@@ -87,6 +87,8 @@ services:
       - .docker.env
     ports:
       - 6881:6881
+    volumes:
+      - torrents:/torrents
 
   celery-flower:
     image: dougppaz/betor
@@ -145,3 +147,13 @@ services:
       - .docker.env
     ports:
       - 8000:8000
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - 8001:80
+    volumes:
+      - torrents:/usr/share/nginx/html
+
+volumes:
+  torrents: {}
