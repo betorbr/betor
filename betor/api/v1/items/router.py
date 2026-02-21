@@ -41,7 +41,7 @@ async def list_items(
     )
 
 
-@items_router.get("/{item_id}", response_model=ItemSchema)
+@items_router.get("/{item_id}/", response_model=ItemSchema)
 async def get_item(request: BetorRequest, item_id: str) -> Item:
     service = GetItemService(request.app.mongodb_client)
     item = await service.retrieve(item_id)
