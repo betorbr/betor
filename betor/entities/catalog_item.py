@@ -10,6 +10,7 @@ class ProviderItemTorrent(TypedDict):
     torrent_name: Optional[str]
     torrent_size: Optional[int]
     torrent_files: Optional[List[str]]
+    download_path: Optional[str]
     torrent_num_peers: Optional[int]
     torrent_num_seeds: Optional[int]
     seasons: List[int]

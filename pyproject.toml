@@ -26,6 +26,7 @@ dependencies = [
     "uuid (>=1.30,<2.0)",
     "language-data (>=1.4.0,<2.0.0)",
     "scrapeer (>=1.0.3,<2.0.0)",
+    "fsspec (>=2026.2.0,<2027.0.0)",
 ]
 
 [project.urls]
@@ -85,6 +86,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "scrapeer"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "fsspec"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
