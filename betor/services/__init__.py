@@ -14,6 +14,7 @@ from .admin_normalize_items_tmdb_id_service import (
 from .catalog_service import CatalogService
 from .detail_job_monitor_service import DetailJobMonitorService
 from .determines_imdb_tmdb_ids_service import DeterminesIMDbTMDBIdsService
+from .get_item_service import GetItemService
 from .get_job_status_service import GetJobStatusService, JobStatus
 from .insert_or_update_raw_item_service import InsertOrUpdateRawItemService
 from .list_items_service import ListItemsService
@@ -50,4 +51,5 @@ __all__ = [
     "UpdateItemTorrentTrackersInfoService",
     "AdminMapsProviderURLIMDBService",
     "AdminMapsProviderURLIMDBResult",
+    "GetItemService",
 ]

@@ -1,12 +1,13 @@
 from typing import Annotated, List, Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from fastapi_pagination import Page
 from fastapi_pagination.ext.motor import apaginate
 
 from betor.api.fast_api import BetorRequest
+from betor.entities import Item
 from betor.enums import ItemsSortEnum, ItemType
-from betor.services import ListItemsService
+from betor.services import GetItemService, ListItemsService
 
 from .schemas import ItemSchema
 
@@ -38,3 +39,12 @@ async def list_items(
         sort=cursor_sort,
         transformer=transformer,
     )
+
+
+@items_router.get("/{item_id}", response_model=ItemSchema)
+async def get_item(request: BetorRequest, item_id: str) -> Item:
+    service = GetItemService(request.app.mongodb_client)
+    item = await service.retrieve(item_id)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
