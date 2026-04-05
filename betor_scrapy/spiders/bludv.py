@@ -74,4 +74,12 @@ class BludvSpider(ProviderSpider, scrapy.Spider):
                 loader.add_value("magnet_uris", unlocked)
             except ValueError:
                 self.logger.debug("Can't not unlock URL: %s", protected_url)
+        for protected_url in response.xpath(
+            "//a[starts-with(@href, 'https://superadsgo.xyz/get.php?id=')]/@href"
+        ).getall():
+            try:
+                unlocked = BludvSpider.unlock_protected_link(protected_url)
+                loader.add_value("magnet_uris", unlocked)
+            except ValueError:
+                self.logger.debug("Can't not unlock URL: %s", protected_url)
         yield loader.load_item()
