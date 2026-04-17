@@ -16,6 +16,12 @@ class BludvSpider(ProviderSpider, scrapy.Spider):
     name = bludv.slug
     allowed_domains = bludv.domains
 
+    PROTECTED_URLS_PREFIXES = [
+        "https://www.systemads.org/get.php?id=",
+        "https://superadsgo.xyz/get.php?id=",
+        "https://superadsgo1.xyz/get.php?id=",
+    ]
+
     @classmethod
     def unlock_protected_link(cls, url: str) -> str:
         parsed = urlparse(url)
@@ -66,20 +72,13 @@ class BludvSpider(ProviderSpider, scrapy.Spider):
             "imdb_id",
             "//div[@class='post']//a[starts-with(@href, 'https://www.imdb.com')]/@href",
         )
-        for protected_url in response.xpath(
-            "//a[starts-with(@href, 'https://www.systemads.org/get.php?id=')]/@href"
-        ).getall():
-            try:
-                unlocked = BludvSpider.unlock_protected_link(protected_url)
-                loader.add_value("magnet_uris", unlocked)
-            except ValueError:
-                self.logger.debug("Can't not unlock URL: %s", protected_url)
-        for protected_url in response.xpath(
-            "//a[starts-with(@href, 'https://superadsgo.xyz/get.php?id=')]/@href"
-        ).getall():
-            try:
-                unlocked = BludvSpider.unlock_protected_link(protected_url)
-                loader.add_value("magnet_uris", unlocked)
-            except ValueError:
-                self.logger.debug("Can't not unlock URL: %s", protected_url)
+        for protected_url_prefix in BludvSpider.PROTECTED_URLS_PREFIXES:
+            for protected_url in response.xpath(
+                f"//a[starts-with(@href, '{protected_url_prefix}')]/@href"
+            ).getall():
+                try:
+                    unlocked = BludvSpider.unlock_protected_link(protected_url)
+                    loader.add_value("magnet_uris", unlocked)
+                except ValueError:
+                    self.logger.debug("Can't not unlock URL: %s", protected_url)
         yield loader.load_item()
