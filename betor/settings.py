@@ -83,6 +83,18 @@ class StoreTorrentFileSettings(BaseSettings):
         return self.save_url is not None
 
 
+class InfluxDBStatsCollectorSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env", env_prefix="influxdb_stats_collector_", extra="allow"
+    )
+
+    host: Optional[str] = None
+    org: Optional[str] = None
+    database: str = "betor_stats"
+    token: Optional[str] = None
+    measurement_name: str = "scrapy_stats"
+
+
 flaresolverr_settings = FlareSolverrSettings()
 database_mongodb_settings = DatabaseMongoDBSettings()
 database_redis_settings = DatabaseRedisSettings()
@@ -92,3 +104,4 @@ libtorrent_settings = LibtorrentSettings()
 search_job_monitor_settings = SearchJobMonitorSettings()
 tmdb_api_settings = TMDBApiSettings()
 store_torrent_file_settings = StoreTorrentFileSettings()
+influx_db_stats_collector_settings = InfluxDBStatsCollectorSettings()
