@@ -1,4 +1,4 @@
-from betor.settings import flaresolverr_settings
+from betor.settings import flaresolverr_settings, influx_db_stats_collector_settings
 
 BOT_NAME = "betor_scrapy"
 SPIDER_MODULES = ["betor_scrapy.spiders"]
@@ -33,3 +33,13 @@ USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15",
 ]
+STATS_CLASS = (
+    "betor_scrapy.stats.InfluxDBStatsCollector"
+    if influx_db_stats_collector_settings.host
+    else "scrapy.statscollectors.MemoryStatsCollector"
+)
+INFLUXDB_HOST = influx_db_stats_collector_settings.host
+INFLUXDB_ORG = influx_db_stats_collector_settings.org
+INFLUXDB_DATABASE = influx_db_stats_collector_settings.database
+INFLUXDB_TOKEN = influx_db_stats_collector_settings.token
+INFLUXDB_MEASUREMENT_NAME = influx_db_stats_collector_settings.measurement_name

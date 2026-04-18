@@ -49,6 +49,27 @@ services:
       retries: 5
       start_period: 10s
 
+  influxdb:
+    image: influxdb:3-core
+    ports:
+      - 8181:8181
+    command:
+      - influxdb3
+      - serve
+      - --node-id=node0
+      - --object-store=file
+      - --data-dir=/var/lib/influxdb3/data
+      - --plugin-dir=/var/lib/influxdb3/plugins
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=betor
+
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
 
@@ -115,6 +136,8 @@ services:
         condition: service_healthy
       flaresolverr:
         condition: service_started
+      influxdb:
+        condition: service_started
     env_file:
       - .docker.env
     healthcheck:
@@ -156,4 +179,5 @@ services:
       - torrents:/usr/share/nginx/html
 
 volumes:
+  grafana-data: {}
   torrents: {}
