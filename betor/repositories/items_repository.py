@@ -267,3 +267,25 @@ class ItemsRepository:
                 }
             },
         )
+
+    async def count_by_provider_slug_and_item_type(
+        self,
+    ) -> Dict[tuple[str, Optional[ItemType]], int]:
+        pipeline = [
+            {
+                "$group": {
+                    "_id": {
+                        "provider_slug": "$provider_slug",
+                        "item_type": "$item_type",
+                    },
+                    "count": {"$sum": 1},
+                }
+            }
+        ]
+        results = await self.collection.aggregate(pipeline).to_list(length=None)
+        return {
+            (result["_id"]["provider_slug"], result["_id"]["item_type"]): result[
+                "count"
+            ]
+            for result in results
+        }

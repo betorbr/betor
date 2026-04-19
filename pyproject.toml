@@ -28,6 +28,8 @@ dependencies = [
     "scrapeer (>=1.0.3,<2.0.0)",
     "fsspec (>=2026.2.0,<2027.0.0)",
     "influxdb3-python (>=0.18.0,<0.19.0)",
+    "prometheus-fastapi-instrumentator (>=7.1.0,<8.0.0)",
+    "apscheduler (>=3.11.2,<4.0.0)",
 ]
 
 [project.urls]
@@ -91,6 +93,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "fsspec"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "apscheduler.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
