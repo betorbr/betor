@@ -20,6 +20,7 @@ class BludvSpider(ProviderSpider, scrapy.Spider):
         "https://www.systemads.org/get.php?id=",
         "https://superadsgo.xyz/get.php?id=",
         "https://superadsgo1.xyz/get.php?id=",
+        "https://www.systemads.xyz/get.php?id=",
     ]
 
     @classmethod
