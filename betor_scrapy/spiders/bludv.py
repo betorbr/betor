@@ -1,6 +1,7 @@
 import base64
 from urllib.parse import parse_qs, urlparse
 
+import requests
 import scrapy
 import scrapy.http
 
@@ -24,7 +25,24 @@ class BludvSpider(ProviderSpider, scrapy.Spider):
     ]
 
     @classmethod
-    def unlock_protected_link(cls, url: str) -> str:
+    def unlock_encrypted_protected_link(cls, url: str) -> str:
+        response = requests.get(url)
+        if response.status_code != 200:
+            raise ValueError(f"Failed to fetch protected URL: {url}")
+        redirect_url = None
+        for line in response.text.splitlines():
+            if "receber.php" in line:
+                start = line.find("https://")
+                end = line.find('"', start)
+                if start != -1 and end != -1:
+                    redirect_url = line[start:end]
+                    break
+        if not redirect_url:
+            raise ValueError("Redirect URL not found in response")
+        return BludvSpider.unlock_protected_redirect_link(redirect_url)
+
+    @classmethod
+    def unlock_protected_redirect_link(cls, url: str) -> str:
         parsed = urlparse(url)
         qs = parse_qs(parsed.query)
         id_values = qs.get("id")
@@ -35,6 +53,13 @@ class BludvSpider(ProviderSpider, scrapy.Spider):
             return base64.b64decode(id_value).decode()
         except Exception as e:
             raise ValueError("can't decode base64 value") from e
+
+    @classmethod
+    def unlock_protected_link(cls, url: str) -> str:
+        try:
+            return BludvSpider.unlock_protected_redirect_link(url)
+        except ValueError:
+            return BludvSpider.unlock_encrypted_protected_link(url)
 
     def parse(self, response: scrapy.http.Response):
         if response.xpath(
