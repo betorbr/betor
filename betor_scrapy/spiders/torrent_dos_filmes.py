@@ -24,6 +24,10 @@ class TorrentDosFilmesSpider(ProviderSpider, scrapy.Spider):
             "//main//div[@class='post green']//a/@href"
         ).getall():
             yield scrapy.Request(item_url)
+        for item_url in response.xpath(
+            "//main//div[@class='post blue']//a/@href"
+        ).getall():
+            yield scrapy.Request(item_url)
 
     def parse_item(self, response: scrapy.http.Response):
         assert isinstance(response, scrapy.http.TextResponse)
