@@ -14,14 +14,14 @@ class RedeTorrentSpider(ProviderSpider, scrapy.Spider):
     allowed_domains = rede_torrent.domains
 
     def parse(self, response: scrapy.http.Response):
-        if response.xpath("//div[@class='capas_pequenas']"):
+        if response.xpath("//div[@class='capa_lista']"):
             yield from self.parse_page(response)
         else:
             yield from self.parse_item(response)
 
     def parse_page(self, response: scrapy.http.Response):
         for item_url in response.xpath(
-            "//div[@class='capas_pequenas']//div[@class='capa_lista']//a[@title]/@href"
+            "//div[@class='capa_lista']//a/@href"
         ).getall():
             yield scrapy.Request(item_url)
 
@@ -35,6 +35,6 @@ class RedeTorrentSpider(ProviderSpider, scrapy.Spider):
         ]
         for field, value in extract_fields(informacoes_text):
             loader.add_value(field, value)
-        loader.add_xpath("raw_title", "//h1[@itemprop='headline']//text()")
-        loader.add_xpath("magnet_uris", "//a[starts-with(@href, 'magnet')]/@href")
+        loader.add_xpath("raw_title", "//h1//text()")
+        loader.add_xpath("magnet_uris", "//a[contains(@href, 'magnet')]/@href")
         yield loader.load_item()
