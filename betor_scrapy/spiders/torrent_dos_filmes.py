@@ -3,7 +3,7 @@ import scrapy.http
 
 from betor.providers import torrent_dos_filmes
 from betor_scrapy.loaders import ProviderLoader
-from betor_scrapy.utils import extract_fields
+from betor_scrapy.utils import UnlockSystemAds, extract_fields
 
 from .provider_spider import ProviderSpider
 
@@ -46,4 +46,13 @@ class TorrentDosFilmesSpider(ProviderSpider, scrapy.Spider):
         loader.add_xpath(
             "imdb_id", "//article//a[starts-with(@href, 'https://www.imdb.com')]/@href"
         )
+        for protected_url_prefix in UnlockSystemAds.PROTECTED_URLS_PREFIXES:
+            for protected_url in response.xpath(
+                f"//a[starts-with(@href, '{protected_url_prefix}')]/@href"
+            ).getall():
+                try:
+                    unlocked = UnlockSystemAds.unlock_protected_link(protected_url)
+                    loader.add_value("magnet_uris", unlocked)
+                except ValueError:
+                    self.logger.debug("Can't not unlock URL: %s", protected_url)
         yield loader.load_item()
