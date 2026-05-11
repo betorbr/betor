@@ -1,13 +1,9 @@
-import base64
-from urllib.parse import parse_qs, urlparse
-
-import requests
 import scrapy
 import scrapy.http
 
 from betor.providers import bludv
 from betor_scrapy.loaders import ProviderLoader
-from betor_scrapy.utils import extract_fields
+from betor_scrapy.utils import UnlockSystemAds, extract_fields
 
 from .provider_spider import ProviderSpider
 
@@ -16,50 +12,6 @@ class BludvSpider(ProviderSpider, scrapy.Spider):
     provider = bludv
     name = bludv.slug
     allowed_domains = bludv.domains
-
-    PROTECTED_URLS_PREFIXES = [
-        "https://www.systemads.org/get.php?id=",
-        "https://superadsgo.xyz/get.php?id=",
-        "https://superadsgo1.xyz/get.php?id=",
-        "https://www.systemads.xyz/get.php?id=",
-    ]
-
-    @classmethod
-    def unlock_encrypted_protected_link(cls, url: str) -> str:
-        response = requests.get(url)
-        if response.status_code != 200:
-            raise ValueError(f"Failed to fetch protected URL: {url}")
-        redirect_url = None
-        for line in response.text.splitlines():
-            if "receber.php" in line:
-                start = line.find("https://")
-                end = line.find('"', start)
-                if start != -1 and end != -1:
-                    redirect_url = line[start:end]
-                    break
-        if not redirect_url:
-            raise ValueError("Redirect URL not found in response")
-        return BludvSpider.unlock_protected_redirect_link(redirect_url)
-
-    @classmethod
-    def unlock_protected_redirect_link(cls, url: str) -> str:
-        parsed = urlparse(url)
-        qs = parse_qs(parsed.query)
-        id_values = qs.get("id")
-        if not id_values:
-            raise ValueError("id value not found")
-        id_value = "".join(id_values)[::-1]
-        try:
-            return base64.b64decode(id_value).decode()
-        except Exception as e:
-            raise ValueError("can't decode base64 value") from e
-
-    @classmethod
-    def unlock_protected_link(cls, url: str) -> str:
-        try:
-            return BludvSpider.unlock_protected_redirect_link(url)
-        except ValueError:
-            return BludvSpider.unlock_encrypted_protected_link(url)
 
     def parse(self, response: scrapy.http.Response):
         if response.xpath(
@@ -98,12 +50,12 @@ class BludvSpider(ProviderSpider, scrapy.Spider):
             "imdb_id",
             "//div[@class='post']//a[starts-with(@href, 'https://www.imdb.com')]/@href",
         )
-        for protected_url_prefix in BludvSpider.PROTECTED_URLS_PREFIXES:
+        for protected_url_prefix in UnlockSystemAds.PROTECTED_URLS_PREFIXES:
             for protected_url in response.xpath(
                 f"//a[starts-with(@href, '{protected_url_prefix}')]/@href"
             ).getall():
                 try:
-                    unlocked = BludvSpider.unlock_protected_link(protected_url)
+                    unlocked = UnlockSystemAds.unlock_protected_link(protected_url)
                     loader.add_value("magnet_uris", unlocked)
                 except ValueError:
                     self.logger.debug("Can't not unlock URL: %s", protected_url)
