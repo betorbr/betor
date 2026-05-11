@@ -3,15 +3,18 @@ import scrapy.http
 
 from betor.providers import comando_torrents
 from betor_scrapy.loaders import ProviderLoader
-from betor_scrapy.utils import UnlockSystemAds, extract_fields
+from betor_scrapy.utils import extract_fields
 
+from .mixins import UnlockSystemAdsMixin
 from .provider_spider import ProviderSpider
 
 
-class ComandoTorrentsSpider(ProviderSpider, scrapy.Spider):
+class ComandoTorrentsSpider(ProviderSpider, UnlockSystemAdsMixin, scrapy.Spider):
     provider = comando_torrents
     name = comando_torrents.slug
-    allowed_domains = comando_torrents.domains
+    allowed_domains = (
+        comando_torrents.domains + UnlockSystemAdsMixin.get_allowed_domains()
+    )
 
     def parse(self, response: scrapy.http.Response):
         if response.xpath("//article//div[@itemprop='text']//p//a[@class='more-link']"):
@@ -43,13 +46,4 @@ class ComandoTorrentsSpider(ProviderSpider, scrapy.Spider):
         loader.add_xpath(
             "imdb_id", "//article//a[starts-with(@href, 'https://www.imdb.com')]/@href"
         )
-        for protected_url_prefix in UnlockSystemAds.PROTECTED_URLS_PREFIXES:
-            for protected_url in response.xpath(
-                f"//a[starts-with(@href, '{protected_url_prefix}')]/@href"
-            ).getall():
-                try:
-                    unlocked = UnlockSystemAds.unlock_protected_link(protected_url)
-                    loader.add_value("magnet_uris", unlocked)
-                except ValueError:
-                    self.logger.debug("Can't not unlock URL: %s", protected_url)
-        yield loader.load_item()
+        yield from self.unlock_system_ads_magnet_uris(response, loader)
