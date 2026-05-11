@@ -7,6 +7,7 @@ from urllib.parse import parse_qs, urlparse
 import requests
 from slugify import slugify
 
+from betor.settings import flaresolverr_settings
 from betor_scrapy.items import ScrapyItem
 
 FIELD_TOKENS = {
@@ -69,12 +70,31 @@ class UnlockSystemAds:
             raise ValueError("can't decode base64 value") from e
 
     @classmethod
-    def unlock_encrypted_protected_link(cls, url: str) -> str:
+    def request_protected_url_content(cls, url: str) -> str:
         response = requests.get(url)
-        if response.status_code != 200:
-            raise ValueError(f"Failed to fetch protected URL: {url}")
+        if response.status_code == 200:
+            return response.text
+        if response.status_code == 403 and "cf-mitigated" in response.headers:
+            if not flaresolverr_settings.base_url:
+                raise ValueError(
+                    f"Access forbidden to protected URL: {url}, configure flaresolverr settings to bypass Cloudflare protection"
+                )
+            flaresolverr_response = requests.post(
+                f"{flaresolverr_settings.base_url}/v1",
+                json={"cmd": "request.get", "url": url},
+            )
+            if flaresolverr_response.status_code == 200:
+                return (
+                    flaresolverr_response.json().get("solution", {}).get("response", "")
+                )
+            raise ValueError(f"Failed to fetch protected URL via flaresolverr: {url}")
+        raise ValueError(f"Failed to fetch protected URL: {url}")
+
+    @classmethod
+    def unlock_encrypted_protected_link(cls, url: str) -> str:
+        response_content = cls.request_protected_url_content(url)
         redirect_url = None
-        for line in response.text.splitlines():
+        for line in response_content.splitlines():
             if "?id=" in line:
                 start = line.find("https://")
                 end = line.find('"', start)

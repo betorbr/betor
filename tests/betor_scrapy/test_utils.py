@@ -58,3 +58,105 @@ class TestUnlockProtectedLink:
 
         with pytest.raises(ValueError, match="Redirect URL not found in response"):
             UnlockSystemAds.unlock_encrypted_protected_link("http://example.com")
+
+
+class TestRequestProtectedUrlContent:
+    @patch("betor_scrapy.utils.requests.get")
+    def test_request_protected_url_content_success(self, mock_get):
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.text = "content"
+        mock_get.return_value = mock_response
+
+        result = UnlockSystemAds.request_protected_url_content("http://example.com")
+
+        assert result == "content"
+        mock_get.assert_called_once_with("http://example.com")
+
+    @patch("betor_scrapy.utils.requests.post")
+    @patch("betor_scrapy.utils.flaresolverr_settings")
+    @patch("betor_scrapy.utils.requests.get")
+    def test_request_protected_url_content_cloudflare_success(
+        self, mock_get, mock_settings, mock_post
+    ):
+        mock_response = Mock()
+        mock_response.status_code = 403
+        mock_response.headers = {"cf-mitigated": "challenge"}
+        mock_get.return_value = mock_response
+
+        mock_settings.base_url = "http://flaresolverr:8191"
+
+        mock_flaresolverr_response = Mock()
+        mock_flaresolverr_response.status_code = 200
+        mock_flaresolverr_response.json.return_value = {
+            "solution": {"response": "flaresolverr_content"}
+        }
+        mock_post.return_value = mock_flaresolverr_response
+
+        result = UnlockSystemAds.request_protected_url_content("http://example.com")
+
+        assert result == "flaresolverr_content"
+        mock_get.assert_called_once_with("http://example.com")
+        mock_post.assert_called_once_with(
+            "http://flaresolverr:8191/v1",
+            json={"cmd": "request.get", "url": "http://example.com"},
+        )
+
+    @patch("betor_scrapy.utils.flaresolverr_settings")
+    @patch("betor_scrapy.utils.requests.get")
+    def test_request_protected_url_content_cloudflare_no_base_url(
+        self, mock_get, mock_settings
+    ):
+        mock_response = Mock()
+        mock_response.status_code = 403
+        mock_response.headers = {"cf-mitigated": "challenge"}
+        mock_get.return_value = mock_response
+
+        mock_settings.base_url = None
+
+        with pytest.raises(
+            ValueError,
+            match="configure flaresolverr settings to bypass Cloudflare protection",
+        ):
+            UnlockSystemAds.request_protected_url_content("http://example.com")
+
+    @patch("betor_scrapy.utils.requests.post")
+    @patch("betor_scrapy.utils.flaresolverr_settings")
+    @patch("betor_scrapy.utils.requests.get")
+    def test_request_protected_url_content_flaresolverr_fail(
+        self, mock_get, mock_settings, mock_post
+    ):
+        mock_response = Mock()
+        mock_response.status_code = 403
+        mock_response.headers = {"cf-mitigated": "challenge"}
+        mock_get.return_value = mock_response
+
+        mock_settings.base_url = "http://flaresolverr:8191"
+
+        mock_flaresolverr_response = Mock()
+        mock_flaresolverr_response.status_code = 500
+        mock_post.return_value = mock_flaresolverr_response
+
+        with pytest.raises(
+            ValueError, match="Failed to fetch protected URL via flaresolverr"
+        ):
+            UnlockSystemAds.request_protected_url_content("http://example.com")
+
+    @patch("betor_scrapy.utils.requests.get")
+    def test_request_protected_url_content_fail_other_status(self, mock_get):
+        mock_response = Mock()
+        mock_response.status_code = 500
+        mock_get.return_value = mock_response
+
+        with pytest.raises(ValueError, match="Failed to fetch protected URL"):
+            UnlockSystemAds.request_protected_url_content("http://example.com")
+
+    @patch("betor_scrapy.utils.requests.get")
+    def test_request_protected_url_content_fail_403_no_cf(self, mock_get):
+        mock_response = Mock()
+        mock_response.status_code = 403
+        mock_response.headers = {}
+        mock_get.return_value = mock_response
+
+        with pytest.raises(ValueError, match="Failed to fetch protected URL"):
+            UnlockSystemAds.request_protected_url_content("http://example.com")
