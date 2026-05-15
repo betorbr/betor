@@ -42,6 +42,7 @@ class CloudflareDownloaderMiddleware:
             spider, "flaresolverr", None
         )
         assert flaresolverr, "Flaresolverr extension not initialized"
+        assert spider.crawler.stats, "Stats collector not available"
         cf_clearance_domain = request.meta.get("cf_clearance_domain")
         if cf_clearance_domain and (
             requests_session := flaresolverr.get_cf_clearance_session(
@@ -54,6 +55,9 @@ class CloudflareDownloaderMiddleware:
                 if res.ok:
                     headers = res.headers
                     headers.pop("Content-Encoding", None)
+                    spider.crawler.stats.inc_value(
+                        "cf_downloader/solved_with_cf_clearance"
+                    )
                     return scrapy.http.HtmlResponse(
                         url=request.url,
                         status=res.status_code,
@@ -64,7 +68,9 @@ class CloudflareDownloaderMiddleware:
                         flags=["cf_clearance", *response_flags],
                     )
             except Exception as e:
+                spider.crawler.stats.inc_value("cf_downloader/failed_with_cf_clearance")
                 spider.logger.error("Failed to solve with CF clearance: %s", e)
+        spider.crawler.stats.inc_value("cf_downloader/solves_with_flaresolverr")
         session = random.choice(list(flaresolverr.get_available_sessions()))
         spider.logger.debug("selected session -> %s", session)
         return scrapy.http.Request(
@@ -77,6 +83,7 @@ class CloudflareDownloaderMiddleware:
                     "cmd": f"request.{request.method.lower()}",
                     "url": request.url,
                     "session": session,
+                    "disableMedia": True,
                 }
             ),
             meta={
@@ -141,7 +148,9 @@ class CloudflareDownloaderResponseMiddleware:
             spider, "flaresolverr", None
         )
         assert flaresolverr, "Flaresolverr extension not initialized"
+        assert spider.crawler.stats, "Stats collector not available"
         if response.status != 200:
+            spider.crawler.stats.inc_value("cf_downloader/failed_with_flaresolverr")
             return response
         data: dict = json.loads(response.body)
         data_solution = cast(Optional[FlareSolverrSolution], data.get("solution"))
@@ -157,6 +166,7 @@ class CloudflareDownloaderResponseMiddleware:
             )
         headers = data_solution["headers"]
         headers.pop("Content-Encoding", None)
+        spider.crawler.stats.inc_value("cf_downloader/solved_with_flaresolverr")
         return scrapy.http.HtmlResponse(
             url=data_solution["url"],
             status=data_solution["status"],
