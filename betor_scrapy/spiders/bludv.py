@@ -12,7 +12,7 @@ from .provider_spider import ProviderSpider
 class BludvSpider(ProviderSpider, UnlockSystemAdsMixin, scrapy.Spider):
     provider = bludv
     name = bludv.slug
-    allowed_domains = bludv.domains + UnlockSystemAdsMixin.get_allowed_domains()
+    allowed_domains = bludv.domains
 
     def parse(self, response: scrapy.http.Response):
         if response.xpath(

@@ -12,9 +12,7 @@ from .provider_spider import ProviderSpider
 class TorrentDosFilmesSpider(ProviderSpider, UnlockSystemAdsMixin, scrapy.Spider):
     provider = torrent_dos_filmes
     name = torrent_dos_filmes.slug
-    allowed_domains = (
-        torrent_dos_filmes.domains + UnlockSystemAdsMixin.get_allowed_domains()
-    )
+    allowed_domains = torrent_dos_filmes.domains
 
     def parse(self, response: scrapy.http.Response):
         if response.xpath("//main//div[@class='wp-pagenavi']"):

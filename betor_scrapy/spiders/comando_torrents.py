@@ -12,9 +12,7 @@ from .provider_spider import ProviderSpider
 class ComandoTorrentsSpider(ProviderSpider, UnlockSystemAdsMixin, scrapy.Spider):
     provider = comando_torrents
     name = comando_torrents.slug
-    allowed_domains = (
-        comando_torrents.domains + UnlockSystemAdsMixin.get_allowed_domains()
-    )
+    allowed_domains = comando_torrents.domains
 
     def parse(self, response: scrapy.http.Response):
         if response.xpath("//article//div[@itemprop='text']//p//a[@class='more-link']"):

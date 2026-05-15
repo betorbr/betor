@@ -18,13 +18,7 @@ class UnlockSystemAdsMixin:
         "https://www.systemads.xyz/get.php?id=",
         "https://systemads.net/go.php?id=",
     ]
-
-    @classmethod
-    def get_allowed_domains(cls) -> List[str]:
-        return [
-            urlparse(protected_url_prefix).netloc
-            for protected_url_prefix in cls.PROTECTED_URLS_PREFIXES
-        ]
+    PROTECTED_URLS_CF_CLEARANCE_DOMAIN = {"systemads.net": ".systemads.net"}
 
     @classmethod
     def unlock_protected_redirect_link(cls, redirect_url: str) -> str:
@@ -99,4 +93,10 @@ class UnlockSystemAdsMixin:
                 url=next_protected_url,
                 callback=self._next_unlock_system_ads_protected_url,
                 cb_kwargs={"loader": loader, "protected_urls": protected_urls},
+                meta={
+                    "allow_offsite": True,
+                    "cf_clearance_domain": UnlockSystemAdsMixin.PROTECTED_URLS_CF_CLEARANCE_DOMAIN.get(
+                        urlparse(next_protected_url).netloc
+                    ),
+                },
             )

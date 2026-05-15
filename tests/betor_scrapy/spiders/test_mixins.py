@@ -4,15 +4,6 @@ from betor_scrapy.spiders.mixins import UnlockSystemAdsMixin
 
 
 class TestUnlockSystemAdsMixin:
-    def test_get_allowed_domains(self):
-        assert UnlockSystemAdsMixin.get_allowed_domains() == [
-            "www.systemads.org",
-            "superadsgo.xyz",
-            "superadsgo1.xyz",
-            "www.systemads.xyz",
-            "systemads.net",
-        ]
-
     @pytest.mark.parametrize(
         (
             "url",
