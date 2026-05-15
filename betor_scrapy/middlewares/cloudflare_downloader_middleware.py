@@ -77,6 +77,7 @@ class CloudflareDownloaderMiddleware:
                     "cmd": f"request.{request.method.lower()}",
                     "url": request.url,
                     "session": session,
+                    "disableMedia": True,
                 }
             ),
             meta={
