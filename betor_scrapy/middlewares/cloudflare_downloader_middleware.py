@@ -42,6 +42,7 @@ class CloudflareDownloaderMiddleware:
             spider, "flaresolverr", None
         )
         assert flaresolverr, "Flaresolverr extension not initialized"
+        assert spider.crawler.stats, "Stats collector not available"
         cf_clearance_domain = request.meta.get("cf_clearance_domain")
         if cf_clearance_domain and (
             requests_session := flaresolverr.get_cf_clearance_session(
@@ -147,6 +148,7 @@ class CloudflareDownloaderResponseMiddleware:
             spider, "flaresolverr", None
         )
         assert flaresolverr, "Flaresolverr extension not initialized"
+        assert spider.crawler.stats, "Stats collector not available"
         if response.status != 200:
             spider.crawler.stats.inc_value("cf_downloader/failed_with_flaresolverr")
             return response
