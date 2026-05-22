@@ -2,7 +2,7 @@ from .provider import Provider
 
 starck_filmes = Provider(
     "starck-filmes",
-    "https://www.starckfilmes-v15.com",
+    "https://www.starckfilmes-v16.com",
     "{base_url}/page/{page}/",
     "{base_url}/?s={qs}",
     "{base_url}/page/{page}/?s={qs}",
@@ -15,5 +15,6 @@ starck_filmes = Provider(
         "starckfilmes-v10.com",
         "starckfilmes-v12.com",
         "starckfilmes-v14.com",
+        "starckfilmes-v15.com",
     ],
 )
