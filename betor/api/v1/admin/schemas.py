@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel
@@ -23,3 +24,10 @@ class AdminDeterminesIMDBTMDBIdValueError(AdminDeterminesIMDBTMDBIdError):
 class AdminMapsProviderURLIMDBPayload(BaseModel):
     provider_url: str
     imdb_id: str
+
+
+class AdminDownloadItemsResponse(BaseModel):
+    items_total: int
+    dump_time_seconds: float
+    download_url: str
+    generated_at: datetime
