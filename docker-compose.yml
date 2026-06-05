@@ -159,14 +159,18 @@ services:
       - .docker.env
     ports:
       - 8000:8000
+    volumes:
+      - items-data:/items-data
 
   nginx:
     image: nginx:latest
     ports:
       - 8001:80
     volumes:
-      - torrents:/usr/share/nginx/html
+      - torrents:/usr/share/nginx/html/torrents
+      - items-data:/usr/share/nginx/html/items-data
 
 volumes:
   grafana-data: {}
   torrents: {}
+  items-data: {}
