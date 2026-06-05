@@ -83,6 +83,19 @@ class StoreTorrentFileSettings(BaseSettings):
         return self.save_url is not None
 
 
+class DownloadItemsStoreSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env", env_prefix="download_items_store_", extra="allow"
+    )
+
+    save_url: Optional[str] = None
+    public_download_base_url: Optional[str] = None
+
+    @property
+    def enabled(self) -> bool:
+        return self.save_url is not None
+
+
 class InfluxDBStatsCollectorSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env", env_prefix="influxdb_stats_collector_", extra="allow"
@@ -95,6 +108,15 @@ class InfluxDBStatsCollectorSettings(BaseSettings):
     measurement_name: str = "scrapy_stats"
 
 
+class DownloadItemsCacheSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env", env_prefix="download_items_cache_", extra="allow"
+    )
+
+    cache_key: str = "admin:download_items:cache"
+    ttl_seconds: int = 3600
+
+
 flaresolverr_settings = FlareSolverrSettings()
 database_mongodb_settings = DatabaseMongoDBSettings()
 database_redis_settings = DatabaseRedisSettings()
@@ -105,3 +127,5 @@ search_job_monitor_settings = SearchJobMonitorSettings()
 tmdb_api_settings = TMDBApiSettings()
 store_torrent_file_settings = StoreTorrentFileSettings()
 influx_db_stats_collector_settings = InfluxDBStatsCollectorSettings()
+download_items_store_settings = DownloadItemsStoreSettings()
+download_items_cache_settings = DownloadItemsCacheSettings()
