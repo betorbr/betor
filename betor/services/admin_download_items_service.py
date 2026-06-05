@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional, TypedDict, cast
 from uuid import uuid4
 
 import fsspec
@@ -32,15 +32,18 @@ class AdminDownloadItemsService:
         self.redis = redis_client
 
     def get_cache(self) -> Optional[DumpCache]:
-        if cached := self.redis.get(download_items_cache_settings.cache_key):
-            cache_data = json.loads(cached)
-            return DumpCache(
-                items_total=cache_data["it"],
-                dump_time_seconds=cache_data["dts"],
-                download_url=cache_data["du"],
-                generated_at=datetime.fromisoformat(cache_data["ga"]),
-            )
-        return None
+        cached = cast(
+            Optional[str], self.redis.get(download_items_cache_settings.cache_key)
+        )
+        if not cached:
+            return None
+        cache_data = cast(Dict[str, Any], json.loads(cached))
+        return DumpCache(
+            items_total=cache_data["it"],
+            dump_time_seconds=cache_data["dts"],
+            download_url=cache_data["du"],
+            generated_at=datetime.fromisoformat(cache_data["ga"]),
+        )
 
     def set_cache(self, cache_obj: DumpCache) -> None:
         expired_at = datetime.now() + timedelta(
@@ -79,7 +82,9 @@ class AdminDownloadItemsService:
         if cached:
             return cached
         duration, items = await self.items_repository.dump_all_items()
-        formatted_items = [ItemSchema(**item).model_dump() for item in items]
+        formatted_items = [
+            ItemSchema.model_validate(item).model_dump() for item in items
+        ]
         download_url = self.store_items(formatted_items)
         cache_obj = DumpCache(
             items_total=len(formatted_items),

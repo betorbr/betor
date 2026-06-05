@@ -425,7 +425,7 @@ class TestGetOrCreateDump:
             ),
         ):
             with mock.patch(
-                "betor.services.admin_download_items_service.ItemSchema"
+                "betor.services.admin_download_items_service.ItemSchema.model_validate"
             ) as item_schema_mock:
                 schema_instance = mock.MagicMock()
                 schema_instance.model_dump.return_value = items[0]
@@ -472,7 +472,7 @@ class TestGetOrCreateDump:
             ),
         ):
             with mock.patch(
-                "betor.services.admin_download_items_service.ItemSchema"
+                "betor.services.admin_download_items_service.ItemSchema.model_validate"
             ) as item_schema_mock:
                 formatted_item = {"id": 1, "formatted": "data"}
                 schema_instance = mock.MagicMock()
@@ -491,8 +491,8 @@ class TestGetOrCreateDump:
 
                         await admin_download_items_service.get_or_create_dump()
 
-                        # Verify ItemSchema was called
-                        item_schema_mock.assert_called_with(**items[0])
+                        # Verify ItemSchema.model_validate was called
+                        item_schema_mock.assert_called_once_with(items[0])
                         schema_instance.model_dump.assert_called_once()
 
     @pytest.mark.asyncio
@@ -518,7 +518,7 @@ class TestGetOrCreateDump:
             ),
         ):
             with mock.patch(
-                "betor.services.admin_download_items_service.ItemSchema"
+                "betor.services.admin_download_items_service.ItemSchema.model_validate"
             ) as item_schema_mock:
                 formatted_item = {"id": 1, "formatted": True}
                 schema_instance = mock.MagicMock()
@@ -565,7 +565,7 @@ class TestGetOrCreateDump:
             ),
         ):
             with mock.patch(
-                "betor.services.admin_download_items_service.ItemSchema"
+                "betor.services.admin_download_items_service.ItemSchema.model_validate"
             ) as item_schema_mock:
                 schema_instance = mock.MagicMock()
                 schema_instance.model_dump.return_value = {"id": 1}
