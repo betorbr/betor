@@ -140,17 +140,6 @@ services:
         condition: service_started
     env_file:
       - .docker.env
-    healthcheck:
-      test:
-        - CMD
-        - scrapyd-client
-        - spiders
-        - -p
-        - betor
-      interval: 5s
-      timeout: 10s
-      retries: 5
-      start_period: 10s
     ports:
       - 6800:6800
 
@@ -165,7 +154,7 @@ services:
       redis:
         condition: service_healthy
       scrapyd:
-        condition: service_healthy
+        condition: service_started
     env_file:
       - .docker.env
     ports:
