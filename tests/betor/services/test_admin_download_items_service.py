@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, List
 from unittest import mock
 
@@ -136,29 +136,42 @@ class TestSetCache:
         ) as cache_settings_mock:
             cache_settings_mock.cache_key = "test_cache_key"
             cache_settings_mock.ttl_seconds = 3600
-            admin_download_items_service.set_cache(dump_cache)
 
-            # Verify redis.set was called
-            admin_download_items_service.redis.set.assert_called_once()
+            with mock.patch(
+                "betor.services.admin_download_items_service.datetime"
+            ) as datetime_mock:
+                # Setup datetime mock to return a specific time
+                now_time = datetime(2026, 6, 5, 12, 0, 0)
+                datetime_mock.now.return_value = now_time
+                # Allow datetime constructor to work normally for other calls
+                datetime_mock.side_effect = lambda *args, **kw: datetime(*args, **kw)
 
-            # Get the actual call arguments
-            call_args = admin_download_items_service.redis.set.call_args
-            key = call_args[0][0]
-            value = call_args[0][1]
-            exat = call_args[1]["exat"]
+                admin_download_items_service.set_cache(dump_cache)
 
-            # Verify key
-            assert key == "test_cache_key"
+                # Verify redis.set was called
+                admin_download_items_service.redis.set.assert_called_once()
 
-            # Verify serialized data
-            stored_data = json.loads(value)
-            assert stored_data["it"] == 200
-            assert stored_data["dts"] == 8.5
-            assert stored_data["du"] == "https://example.com/items_dump_20260605.json"
-            assert stored_data["ga"] == cache_time.isoformat()
+                # Get the actual call arguments
+                call_args = admin_download_items_service.redis.set.call_args
+                key = call_args[0][0]
+                value = call_args[0][1]
+                exat = call_args[1]["exat"]
 
-            # Verify TTL
-            assert exat == 3600
+                # Verify key
+                assert key == "test_cache_key"
+
+                # Verify serialized data
+                stored_data = json.loads(value)
+                assert stored_data["it"] == 200
+                assert stored_data["dts"] == 8.5
+                assert (
+                    stored_data["du"] == "https://example.com/items_dump_20260605.json"
+                )
+                assert stored_data["ga"] == cache_time.isoformat()
+
+                # Verify TTL is a future timestamp
+                expected_expiry = int((now_time + timedelta(seconds=3600)).timestamp())
+                assert exat == expected_expiry
 
     def test_set_cache_uses_correct_settings(
         self, admin_download_items_service: AdminDownloadItemsService
@@ -176,11 +189,22 @@ class TestSetCache:
         ) as cache_settings_mock:
             cache_settings_mock.cache_key = "custom_key"
             cache_settings_mock.ttl_seconds = 7200
-            admin_download_items_service.set_cache(dump_cache)
 
-            call_args = admin_download_items_service.redis.set.call_args
-            assert call_args[0][0] == "custom_key"
-            assert call_args[1]["exat"] == 7200
+            with mock.patch(
+                "betor.services.admin_download_items_service.datetime"
+            ) as datetime_mock:
+                now_time = datetime(2026, 6, 5, 12, 0, 0)
+                datetime_mock.now.return_value = now_time
+                datetime_mock.side_effect = lambda *args, **kw: datetime(*args, **kw)
+
+                admin_download_items_service.set_cache(dump_cache)
+
+                call_args = admin_download_items_service.redis.set.call_args
+                assert call_args[0][0] == "custom_key"
+
+                # Verify TTL is a future timestamp
+                expected_expiry = int((now_time + timedelta(seconds=7200)).timestamp())
+                assert call_args[1]["exat"] == expected_expiry
 
 
 class TestStoreItems:

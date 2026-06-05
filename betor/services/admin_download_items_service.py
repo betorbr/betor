@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, TypedDict
 
 import fsspec
@@ -42,6 +42,9 @@ class AdminDownloadItemsService:
         return None
 
     def set_cache(self, cache_obj: DumpCache) -> None:
+        expired_at = datetime.now() + timedelta(
+            seconds=download_items_cache_settings.ttl_seconds
+        )
         self.redis.set(
             download_items_cache_settings.cache_key,
             json.dumps(
@@ -52,7 +55,7 @@ class AdminDownloadItemsService:
                     "ga": cache_obj["generated_at"].isoformat(),
                 }
             ),
-            exat=download_items_cache_settings.ttl_seconds,
+            exat=int(expired_at.timestamp()),
         )
 
     def store_items(self, formatted_items: List[Dict[str, Any]]) -> str:
