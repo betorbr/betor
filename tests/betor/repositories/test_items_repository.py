@@ -173,3 +173,34 @@ class TestInsertOrUpdateItem:
                 mock.MagicMock(spec=RawItem)
             )
             assert result == "no_change"
+
+
+class TestDumpAllItems:
+    @pytest.mark.asyncio
+    async def test_ok(self, items_repository: ItemsRepository, collection_mock):
+        collection_mock.find = mock.MagicMock(
+            return_value=mock.MagicMock(
+                to_list=mock.AsyncMock(
+                    return_value=[
+                        {
+                            "_id": "1234",
+                            "provider_slug": "slug",
+                            "provider_url": "http://example.com",
+                            "magnet_uri": "magnet:?xt=urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c",
+                            "magnet_xt": "urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c",
+                        }
+                    ]
+                )
+            )
+        )
+
+        with mock.patch(
+            "betor.repositories.items_repository.perf_counter",
+            side_effect=[1.0, 1.5],
+        ):
+            duration, items = await items_repository.dump_all_items()
+
+        assert duration == 0.5
+        assert len(items) == 1
+        assert items[0]["id"] == "1234"
+        assert items[0]["provider_slug"] == "slug"

@@ -1,6 +1,6 @@
 from typing import Union
 
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, HTTPException, Response, status
 
 from betor.api.fast_api import BetorRequest
 from betor.exceptions import RawItemNotFound
@@ -12,11 +12,13 @@ from betor.services import (
     AdminNormalizeItemsTMDBIdResult,
     AdminNormalizeItemsTMDBIdService,
 )
+from betor.services.admin_download_items_service import AdminDownloadItemsService
 
 from .schemas import (
     AdminDeterminesIMDBTMDBIdPayload,
     AdminDeterminesIMDBTMDBIdRawItemNotFoundError,
     AdminDeterminesIMDBTMDBIdValueError,
+    AdminDownloadItemsResponse,
     AdminMapsProviderURLIMDBPayload,
 )
 
@@ -55,3 +57,14 @@ async def maps_provider_url_imdb(
 ) -> AdminMapsProviderURLIMDBResult:
     service = AdminMapsProviderURLIMDBService(request.app.mongodb_client)
     return await service.maps(payload.provider_url, payload.imdb_id)
+
+
+@admin_router.get("/download-items/", response_model=AdminDownloadItemsResponse)
+async def download_items(request: BetorRequest):
+    service = AdminDownloadItemsService(
+        request.app.mongodb_client, request.app.redis_client
+    )
+    try:
+        return await service.get_or_create_dump()
+    except RuntimeError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

@@ -2,6 +2,7 @@ import hashlib
 import json
 from collections import OrderedDict
 from datetime import datetime
+from time import perf_counter
 from typing import Dict, List, Optional, Sequence
 
 import motor.motor_asyncio
@@ -190,6 +191,13 @@ class ItemsRepository:
     async def get_all_by_magnet_uri(self, magnet_uri: str) -> List[Item]:
         results = await self.collection.find({"magnet_uri": magnet_uri}).to_list()
         return [ItemsRepository.parse_result(result) for result in results]
+
+    async def dump_all_items(self) -> tuple[float, List[Item]]:
+        start = perf_counter()
+        results = await self.collection.find({}).to_list(length=None)
+        items = [ItemsRepository.parse_result(result) for result in results]
+        duration = perf_counter() - start
+        return duration, items
 
     async def update_episodes_info(self, magnet_uri: str, episodes_info: EpisodesInfo):
         await self.collection.update_many(

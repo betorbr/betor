@@ -140,17 +140,6 @@ services:
         condition: service_started
     env_file:
       - .docker.env
-    healthcheck:
-      test:
-        - CMD
-        - scrapyd-client
-        - spiders
-        - -p
-        - betor
-      interval: 5s
-      timeout: 10s
-      retries: 5
-      start_period: 10s
     ports:
       - 6800:6800
 
@@ -165,19 +154,23 @@ services:
       redis:
         condition: service_healthy
       scrapyd:
-        condition: service_healthy
+        condition: service_started
     env_file:
       - .docker.env
     ports:
       - 8000:8000
+    volumes:
+      - items-data:/items-data
 
   nginx:
     image: nginx:latest
     ports:
       - 8001:80
     volumes:
-      - torrents:/usr/share/nginx/html
+      - torrents:/usr/share/nginx/html/torrents
+      - items-data:/usr/share/nginx/html/items-data
 
 volumes:
   grafana-data: {}
   torrents: {}
+  items-data: {}
