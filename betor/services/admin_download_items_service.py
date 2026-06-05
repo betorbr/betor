@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, TypedDict
+from uuid import uuid4
 
 import fsspec
 import motor.motor_asyncio
@@ -60,9 +61,7 @@ class AdminDownloadItemsService:
 
     def store_items(self, formatted_items: List[Dict[str, Any]]) -> str:
         assert download_items_store_settings.save_url
-        filename = (
-            f"items_dump_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.json"
-        )
+        filename = f"items_{uuid4()}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.json"
         path = f"{download_items_store_settings.save_url.rstrip('/')}/{filename}"
         with fsspec.open(path, "w") as f:
             json.dump(formatted_items, f, default=str)

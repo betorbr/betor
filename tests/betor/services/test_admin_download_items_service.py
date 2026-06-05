@@ -231,23 +231,29 @@ class TestStoreItems:
                 store_settings_mock.save_url = "file:///tmp/downloads"
                 store_settings_mock.public_download_base_url = None
 
-                result = admin_download_items_service.store_items(items)
+                with mock.patch(
+                    "betor.services.admin_download_items_service.uuid4"
+                ) as uuid_mock:
+                    test_uuid = "12345678-1234-5678-1234-567812345678"
+                    uuid_mock.return_value = test_uuid
 
-                # Verify fsspec.open was called
-                fsspec_open_mock.assert_called_once()
-                call_args = fsspec_open_mock.call_args[0]
+                    result = admin_download_items_service.store_items(items)
 
-                # Verify path contains save_url and filename
-                path = call_args[0]
-                assert "file:///tmp/downloads" in path
-                assert path.startswith("file:///tmp/downloads/items_dump_")
-                assert path.endswith(".json")
+                    # Verify fsspec.open was called
+                    fsspec_open_mock.assert_called_once()
+                    call_args = fsspec_open_mock.call_args[0]
 
-                mock_file.write.assert_called()
+                    # Verify path contains save_url and filename with UUID
+                    path = call_args[0]
+                    assert "file:///tmp/downloads" in path
+                    assert f"items_{test_uuid}_" in path
+                    assert path.endswith(".json")
 
-                # Result should be just the filename
-                assert result.startswith("items_dump_")
-                assert result.endswith(".json")
+                    mock_file.write.assert_called()
+
+                    # Result should be just the filename with UUID
+                    assert f"items_{test_uuid}_" in result
+                    assert result.endswith(".json")
 
     def test_store_items_returns_public_url_when_configured(
         self, admin_download_items_service: AdminDownloadItemsService
@@ -269,11 +275,18 @@ class TestStoreItems:
                     "https://example.com/downloads"
                 )
 
-                result = admin_download_items_service.store_items(items)
+                with mock.patch(
+                    "betor.services.admin_download_items_service.uuid4"
+                ) as uuid_mock:
+                    test_uuid = "87654321-4321-8765-4321-876543218765"
+                    uuid_mock.return_value = test_uuid
 
-                # Result should use public_download_base_url
-                assert result.startswith("https://example.com/downloads")
-                assert result.endswith(".json")
+                    result = admin_download_items_service.store_items(items)
+
+                    # Result should use public_download_base_url with UUID in filename
+                    assert result.startswith("https://example.com/downloads")
+                    assert f"items_{test_uuid}_" in result
+                    assert result.endswith(".json")
 
     def test_store_items_serializes_items_to_json(
         self, admin_download_items_service: AdminDownloadItemsService
@@ -299,13 +312,16 @@ class TestStoreItems:
                     store_settings_mock.save_url = "file:///tmp"
                     store_settings_mock.public_download_base_url = None
 
-                    admin_download_items_service.store_items(items)
+                    with mock.patch(
+                        "betor.services.admin_download_items_service.uuid4"
+                    ):
+                        admin_download_items_service.store_items(items)
 
-                    # Verify json.dump was called with correct data
-                    json_dump_mock.assert_called_once()
-                    call_args = json_dump_mock.call_args
-                    assert call_args[0][0] == items
-                    assert call_args[1]["default"] == str
+                        # Verify json.dump was called with correct data
+                        json_dump_mock.assert_called_once()
+                        call_args = json_dump_mock.call_args
+                        assert call_args[0][0] == items
+                        assert call_args[1]["default"] == str
 
     def test_store_items_strips_trailing_slashes(
         self, admin_download_items_service: AdminDownloadItemsService
@@ -327,13 +343,14 @@ class TestStoreItems:
                     "https://example.com/downloads/"
                 )
 
-                result = admin_download_items_service.store_items(items)
+                with mock.patch("betor.services.admin_download_items_service.uuid4"):
+                    result = admin_download_items_service.store_items(items)
 
-                # Path should not have double slashes
-                call_args = fsspec_open_mock.call_args[0]
-                path = call_args[0]
-                assert "downloads//" not in path
-                assert result.count("downloads/") == 1
+                    # Path should not have double slashes
+                    call_args = fsspec_open_mock.call_args[0]
+                    path = call_args[0]
+                    assert "downloads//" not in path
+                    assert result.count("downloads/") == 1
 
 
 class TestGetOrCreateDump:
