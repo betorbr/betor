@@ -61,7 +61,7 @@ class AdminDownloadItemsService:
 
     def store_items(self, formatted_items: List[Dict[str, Any]]) -> str:
         assert download_items_store_settings.save_url
-        filename = f"items_{uuid4()}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.json"
+        filename = f"items_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}_{uuid4()}.json"
         path = f"{download_items_store_settings.save_url.rstrip('/')}/{filename}"
         with fsspec.open(path, "w") as f:
             json.dump(formatted_items, f, default=str)

@@ -246,14 +246,12 @@ class TestStoreItems:
                     # Verify path contains save_url and filename with UUID
                     path = call_args[0]
                     assert "file:///tmp/downloads" in path
-                    assert f"items_{test_uuid}_" in path
-                    assert path.endswith(".json")
+                    assert path.endswith(f"_{test_uuid}.json")
 
                     mock_file.write.assert_called()
 
                     # Result should be just the filename with UUID
-                    assert f"items_{test_uuid}_" in result
-                    assert result.endswith(".json")
+                    assert result.endswith(f"_{test_uuid}.json")
 
     def test_store_items_returns_public_url_when_configured(
         self, admin_download_items_service: AdminDownloadItemsService
@@ -285,8 +283,7 @@ class TestStoreItems:
 
                     # Result should use public_download_base_url with UUID in filename
                     assert result.startswith("https://example.com/downloads")
-                    assert f"items_{test_uuid}_" in result
-                    assert result.endswith(".json")
+                    assert result.endswith(f"_{test_uuid}.json")
 
     def test_store_items_serializes_items_to_json(
         self, admin_download_items_service: AdminDownloadItemsService
