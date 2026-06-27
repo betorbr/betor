@@ -17,8 +17,12 @@ class UnlockSystemAdsMixin:
         "https://superadsgo1.xyz/get.php?id=",
         "https://www.systemads.xyz/get.php?id=",
         "https://systemads.net/go.php?id=",
+        "https://videosad.net/links.php?id=",
     ]
-    PROTECTED_URLS_CF_CLEARANCE_DOMAIN = {"systemads.net": ".systemads.net"}
+    PROTECTED_URLS_CF_CLEARANCE_DOMAIN = {
+        "systemads.net": ".systemads.net",
+        "videosad.net": ".videosad.net",
+    }
 
     @classmethod
     def unlock_protected_redirect_link(cls, redirect_url: str) -> str:
@@ -35,6 +39,25 @@ class UnlockSystemAdsMixin:
 
     @classmethod
     def unlock_encrypted_protected_link(cls, response_content: str) -> str:
+        try:
+            return cls.unlock_encrypted_protected_link_dest_url_mode(response_content)
+        except ValueError:
+            return cls.unlock_encrypted_protected_link_legacy_mode(response_content)
+
+    @classmethod
+    def unlock_encrypted_protected_link_dest_url_mode(
+        cls, response_content: str
+    ) -> str:
+        for line in response_content.splitlines():
+            if "DEST_URL" in line:
+                start = line.find('"') + 1
+                end = line.find('"', start)
+                if start != -1 and end != -1:
+                    return line[start:end]
+        raise ValueError("DEST_URL not found in response")
+
+    @classmethod
+    def unlock_encrypted_protected_link_legacy_mode(cls, response_content: str) -> str:
         redirect_url = None
         for line in response_content.splitlines():
             if "?id=" in line:
