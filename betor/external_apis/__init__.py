@@ -8,6 +8,11 @@ from .imdb_suggestion_api import (
     IMDbSuggestionResponseLink,
     IMDbSuggestionResponseTitle,
 )
+from .tmdb_external_ids_api import (
+    TMDBExternalIdsAPI,
+    TMDBExternalIdsAPIError,
+    TMDBExternalIdsResponse,
+)
 from .tmdb_find_by_id_api import (
     TMDBFindByIdAPI,
     TMDBFindByIdAPIError,
@@ -40,4 +45,7 @@ __all__ = [
     "IMDBAPIDevSearchAPIError",
     "IMDBAPIDevTitleAPI",
     "IMDBAPIDevTitleAPIError",
+    "TMDBExternalIdsAPI",
+    "TMDBExternalIdsResponse",
+    "TMDBExternalIdsAPIError",
 ]
