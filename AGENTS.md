@@ -6,7 +6,7 @@ This repository implements a Python-based media search backend that combines Fas
 ## Key project facts
 - Python 3.13 with dependency management via Poetry.
 - Package roots: `betor` and `betor_scrapy`.
-- CI uses `poetry install`, `poetry run flake8`, `poetry run isort --profile black .`, `poetry run black .`, `poetry run mypy .`, and `poetry run pytest .`.
+- CI uses `poetry install`, `poetry run flake8`, `poetry run isort --profile black .`, `poetry run black .`, `poetry run mypy .`, and `poetry run pytest tests`.
 - Code is organized around API, providers, services, repositories, external API integrations, and Scrapy spiders/pipelines.
 
 ## Primary entry points
@@ -28,7 +28,7 @@ This repository implements a Python-based media search backend that combines Fas
 ## Style and conventions
 - Use the existing format rules from `black` and `isort`.
 - The code uses async/await widely; preserve async behavior in services and pipelines.
-- Tests are under `tests/`; run `poetry run pytest .`.
+- Tests are under `tests/`; run `poetry run pytest tests`.
 - `pytest.ini` enables coverage for `betor` and `betor_scrapy`.
 
 ## What agents should do
