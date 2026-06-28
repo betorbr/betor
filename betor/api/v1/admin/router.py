@@ -51,7 +51,7 @@ async def determines_imdb_tmdb_id(
         return AdminDeterminesIMDBTMDBIdValueError(message=str(e))
 
 
-@admin_router.post("/maps-provider-url-imdb")
+@admin_router.post("/maps-provider-url-imdb/")
 async def maps_provider_url_imdb(
     request: BetorRequest, payload: AdminMapsProviderURLIMDBPayload
 ) -> AdminMapsProviderURLIMDBResult:
