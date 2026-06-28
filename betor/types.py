@@ -1,4 +1,5 @@
 from typing import (
+    AsyncGenerator,
     Callable,
     Dict,
     List,
@@ -33,3 +34,11 @@ ApaginateAggregateParams: TypeAlias = Tuple[
 Languages: TypeAlias = List[str]
 
 InsertOrUpdateResult: TypeAlias = Literal["inserted", "updated", "no_change"]
+
+StrategyResult: TypeAlias = Tuple[float, Optional[str], Optional[str], Optional[T]]
+
+StrategyGenerator: TypeAlias = AsyncGenerator[StrategyResult[T], None]
+
+ScoreKey: TypeAlias = Tuple[str, Optional[T]]
+
+Scores: TypeAlias = Dict[ScoreKey, float]

@@ -4,7 +4,7 @@ from unittest import mock
 import motor.motor_asyncio
 import pytest
 
-from betor.entities import RawItem
+from betor.entities import ProviderURLIMDBMapping, RawItem
 from betor.enums import ItemType
 from betor.services import DeterminesIMDbTMDBIdsService
 
@@ -42,11 +42,67 @@ def mongodb_client_mock():
                 year=None,
                 cast=None,
             ),
+            [
+                ProviderURLIMDBMapping(
+                    id=None,
+                    inserted_at=None,
+                    updated_at=None,
+                    provider_url="http://www.test.com/movie01/",
+                    imdb_id="tt38681832",
+                )
+            ],
+            "tt38681832",
+            "1560681",
+            ItemType.movie,
+        ),
+        (
+            RawItem(
+                id=None,
+                hash=None,
+                inserted_at=None,
+                updated_at=None,
+                provider_slug="test",
+                provider_url="http://www.test.com/movie01/",
+                imdb_id=None,
+                tmdb_id=None,
+                magnet_uris=[],
+                languages=[],
+                qualitys=[],
+                title=None,
+                translated_title="As Cores do Mal: Preto",
+                raw_title=None,
+                year=2026,
+                cast=None,
+            ),
             [None],
-            None,
-            None,
-            None,
-        )
+            "tt38681832",
+            "1560681",
+            ItemType.movie,
+        ),
+        (
+            RawItem(
+                id=None,
+                hash=None,
+                inserted_at=None,
+                updated_at=None,
+                provider_slug="starck-filmes",
+                provider_url="https://www.starckfilmes-v20.com/catalog/origem-4-temporada-2026-19-04-2026/",
+                imdb_id=None,
+                tmdb_id=None,
+                magnet_uris=[],
+                languages=[],
+                qualitys=[],
+                title="From",
+                translated_title=None,
+                raw_title="Origem 4ª Temporada Torrent (2026) Dual Áudio Download",
+                year=2026,
+                cast=None,
+            ),
+            [None],
+            "tt9813792",
+            "124364",
+            ItemType.tv,
+        ),
     ],
 )
 @pytest.mark.asyncio
