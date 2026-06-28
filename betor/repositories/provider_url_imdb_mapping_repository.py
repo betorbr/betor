@@ -1,12 +1,13 @@
 from collections import OrderedDict
 from datetime import datetime
-from typing import Dict, Optional, cast
+from typing import Any, Dict, Optional, Sequence, cast
 
 import motor.motor_asyncio
 
 from betor.entities import ProviderURLIMDBMapping
+from betor.enums import ProviderURLIMDBMappingSortEnum
 from betor.settings import database_mongodb_settings
-from betor.types import InsertOrUpdateResult
+from betor.types import ApaginateParams, CursorSort, InsertOrUpdateResult
 
 
 class ProviderURLIMDBMappingRepository:
@@ -22,6 +23,12 @@ class ProviderURLIMDBMappingRepository:
             provider_url=result["provider_url"],
             imdb_id=result["imdb_id"],
         )
+
+    @classmethod
+    def parse_results(cls, results: Sequence[Dict]) -> Sequence[ProviderURLIMDBMapping]:
+        return [
+            ProviderURLIMDBMappingRepository.parse_result(result) for result in results
+        ]
 
     @classmethod
     def build_data(cls, provider_url_imdb_mapping: ProviderURLIMDBMapping) -> dict:
@@ -54,6 +61,45 @@ class ProviderURLIMDBMappingRepository:
         result_dict = cast(Dict, result)
         return ProviderURLIMDBMappingRepository.parse_result(result_dict)
 
+    def apaginate_params(
+        self,
+        sort: ProviderURLIMDBMappingSortEnum,
+        provider_url: Optional[str] = None,
+    ) -> ApaginateParams[ProviderURLIMDBMapping]:
+        cursor_sort_mapping: Dict[ProviderURLIMDBMappingSortEnum, CursorSort] = {
+            ProviderURLIMDBMappingSortEnum.inserted_at_asc: self.INSERTED_AT_FIELD,
+            ProviderURLIMDBMappingSortEnum.inserted_at_desc: (
+                self.INSERTED_AT_FIELD,
+                -1,
+            ),
+            ProviderURLIMDBMappingSortEnum.updated_at_asc: self.UPDATED_AT_FIELD,
+            ProviderURLIMDBMappingSortEnum.updated_at_desc: (
+                self.UPDATED_AT_FIELD,
+                -1,
+            ),
+        }
+        cursor_sort = cursor_sort_mapping.get(sort)
+        assert cursor_sort is not None
+
+        filter_statements: list[Dict[str, Any]] = []
+        if provider_url is not None:
+            filter_statements.append({"provider_url": provider_url})
+
+        query_filter: Optional[Dict[Any, Any]] = None
+        if filter_statements:
+            query_filter = (
+                {"$and": filter_statements}
+                if len(filter_statements) > 1
+                else filter_statements[0]
+            )
+
+        return (
+            self.collection,
+            query_filter,
+            cursor_sort,
+            ProviderURLIMDBMappingRepository.parse_results,
+        )
+
     async def insert(self, provider_url_imdb_mapping: ProviderURLIMDBMapping):
         await self.collection.insert_one(
             {
@@ -77,6 +123,10 @@ class ProviderURLIMDBMappingRepository:
                 }
             },
         )
+
+    async def delete(self, provider_url: str) -> bool:
+        result = await self.collection.delete_one({"provider_url": provider_url})
+        return bool(result.deleted_count)
 
     async def insert_or_update(
         self, provider_url_imdb_mapping: ProviderURLIMDBMapping
