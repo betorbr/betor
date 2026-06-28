@@ -3,6 +3,7 @@ from unittest import mock
 
 import motor.motor_asyncio
 import pytest
+from bson.objectid import ObjectId
 
 from betor.enums import ProviderURLIMDBMappingSortEnum
 from betor.repositories import ProviderURLIMDBMappingRepository
@@ -80,12 +81,12 @@ class TestDelete:
         collection_mock.delete_one = mock.AsyncMock(return_value=delete_result)
 
         deleted = await provider_url_imdb_mapping_repository.delete(
-            "http://example.com"
+            "507f1f77bcf86cd799439011"
         )
 
         assert deleted is True
         collection_mock.delete_one.assert_awaited_once_with(
-            {"provider_url": "http://example.com"}
+            {"_id": ObjectId("507f1f77bcf86cd799439011")}
         )
 
     @pytest.mark.asyncio
@@ -99,7 +100,18 @@ class TestDelete:
         collection_mock.delete_one = mock.AsyncMock(return_value=delete_result)
 
         deleted = await provider_url_imdb_mapping_repository.delete(
-            "http://example.com"
+            "507f1f77bcf86cd799439011"
         )
 
         assert deleted is False
+
+    @pytest.mark.asyncio
+    async def test_invalid_id(
+        self,
+        provider_url_imdb_mapping_repository: ProviderURLIMDBMappingRepository,
+        collection_mock,
+    ):
+        deleted = await provider_url_imdb_mapping_repository.delete("invalid-id")
+
+        assert deleted is False
+        collection_mock.delete_one.assert_not_called()

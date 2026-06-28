@@ -3,6 +3,8 @@ from datetime import datetime
 from typing import Any, Dict, Optional, Sequence, cast
 
 import motor.motor_asyncio
+from bson.errors import InvalidId
+from bson.objectid import ObjectId
 
 from betor.entities import ProviderURLIMDBMapping
 from betor.enums import ProviderURLIMDBMappingSortEnum
@@ -124,8 +126,13 @@ class ProviderURLIMDBMappingRepository:
             },
         )
 
-    async def delete(self, provider_url: str) -> bool:
-        result = await self.collection.delete_one({"provider_url": provider_url})
+    async def delete(self, provider_url_id: str) -> bool:
+        try:
+            object_id = ObjectId(provider_url_id)
+        except InvalidId:
+            return False
+
+        result = await self.collection.delete_one({"_id": object_id})
         return bool(result.deleted_count)
 
     async def insert_or_update(
