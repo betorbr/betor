@@ -17,6 +17,7 @@ class Title:
         value = re.sub(r"\s+", " ", value)
         value = re.sub(r" - [CAM|TS|HD|WEB-DL]+$", "", value)
         value = re.sub(r" - [\d]+ª [Temporada|TEMPORADA]+$", "", value)
+        value = re.sub(r" S[\d]+$", "", value)
         return value
 
 
