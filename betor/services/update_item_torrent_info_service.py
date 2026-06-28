@@ -37,6 +37,11 @@ class UpdateItemTorrentInfoService:
             while not lt_torrent_handler.has_metadata():
                 sleep(1)
             lt_torrent_info = lt_torrent_handler.torrent_file()
+            if lt_torrent_info is None:
+                lt_session.remove_torrent(lt_torrent_handler)
+                raise ValueError(
+                    f"Could not retrieve torrent metadata for {magnet_uri}"
+                )
             lt_file_storage = lt_torrent_info.orig_files()
             torrent_file = lt.create_torrent(lt_torrent_info)
             download_path = None
