@@ -33,6 +33,13 @@ class ItemsSortEnum(StrEnum):
     updated_at_desc = "-updated_at"
 
 
+class RawItemsSortEnum(StrEnum):
+    inserted_at_asc = "inserted_at"
+    inserted_at_desc = "-inserted_at"
+    updated_at_asc = "updated_at"
+    updated_at_desc = "-updated_at"
+
+
 class ItemType(StrEnum):
     movie = "movie"
     tv = "tv"

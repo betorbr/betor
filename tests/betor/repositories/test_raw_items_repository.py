@@ -4,8 +4,10 @@ from unittest import mock
 
 import motor.motor_asyncio
 import pytest
+from bson.objectid import ObjectId
 
 from betor.entities import RawItem
+from betor.enums import RawItemsSortEnum
 from betor.repositories import RawItemsRepository
 
 
@@ -195,3 +197,50 @@ class TestInsertOrUpdateItem:
                 mock.MagicMock(spec=RawItem)
             )
             assert result == "no_change"
+
+
+class TestGetById:
+    @pytest.mark.asyncio
+    async def test_ok(
+        self,
+        raw_items_repository: RawItemsRepository,
+        collection_mock,
+    ):
+        object_id = ObjectId("507f1f77bcf86cd799439011")
+        collection_mock.find_one = mock.AsyncMock(
+            return_value={
+                "_id": object_id,
+                "provider_slug": "slug",
+                "provider_url": "http://example.com",
+            }
+        )
+
+        result = await raw_items_repository.get_by_id("507f1f77bcf86cd799439011")
+
+        assert result
+        assert result["id"] == str(object_id)
+
+    @pytest.mark.asyncio
+    async def test_invalid_id(self, raw_items_repository: RawItemsRepository):
+        assert await raw_items_repository.get_by_id("invalid-id") is None
+
+
+class TestApaginateParams:
+    def test_ok(self, raw_items_repository: RawItemsRepository):
+        collection, query_filter, cursor_sort, transformer = (
+            raw_items_repository.apaginate_params(
+                RawItemsSortEnum.inserted_at_desc,
+                provider_slug="slug",
+                provider_url="http://example.com",
+            )
+        )
+
+        assert collection == raw_items_repository.collection
+        assert query_filter == {
+            "$and": [
+                {"provider_slug": "slug"},
+                {"provider_url": "http://example.com"},
+            ]
+        }
+        assert cursor_sort == ("inserted_at", -1)
+        assert transformer == RawItemsRepository.parse_results

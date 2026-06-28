@@ -2,13 +2,16 @@ import hashlib
 import json
 from collections import OrderedDict
 from datetime import datetime
-from typing import Dict, Optional, cast
+from typing import Any, Dict, Optional, Sequence, cast
 
 import motor.motor_asyncio
+from bson.errors import InvalidId
+from bson.objectid import ObjectId
 
 from betor.entities import RawItem
+from betor.enums import RawItemsSortEnum
 from betor.settings import database_mongodb_settings
-from betor.types import InsertOrUpdateResult
+from betor.types import ApaginateParams, CursorSort, InsertOrUpdateResult
 
 
 class RawItemsRepository:
@@ -54,6 +57,10 @@ class RawItemsRepository:
             cast=result.get("cast"),
         )
 
+    @classmethod
+    def parse_results(cls, results: Sequence[Dict]) -> Sequence[RawItem]:
+        return [RawItemsRepository.parse_result(result) for result in results]
+
     def __init__(self, mongodb_client: motor.motor_asyncio.AsyncIOMotorClient):
         self.mongodb_client = mongodb_client
 
@@ -82,6 +89,53 @@ class RawItemsRepository:
             return None
         result_dict = cast(Dict, result)
         return RawItemsRepository.parse_result(result_dict)
+
+    async def get_by_id(self, raw_item_id: str) -> Optional[RawItem]:
+        try:
+            object_id = ObjectId(raw_item_id)
+        except InvalidId:
+            return None
+        result = await self.collection.find_one({"_id": object_id})
+        if not result:
+            return None
+        result_dict = cast(Dict, result)
+        return RawItemsRepository.parse_result(result_dict)
+
+    def apaginate_params(
+        self,
+        sort: RawItemsSortEnum,
+        provider_slug: Optional[str] = None,
+        provider_url: Optional[str] = None,
+    ) -> ApaginateParams[RawItem]:
+        cursor_sort_mapping: Dict[RawItemsSortEnum, CursorSort] = {
+            RawItemsSortEnum.inserted_at_asc: self.INSERTED_AT_FIELD,
+            RawItemsSortEnum.inserted_at_desc: (self.INSERTED_AT_FIELD, -1),
+            RawItemsSortEnum.updated_at_asc: self.UPDATED_AT_FIELD,
+            RawItemsSortEnum.updated_at_desc: (self.UPDATED_AT_FIELD, -1),
+        }
+        cursor_sort = cursor_sort_mapping.get(sort)
+        assert cursor_sort is not None
+
+        filter_statements: list[Dict[str, Any]] = []
+        if provider_slug is not None:
+            filter_statements.append({"provider_slug": provider_slug})
+        if provider_url is not None:
+            filter_statements.append({"provider_url": provider_url})
+
+        query_filter: Optional[Dict[str, Any]] = None
+        if filter_statements:
+            query_filter = (
+                {"$and": filter_statements}
+                if len(filter_statements) > 1
+                else filter_statements[0]
+            )
+
+        return (
+            self.collection,
+            query_filter,
+            cursor_sort,
+            RawItemsRepository.parse_results,
+        )
 
     async def insert_or_update(self, raw_item: RawItem) -> InsertOrUpdateResult:
         retrieved = await self.get(raw_item["provider_slug"], raw_item["provider_url"])

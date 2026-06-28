@@ -16,8 +16,10 @@ from .detail_job_monitor_service import DetailJobMonitorService
 from .determines_imdb_tmdb_ids_service import DeterminesIMDbTMDBIdsService
 from .get_item_service import GetItemService
 from .get_job_status_service import GetJobStatusService, JobStatus
+from .get_raw_item_service import GetRawItemService
 from .insert_or_update_raw_item_service import InsertOrUpdateRawItemService
 from .list_items_service import ListItemsService
+from .list_raw_items_service import ListRawItemsService
 from .process_raw_item_service import ProcessRawItemService
 from .scrape_service import ScrapeReturn, ScrapeService
 from .search_service import SearchService
@@ -52,4 +54,6 @@ __all__ = [
     "AdminMapsProviderURLIMDBService",
     "AdminMapsProviderURLIMDBResult",
     "GetItemService",
+    "GetRawItemService",
+    "ListRawItemsService",
 ]
