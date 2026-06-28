@@ -4,6 +4,7 @@ from .admin.router import admin_router
 from .catalog.router import catalog_router
 from .items.router import items_router
 from .job_monitors.router import job_monitors_router
+from .provider_url_imdb_mappings.router import provider_url_imdb_mappings_router
 from .raw_items.router import raw_items_router
 from .scrape.router import scrape_router
 from .search.router import search_router
@@ -11,6 +12,9 @@ from .search.router import search_router
 router = APIRouter()
 router.include_router(items_router, prefix="/items")
 router.include_router(raw_items_router, prefix="/raw-items")
+router.include_router(
+    provider_url_imdb_mappings_router, prefix="/provider-url-imdb-mappings"
+)
 router.include_router(scrape_router, prefix="/scrape")
 router.include_router(job_monitors_router, prefix="/job-monitors")
 router.include_router(search_router, prefix="/search")
