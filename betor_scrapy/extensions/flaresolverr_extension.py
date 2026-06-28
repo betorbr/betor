@@ -35,12 +35,16 @@ class FlareSolverrExtension:
         redis_cf_clearance_key = crawler.settings.get(
             "FLARESOLVERR_REDIS_CF_CLEARANCE_KEY", "flaresolverr:cf_clearance:{domain}"
         )
-        max_sessions = crawler.settings.get("FLARESOLVERR_MAX_SESSIONS", 3)
+        max_sessions = crawler.settings.getint("FLARESOLVERR_MAX_SESSIONS", 3)
+        flaresolverr_session_create_timeout = crawler.settings.getint(
+            "FLARESOLVERR_SESSION_CREATE_TIMEOUT", 5
+        )
         obj = cls(
             base_url,
             session_prefix,
             redis_cf_clearance_key,
             max_sessions,
+            flaresolverr_session_create_timeout,
         )
         crawler.signals.connect(obj.spider_opened, signal=scrapy.signals.spider_opened)
         crawler.signals.connect(obj.spider_closed, signal=scrapy.signals.spider_closed)
@@ -52,12 +56,14 @@ class FlareSolverrExtension:
         session_prefix: str,
         redis_cf_clearance_key: str,
         max_sessions: int,
+        flaresolverr_session_create_timeout: int,
     ):
         self.redis_client = get_redis_client()
         self.base_url = base_url
         self.session_prefix = session_prefix
         self.redis_cf_clearance_key = redis_cf_clearance_key
         self.max_sessions = max_sessions
+        self.flaresolverr_session_create_timeout = flaresolverr_session_create_timeout
 
     def spider_opened(self, spider: scrapy.Spider) -> None:
         self.redis_client.ping()
@@ -91,6 +97,7 @@ class FlareSolverrExtension:
                 "cmd": "sessions.create",
                 "session": f"{self.session_prefix}{uuid4()}",
             },
+            timeout=self.flaresolverr_session_create_timeout,
         )
         response.raise_for_status()
         data = cast(FlareSolverrSessionsCreateResponse, response.json())
