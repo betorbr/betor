@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Generator, Optional
 
 from betor.entities import RawItem
 from betor.enums import ItemType
@@ -10,6 +10,19 @@ from .strategy import Strategy
 
 
 class TmdbTrendingStrategy(Strategy):
+    @staticmethod
+    def build_queries(raw_item: RawItem) -> Generator[str, None, None]:
+        if raw_item["title"] and raw_item["year"]:
+            yield f"{raw_item['title']} {raw_item['year']}"
+        if raw_item["translated_title"] and raw_item["year"]:
+            yield f"{raw_item['translated_title']} {raw_item['year']}"
+        if raw_item["title"]:
+            yield raw_item["title"]
+            if "/" in raw_item["title"]:
+                yield from map(lambda v: v.strip(), raw_item["title"].split("/"))
+        if raw_item["translated_title"]:
+            yield raw_item["translated_title"]
+
     def __init__(self, tmdb_trending_api: TMDBTrendingAPI):
         self.tmdb_trending_api = tmdb_trending_api
 
@@ -19,7 +32,7 @@ class TmdbTrendingStrategy(Strategy):
         imdb_scores: Optional[Scores] = None,
         tmdb_scores: Optional[Scores] = None,
     ) -> StrategyGenerator:
-        for query in Strategy.build_queries(raw_item):
+        for query in TmdbTrendingStrategy.build_queries(raw_item):
             try:
                 data = await self.tmdb_trending_api.execute(query)
             except TMDBTrendingAPIError:
