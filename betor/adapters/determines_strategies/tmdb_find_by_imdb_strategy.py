@@ -18,7 +18,7 @@ class TmdbFindByImdbStrategy(Strategy):
         raw_item: RawItem,
         imdb_scores: Optional[Scores] = None,
         tmdb_scores: Optional[Scores] = None,
-    ) -> StrategyGenerator[ItemType]:
+    ) -> StrategyGenerator:
         if imdb_scores and tmdb_api_settings.access_token:
             for k, score in imdb_scores.items():
                 imdb_id, _ = k
@@ -40,5 +40,5 @@ class TmdbFindByImdbStrategy(Strategy):
                         and ItemType.tv
                     )
                     if tmdb_id and item_type:
-                        yield score, None, tmdb_id, item_type
+                        yield self, score, None, tmdb_id, item_type
                         break

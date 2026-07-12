@@ -17,14 +17,14 @@ class RawImdbIdStrategy(Strategy):
         raw_item: RawItem,
         imdb_scores: Optional[Scores] = None,
         tmdb_scores: Optional[Scores] = None,
-    ) -> StrategyGenerator[ItemType]:
+    ) -> StrategyGenerator:
         if raw_item["imdb_id"]:
             try:
                 title = await self.imdb_title_api.execute(raw_item["imdb_id"])
                 if title["type"] == "movie":
-                    yield 100.0, title["id"], None, ItemType.movie
+                    yield self, 100.0, title["id"], None, ItemType.movie
                 if title["type"] in ["tvSeries", "tvMiniSeries"]:
-                    yield 100.0, title["id"], None, ItemType.tv
+                    yield self, 100.0, title["id"], None, ItemType.tv
                 return
             except IMDBAPIDevTitleAPIError:
                 return
