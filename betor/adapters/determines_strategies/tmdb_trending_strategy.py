@@ -18,7 +18,7 @@ class TmdbTrendingStrategy(Strategy):
         raw_item: RawItem,
         imdb_scores: Optional[Scores] = None,
         tmdb_scores: Optional[Scores] = None,
-    ) -> StrategyGenerator[ItemType]:
+    ) -> StrategyGenerator:
         for query in Strategy.build_queries(raw_item):
             try:
                 data = await self.tmdb_trending_api.execute(query)
@@ -32,6 +32,10 @@ class TmdbTrendingStrategy(Strategy):
                     raw_item["title"] or raw_item["translated_title"] or "",
                 )
                 if result.get("media_type") == "movie":
-                    yield similarity * 50, None, str(result.get("id")), ItemType.movie
+                    yield self, similarity * 50, None, str(
+                        result.get("id")
+                    ), ItemType.movie
                 if result.get("media_type") == "tv":
-                    yield similarity * 50, None, str(result.get("id")), ItemType.tv
+                    yield self, similarity * 50, None, str(
+                        result.get("id")
+                    ), ItemType.tv

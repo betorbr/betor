@@ -18,7 +18,7 @@ class ImdbSearchStrategy(Strategy):
         raw_item: RawItem,
         imdb_scores: Optional[Scores] = None,
         tmdb_scores: Optional[Scores] = None,
-    ) -> StrategyGenerator[ItemType]:
+    ) -> StrategyGenerator:
         for query in Strategy.build_queries(raw_item):
             try:
                 data = await self.imdb_search_api.execute(query)
@@ -30,14 +30,14 @@ class ImdbSearchStrategy(Strategy):
                     raw_item["title"] or raw_item["translated_title"] or "",
                 )
                 if title.get("type") == "movie":
-                    yield similarity * 50, title.get("id"), None, ItemType.movie
+                    yield self, similarity * 50, title.get("id"), None, ItemType.movie
                 if title.get("type") in ["tvSeries", "tvMiniSeries"]:
-                    yield similarity * 50, title.get("id"), None, ItemType.tv
+                    yield self, similarity * 50, title.get("id"), None, ItemType.tv
                 similarity = jaccard_similarity(
                     title.get("originalTitle", ""),
                     raw_item["title"] or raw_item["translated_title"] or "",
                 )
                 if title.get("type") == "movie":
-                    yield similarity * 50, title.get("id"), None, ItemType.movie
+                    yield self, similarity * 50, title.get("id"), None, ItemType.movie
                 if title.get("type") in ["tvSeries", "tvMiniSeries"]:
-                    yield similarity * 50, title.get("id"), None, ItemType.tv
+                    yield self, similarity * 50, title.get("id"), None, ItemType.tv

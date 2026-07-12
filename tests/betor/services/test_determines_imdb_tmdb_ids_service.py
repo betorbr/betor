@@ -5,6 +5,7 @@ import motor.motor_asyncio
 import pytest
 from faker import Faker
 
+from betor.adapters.determines_strategies.strategy import Strategy
 from betor.entities import RawItem
 from betor.enums import ItemType
 from betor.services import DeterminesIMDbTMDBIdsService
@@ -19,12 +20,6 @@ def mongodb_client_mock():
 @pytest.fixture
 def determines_service(mongodb_client_mock):
     with (
-        mock.patch(
-            "betor.services.determines_imdb_tmdb_ids_service.IMDBAPIDevSearchAPI"
-        ),
-        mock.patch(
-            "betor.services.determines_imdb_tmdb_ids_service.IMDBAPIDevTitleAPI"
-        ),
         mock.patch("betor.services.determines_imdb_tmdb_ids_service.TMDBTrendingAPI"),
         mock.patch("betor.services.determines_imdb_tmdb_ids_service.TMDBFindByIdAPI"),
         mock.patch("betor.services.determines_imdb_tmdb_ids_service.IMDbSuggestionAPI"),
@@ -96,8 +91,9 @@ class TestDetermines:
         # Mock the run_strategies method to return some scores
         async def mock_strategies(
             *args, **kwargs
-        ) -> AsyncGenerator[tuple[float, str, str, ItemType], None]:
+        ) -> AsyncGenerator[tuple[object, float, str, str, ItemType], None]:
             yield (
+                determines_service.strategies[0],
                 1.0,
                 imdb_id,
                 tmdb_id,
@@ -121,8 +117,10 @@ class TestDetermines:
 
         async def mock_strategies(
             *args, **kwargs
-        ) -> AsyncGenerator[tuple[float, str | None, str | None, ItemType], None]:
-            yield (1.0, imdb_id, None, ItemType.movie)
+        ) -> AsyncGenerator[
+            tuple[object, float, str | None, str | None, ItemType], None
+        ]:
+            yield (determines_service.strategies[0], 1.0, imdb_id, None, ItemType.movie)
 
         with mock.patch.object(determines_service, "run_strategies", mock_strategies):
             result = await determines_service.determines(simple_raw_item)
@@ -138,8 +136,8 @@ class TestDetermines:
 
         async def mock_strategies(
             *args, **kwargs
-        ) -> AsyncGenerator[tuple[float, str | None, str, ItemType], None]:
-            yield (1.0, None, tmdb_id, ItemType.tv)
+        ) -> AsyncGenerator[tuple[object, float, str | None, str, ItemType], None]:
+            yield (determines_service.strategies[0], 1.0, None, tmdb_id, ItemType.tv)
 
         with mock.patch.object(determines_service, "run_strategies", mock_strategies):
             result = await determines_service.determines(simple_raw_item)
@@ -153,8 +151,8 @@ class TestDetermines:
     ):
         async def mock_strategies(
             *args, **kwargs
-        ) -> AsyncGenerator[tuple[float, None, None, None], None]:
-            yield (1.0, None, None, None)
+        ) -> AsyncGenerator[tuple[object, float, None, None, None], None]:
+            yield (determines_service.strategies[0], 1.0, None, None, None)
 
         with mock.patch.object(determines_service, "run_strategies", mock_strategies):
             result = await determines_service.determines(simple_raw_item)
@@ -174,10 +172,22 @@ class TestDetermines:
 
         async def mock_strategies(
             *args, **kwargs
-        ) -> AsyncGenerator[tuple[float, str, str, ItemType], None]:
+        ) -> AsyncGenerator[tuple[object, float, str, str, ItemType], None]:
             # Multiple results for the same ID to test score accumulation
-            yield (0.5, imdb_id, tmdb_id, ItemType.movie)
-            yield (0.3, imdb_id, tmdb_id, ItemType.movie)
+            yield (
+                determines_service.strategies[0],
+                0.5,
+                imdb_id,
+                tmdb_id,
+                ItemType.movie,
+            )
+            yield (
+                determines_service.strategies[0],
+                0.3,
+                imdb_id,
+                tmdb_id,
+                ItemType.movie,
+            )
 
         with mock.patch.object(determines_service, "run_strategies", mock_strategies):
             result = await determines_service.determines(simple_raw_item)
@@ -198,9 +208,21 @@ class TestDetermines:
 
         async def mock_strategies(
             *args, **kwargs
-        ) -> AsyncGenerator[tuple[float, str, str, ItemType], None]:
-            yield (0.2, imdb_id_1, tmdb_id, ItemType.movie)
-            yield (0.8, imdb_id_2, tmdb_id, ItemType.movie)
+        ) -> AsyncGenerator[tuple[object, float, str, str, ItemType], None]:
+            yield (
+                determines_service.strategies[0],
+                0.2,
+                imdb_id_1,
+                tmdb_id,
+                ItemType.movie,
+            )
+            yield (
+                determines_service.strategies[0],
+                0.8,
+                imdb_id_2,
+                tmdb_id,
+                ItemType.movie,
+            )
 
         with mock.patch.object(determines_service, "run_strategies", mock_strategies):
             result = await determines_service.determines(simple_raw_item)
@@ -220,12 +242,18 @@ class TestRunStrategies:
     ):
         imdb_scores: dict[ScoreKey[ItemType], float] = {}
         tmdb_scores: dict[ScoreKey[ItemType], float] = {}
-        results_to_return: list[tuple[float, str, str, ItemType]] = []
+        results_to_return: list[tuple[Strategy, float, str, str, ItemType]] = []
 
         # Create mock strategies
         for i in range(min(3, len(determines_service.strategies))):
             results_to_return.append(
-                (0.5, fake.numerify("tt########"), "123456", ItemType.movie)
+                (
+                    determines_service.strategies[i],
+                    0.5,
+                    fake.numerify("tt########"),
+                    "123456",
+                    ItemType.movie,
+                )
             )
 
         original_strategies = determines_service.strategies
@@ -234,7 +262,7 @@ class TestRunStrategies:
             raw_item: RawItem,
             imdb_scores: dict[ScoreKey[ItemType], float],
             tmdb_scores: dict[ScoreKey[ItemType], float],
-        ) -> AsyncGenerator[tuple[float, str, str, ItemType], None]:
+        ) -> AsyncGenerator[tuple[object, float, str, str, ItemType], None]:
             for result in results_to_return:
                 yield result
 
