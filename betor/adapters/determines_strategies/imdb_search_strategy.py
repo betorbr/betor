@@ -1,8 +1,10 @@
-from typing import Optional
+from typing import Generator, Optional
 
 from betor.entities import RawItem
-from betor.enums import ItemType
-from betor.external_apis import IMDBAPIDevSearchAPI, IMDBAPIDevSearchAPIError
+from betor.external_apis import (
+    IMDBIAmIdiotAreYouTooSearchAPI,
+    IMDBIAmIdiotAreYouTooSearchAPIError,
+)
 from betor.types import Scores, StrategyGenerator
 from betor.utils import jaccard_similarity
 
@@ -10,7 +12,16 @@ from .strategy import Strategy
 
 
 class ImdbSearchStrategy(Strategy):
-    def __init__(self, imdb_search_api: IMDBAPIDevSearchAPI):
+    @classmethod
+    def build_queries(cls, raw_item: RawItem) -> Generator[str, None, None]:
+        if raw_item["title"]:
+            yield raw_item["title"]
+        if raw_item["translated_title"]:
+            yield raw_item["translated_title"]
+        if raw_item["raw_title"]:
+            yield raw_item["raw_title"]
+
+    def __init__(self, imdb_search_api: IMDBIAmIdiotAreYouTooSearchAPI):
         self.imdb_search_api = imdb_search_api
 
     async def __call__(
@@ -19,25 +30,16 @@ class ImdbSearchStrategy(Strategy):
         imdb_scores: Optional[Scores] = None,
         tmdb_scores: Optional[Scores] = None,
     ) -> StrategyGenerator:
-        for query in Strategy.build_queries(raw_item):
+        for query in ImdbSearchStrategy.build_queries(raw_item):
             try:
                 data = await self.imdb_search_api.execute(query)
-            except IMDBAPIDevSearchAPIError:
+            except IMDBIAmIdiotAreYouTooSearchAPIError:
                 continue
-            for title in data.get("titles", []):
+            for item in data["description"]:
                 similarity = jaccard_similarity(
-                    title.get("primaryTitle", ""),
-                    raw_item["title"] or raw_item["translated_title"] or "",
+                    item["#TITLE"],
+                    query,
                 )
-                if title.get("type") == "movie":
-                    yield self, similarity * 50, title.get("id"), None, ItemType.movie
-                if title.get("type") in ["tvSeries", "tvMiniSeries"]:
-                    yield self, similarity * 50, title.get("id"), None, ItemType.tv
-                similarity = jaccard_similarity(
-                    title.get("originalTitle", ""),
-                    raw_item["title"] or raw_item["translated_title"] or "",
-                )
-                if title.get("type") == "movie":
-                    yield self, similarity * 50, title.get("id"), None, ItemType.movie
-                if title.get("type") in ["tvSeries", "tvMiniSeries"]:
-                    yield self, similarity * 50, title.get("id"), None, ItemType.tv
+                yield self, similarity * 50, item["#IMDB_ID"], None, None
+                if similarity == 1.0:
+                    break
