@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import Generator, Optional
 
 from betor.entities import RawItem
-from betor.enums import ItemType
 from betor.types import Scores, StrategyGenerator
 
 
@@ -26,7 +25,7 @@ class Strategy(ABC):
         raw_item: RawItem,
         imdb_scores: Optional[Scores] = None,
         tmdb_scores: Optional[Scores] = None,
-    ) -> StrategyGenerator[ItemType]:
+    ) -> StrategyGenerator:
         if False:  # pragma: no cover
             yield  # type: ignore[unreachable]
         raise NotImplementedError()

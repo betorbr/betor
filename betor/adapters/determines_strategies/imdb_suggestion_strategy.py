@@ -21,7 +21,7 @@ class ImdbSuggestionStrategy(Strategy):
         raw_item: RawItem,
         imdb_scores: Optional[Scores] = None,
         tmdb_scores: Optional[Scores] = None,
-    ) -> StrategyGenerator[ItemType]:
+    ) -> StrategyGenerator:
         if raw_item["translated_title"] and raw_item["cast"] and not raw_item["title"]:
             try:
                 suggestions = await self.imdb_suggestion_api.execute(
@@ -37,8 +37,8 @@ class ImdbSuggestionStrategy(Strategy):
                     raw_item_cast = set(raw_item["cast"])
                     if suggestion_cast.intersection(raw_item_cast):
                         if s["qid"] == "movie":
-                            yield 50.0, s["id"], None, ItemType.movie
+                            yield self, 50.0, s["id"], None, ItemType.movie
                         if s["qid"] in ["tvSeries", "tvMiniSeries"]:
-                            yield 50.0, s["id"], None, ItemType.tv
+                            yield self, 50.0, s["id"], None, ItemType.tv
             except IMDbSuggestionAPIError:
                 return
