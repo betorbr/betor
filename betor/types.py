@@ -42,11 +42,11 @@ Languages: TypeAlias = List[str]
 InsertOrUpdateResult: TypeAlias = Literal["inserted", "updated", "no_change"]
 
 StrategyResult: TypeAlias = Tuple[
-    "Strategy", float, Optional[str], Optional[str], "ItemType"
+    "Strategy", float, Optional[str], Optional[str], Optional["ItemType"]
 ]
 
 StrategyGenerator: TypeAlias = AsyncGenerator[StrategyResult, None]
 
-ScoreKey: TypeAlias = Tuple[str, Optional[T]]
+ScoreKey: TypeAlias = Tuple[str, Optional["ItemType"]]
 
 Scores: TypeAlias = Dict[ScoreKey, float]
