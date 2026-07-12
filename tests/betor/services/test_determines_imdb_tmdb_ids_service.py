@@ -240,8 +240,8 @@ class TestRunStrategies:
         simple_raw_item: RawItem,
         fake: Faker,
     ):
-        imdb_scores: dict[ScoreKey[ItemType], float] = {}
-        tmdb_scores: dict[ScoreKey[ItemType], float] = {}
+        imdb_scores: dict[ScoreKey, float] = {}
+        tmdb_scores: dict[ScoreKey, float] = {}
         results_to_return: list[tuple[Strategy, float, str, str, ItemType]] = []
 
         # Create mock strategies
@@ -260,8 +260,8 @@ class TestRunStrategies:
 
         async def mock_strategy_generator(
             raw_item: RawItem,
-            imdb_scores: dict[ScoreKey[ItemType], float],
-            tmdb_scores: dict[ScoreKey[ItemType], float],
+            imdb_scores: dict[ScoreKey, float],
+            tmdb_scores: dict[ScoreKey, float],
         ) -> AsyncGenerator[tuple[object, float, str, str, ItemType], None]:
             for result in results_to_return:
                 yield result
