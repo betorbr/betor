@@ -8,6 +8,7 @@ from betor.adapters.determines_strategies import (
     ImdbSearchStrategy,
     ImdbSuggestionStrategy,
     ProviderURLMappingStrategy,
+    RawImdbIdStrategy,
     TmdbFindByImdbStrategy,
     TmdbTrendingStrategy,
 )
@@ -46,6 +47,7 @@ class DeterminesIMDbTMDBIdsService:
             ProviderURLMappingStrategy(
                 self.provider_url_imdb_mapping_repository, self.tmdb_find_by_id_api
             ),
+            RawImdbIdStrategy(),
             ImdbSearchStrategy(self.imdb_search_api),
             ImdbSuggestionStrategy(self.imdb_suggestion_api),
             TmdbTrendingStrategy(self.tmdb_trending_api),
