@@ -5,6 +5,7 @@ import motor.motor_asyncio
 
 from betor.adapters.determines_strategies import (
     ImdbFindByTmdbStrategy,
+    ImdbSearchStrategy,
     ImdbSuggestionStrategy,
     ProviderURLMappingStrategy,
     TmdbFindByImdbStrategy,
@@ -13,6 +14,7 @@ from betor.adapters.determines_strategies import (
 from betor.entities import RawItem
 from betor.enums import ItemType
 from betor.external_apis import (
+    IMDBIAmIdiotAreYouTooSearchAPI,
     IMDbSuggestionAPI,
     TMDBExternalIdsAPI,
     TMDBFindByIdAPI,
@@ -26,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 class DeterminesIMDbTMDBIdsService:
     @classmethod
-    def best_scored_key(cls, scores: Scores) -> ScoreKey[ItemType]:
+    def best_scored_key(cls, scores: Scores) -> ScoreKey:
         if not scores:
             raise ValueError()
         return max(scores.items(), key=lambda kv: kv[1])[0]
@@ -39,10 +41,12 @@ class DeterminesIMDbTMDBIdsService:
             mongodb_client
         )
         self.tmdb_external_ids_api = TMDBExternalIdsAPI()
+        self.imdb_search_api = IMDBIAmIdiotAreYouTooSearchAPI()
         self.strategies = [
             ProviderURLMappingStrategy(
                 self.provider_url_imdb_mapping_repository, self.tmdb_find_by_id_api
             ),
+            ImdbSearchStrategy(self.imdb_search_api),
             ImdbSuggestionStrategy(self.imdb_suggestion_api),
             TmdbTrendingStrategy(self.tmdb_trending_api),
             TmdbFindByImdbStrategy(self.tmdb_find_by_id_api),
