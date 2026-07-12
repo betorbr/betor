@@ -1,0 +1,48 @@
+services:
+  acceptance-tests:
+    image: dougppaz/betor
+    build:
+      context: .
+      dockerfile: acceptance-tests.Dockerfile
+    env_file:
+      - .docker.env
+
+  redis:
+    image: redis:8
+    ports:
+      - 6379:6379
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - --raw
+        - incr
+        - ping
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  celery-worker-api-requests:
+    image: dougppaz/betor
+    build:
+      context: .
+    command: ["celery", "-A", "betor.celery.app", "worker", "-Q", "api-requests"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .docker.env
+
+  celery-flower:
+    image: dougppaz/betor
+    build:
+      context: .
+    command: ["celery", "-A", "betor.celery.app", "flower"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .docker.env
+    ports:
+      - 5555:5555
