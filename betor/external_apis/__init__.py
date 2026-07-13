@@ -24,6 +24,11 @@ from .tmdb_find_by_id_api import (
     TMDBFindByIdResponse,
     TMDBFindByIdResponseResult,
 )
+from .tmdb_search_multi_api import (
+    TMDBSearchMultiAPI,
+    TMDBSearchMultiAPIError,
+    TMDBSearchMultiAPIResponse,
+)
 from .tmdb_trending_api import (
     TMDBTrendingAPI,
     TMDBTrendingAPIError,
@@ -56,4 +61,7 @@ __all__ = [
     "IMDBIAmIdiotAreYouTooSearchAPI",
     "IMDBIAmIdiotAreYouTooSearchAPIResponse",
     "IMDBIAmIdiotAreYouTooSearchAPIError",
+    "TMDBSearchMultiAPI",
+    "TMDBSearchMultiAPIResponse",
+    "TMDBSearchMultiAPIError",
 ]
