@@ -42,14 +42,16 @@ class ProcessRawItemService:
     ) -> ProcessRawItemReturn:
         raw_item = await self.raw_items_repository.get(provider_slug, provider_url)
         assert raw_item, f"Raw Item not found {provider_slug=} {provider_url=}"
-        imdb_id, tmdb_id, item_type = (
+        imdb_id, imdb_score_value, tmdb_id, tmdb_score_value, item_type = (
             await self.determines_imdb_tmdb_ids_service.determines(raw_item)
         )
         base_item = BaseItem(
             provider_slug=raw_item["provider_slug"],
             provider_url=raw_item["provider_url"],
             imdb_id=imdb_id,
+            imdb_score_value=imdb_score_value,
             tmdb_id=tmdb_id,
+            tmdb_score_value=tmdb_score_value,
             item_type=item_type,
         )
         if not base_item["imdb_id"] and not base_item["tmdb_id"]:

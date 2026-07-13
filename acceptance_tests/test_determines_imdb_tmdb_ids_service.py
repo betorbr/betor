@@ -169,7 +169,9 @@ async def test_determines(
         new_callable=mock.AsyncMock,
         side_effect=mapping_get_side_effect,
     ):
-        imdb_id, tmdb_id, item_type = await service.determines(raw_item)
+        imdb_id, imdb_score_value, tmdb_id, tmdb_score_value, item_type = (
+            await service.determines(raw_item)
+        )
     assert imdb_id == expected_imdb_id
     assert tmdb_id == expected_tmdb_id
     assert item_type == expected_item_type
