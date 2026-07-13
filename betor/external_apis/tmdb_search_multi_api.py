@@ -11,6 +11,7 @@ from betor.celery.app import celery_app
 class TMDBSearchMultiAPIResponseResult(TypedDict):
     id: int
     title: str
+    name: str
     original_title: str
     media_type: Union[Literal["movie", "tv"], str]
 
