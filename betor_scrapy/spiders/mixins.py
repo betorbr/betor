@@ -18,6 +18,7 @@ class UnlockSystemAdsMixin:
         "https://www.systemads.xyz/get.php?id=",
         "https://systemads.net/go.php?id=",
         "https://videosad.net/links.php?id=",
+        "https://systemads1.com/go.php?id=",
     ]
     PROTECTED_URLS_CF_CLEARANCE_DOMAIN = {
         "systemads.net": ".systemads.net",
