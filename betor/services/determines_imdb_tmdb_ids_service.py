@@ -10,6 +10,7 @@ from betor.adapters.determines_strategies import (
     ProviderURLMappingStrategy,
     RawImdbIdStrategy,
     TmdbFindByImdbStrategy,
+    TmdbTranslatedTitleSearchStrategy,
     TmdbTrendingStrategy,
 )
 from betor.entities import RawItem
@@ -19,6 +20,7 @@ from betor.external_apis import (
     IMDbSuggestionAPI,
     TMDBExternalIdsAPI,
     TMDBFindByIdAPI,
+    TMDBSearchMultiAPI,
     TMDBTrendingAPI,
 )
 from betor.repositories import ProviderURLIMDBMappingRepository
@@ -43,6 +45,7 @@ class DeterminesIMDbTMDBIdsService:
         )
         self.tmdb_external_ids_api = TMDBExternalIdsAPI()
         self.imdb_search_api = IMDBIAmIdiotAreYouTooSearchAPI()
+        self.tmdb_search_multi_api = TMDBSearchMultiAPI()
         self.strategies = [
             ProviderURLMappingStrategy(
                 self.provider_url_imdb_mapping_repository, self.tmdb_find_by_id_api
@@ -51,6 +54,7 @@ class DeterminesIMDbTMDBIdsService:
             ImdbSearchStrategy(self.imdb_search_api),
             ImdbSuggestionStrategy(self.imdb_suggestion_api),
             TmdbTrendingStrategy(self.tmdb_trending_api),
+            TmdbTranslatedTitleSearchStrategy(self.tmdb_search_multi_api),
             TmdbFindByImdbStrategy(self.tmdb_find_by_id_api),
             ImdbFindByTmdbStrategy(self.tmdb_external_ids_api),
         ]
