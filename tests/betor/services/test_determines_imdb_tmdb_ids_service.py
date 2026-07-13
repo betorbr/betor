@@ -60,7 +60,10 @@ class TestBestScoredKey:
     def test_single_score(self):
         scores = {("tt123456", ItemType.movie): 1.0}
         result = DeterminesIMDbTMDBIdsService.best_scored_key(scores)
-        assert result == ("tt123456", ItemType.movie)
+        assert result == (
+            ("tt123456", ItemType.movie),
+            1.0,
+        )
 
     def test_multiple_scores_returns_highest(self):
         scores = {
@@ -69,7 +72,10 @@ class TestBestScoredKey:
             ("tt333333", ItemType.tv): 1.0,
         }
         result = DeterminesIMDbTMDBIdsService.best_scored_key(scores)
-        assert result == ("tt222222", ItemType.movie)
+        assert result == (
+            ("tt222222", ItemType.movie),
+            2.5,
+        )
 
     def test_empty_scores_raises_error(self):
         scores = {}
@@ -103,8 +109,10 @@ class TestDetermines:
         with mock.patch.object(determines_service, "run_strategies", mock_strategies):
             result = await determines_service.determines(simple_raw_item)
             assert result[0] == imdb_id
-            assert result[1] == tmdb_id
-            assert result[2] == ItemType.movie
+            assert result[1] == 1.0
+            assert result[2] == tmdb_id
+            assert result[3] == 1.0
+            assert result[4] == ItemType.movie
 
     @pytest.mark.asyncio
     async def test_determines_with_only_imdb_id(
@@ -125,8 +133,8 @@ class TestDetermines:
         with mock.patch.object(determines_service, "run_strategies", mock_strategies):
             result = await determines_service.determines(simple_raw_item)
             assert result[0] == imdb_id
-            assert result[1] is None
-            assert result[2] == ItemType.movie
+            assert result[2] is None
+            assert result[4] == ItemType.movie
 
     @pytest.mark.asyncio
     async def test_determines_with_only_tmdb_id(
@@ -142,8 +150,8 @@ class TestDetermines:
         with mock.patch.object(determines_service, "run_strategies", mock_strategies):
             result = await determines_service.determines(simple_raw_item)
             assert result[0] is None
-            assert result[1] == tmdb_id
-            assert result[2] == ItemType.tv
+            assert result[2] == tmdb_id
+            assert result[4] == ItemType.tv
 
     @pytest.mark.asyncio
     async def test_determines_with_no_ids(
@@ -192,8 +200,8 @@ class TestDetermines:
         with mock.patch.object(determines_service, "run_strategies", mock_strategies):
             result = await determines_service.determines(simple_raw_item)
             assert result[0] == imdb_id
-            assert result[1] == tmdb_id
-            assert result[2] == ItemType.movie
+            assert result[2] == tmdb_id
+            assert result[4] == ItemType.movie
 
     @pytest.mark.asyncio
     async def test_determines_picks_highest_scored_id(
@@ -228,8 +236,8 @@ class TestDetermines:
             result = await determines_service.determines(simple_raw_item)
             # Should pick imdb_id_2 since it has higher score
             assert result[0] == imdb_id_2
-            assert result[1] == tmdb_id
-            assert result[2] == ItemType.movie
+            assert result[2] == tmdb_id
+            assert result[4] == ItemType.movie
 
 
 class TestRunStrategies:

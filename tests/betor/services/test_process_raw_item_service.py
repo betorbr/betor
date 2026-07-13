@@ -70,7 +70,9 @@ class TestProcess:
         process_raw_item_service.determines_imdb_tmdb_ids_service.determines.return_value = tuple(  # type: ignore[attr-defined]
             [
                 imdb_id,
+                2.0,
                 tmdb_id,
+                1.0,
                 ItemType.movie,
             ]
         )
@@ -87,7 +89,9 @@ class TestProcess:
                     "provider_slug": raw_item["provider_slug"],
                     "provider_url": raw_item["provider_url"],
                     "imdb_id": imdb_id,
+                    "imdb_score_value": 2.0,
                     "tmdb_id": tmdb_id,
+                    "tmdb_score_value": 1.0,
                     "item_type": ItemType.movie,
                 },
                 "items": [{"id": None}],
@@ -107,6 +111,8 @@ class TestProcess:
                 None,
                 None,
                 None,
+                None,
+                None,
             ]
         )
         with mock.patch.object(
@@ -122,7 +128,9 @@ class TestProcess:
                     "provider_slug": raw_item["provider_slug"],
                     "provider_url": raw_item["provider_url"],
                     "imdb_id": None,
+                    "imdb_score_value": None,
                     "tmdb_id": None,
+                    "tmdb_score_value": None,
                     "item_type": None,
                 },
                 "items": [],
@@ -142,7 +150,9 @@ class TestProcessRawItemMagnetURI:
             provider_slug=raw_item["provider_slug"],
             provider_url=raw_item["provider_url"],
             imdb_id=None,
+            imdb_score_value=None,
             tmdb_id=None,
+            tmdb_score_value=None,
             item_type=None,
         )
         with (
@@ -202,7 +212,9 @@ class TestProcessRawItemMagnetURI:
             provider_slug=raw_item["provider_slug"],
             provider_url=raw_item["provider_url"],
             imdb_id=None,
+            imdb_score_value=None,
             tmdb_id=None,
+            tmdb_score_value=None,
             item_type=None,
         )
         with (
