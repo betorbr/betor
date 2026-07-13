@@ -37,13 +37,16 @@ class TmdbTranslatedTitleSearchStrategy(Strategy):
             raw_item["translated_title"], "pt-BR"
         )
         for result in response["results"]:
+            title_name = result.get("title") or result.get("name")
+            if not title_name:
+                continue
             similarity = jaccard_similarity(
-                result["title"],
+                title_name,
                 raw_item["translated_title"],
             )
+            if similarity < 0.8:
+                break
             if result["media_type"] == "movie":
                 yield self, similarity * 100, None, str(result["id"]), ItemType.movie
             elif result["media_type"] == "tv":
                 yield self, similarity * 100, None, str(result["id"]), ItemType.tv
-            if similarity == 1.0:
-                break
