@@ -1,4 +1,4 @@
-from typing import List, Literal, TypedDict, cast
+from typing import List, Literal, TypedDict, Union, cast
 from urllib.parse import quote
 
 import httpx
@@ -12,6 +12,7 @@ class TMDBSearchMultiAPIResponseResult(TypedDict):
     id: int
     title: str
     original_title: str
+    media_type: Union[Literal["movie", "tv"], str]
 
 
 class TMDBSearchMultiAPIResponse(TypedDict):
