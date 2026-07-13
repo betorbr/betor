@@ -44,7 +44,7 @@ class TmdbTranslatedTitleSearchStrategy(Strategy):
                 title_name,
                 raw_item["translated_title"],
             )
-            if similarity < 0.8:
+            if similarity < 0.95:
                 break
             if result["media_type"] == "movie":
                 yield self, similarity * 100, None, str(result["id"]), ItemType.movie

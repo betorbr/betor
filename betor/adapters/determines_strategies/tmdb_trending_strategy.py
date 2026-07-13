@@ -44,11 +44,13 @@ class TmdbTrendingStrategy(Strategy):
                     result.get("name", ""),
                     raw_item["title"] or raw_item["translated_title"] or "",
                 )
+                if similarity < 0.95:
+                    continue
                 if result.get("media_type") == "movie":
-                    yield self, similarity * 50, None, str(
+                    yield self, similarity * 100, None, str(
                         result.get("id")
                     ), ItemType.movie
                 if result.get("media_type") == "tv":
-                    yield self, similarity * 50, None, str(
+                    yield self, similarity * 100, None, str(
                         result.get("id")
                     ), ItemType.tv

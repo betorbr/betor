@@ -18,8 +18,6 @@ class ImdbSearchStrategy(Strategy):
             yield raw_item["title"]
         if raw_item["translated_title"]:
             yield raw_item["translated_title"]
-        if raw_item["raw_title"]:
-            yield raw_item["raw_title"]
 
     def __init__(self, imdb_search_api: IMDBIAmIdiotAreYouTooSearchAPI):
         self.imdb_search_api = imdb_search_api
@@ -40,6 +38,6 @@ class ImdbSearchStrategy(Strategy):
                     item["#TITLE"],
                     query,
                 )
-                yield self, similarity * 50, item["#IMDB_ID"], None, None
-                if similarity == 1.0:
-                    break
+                if similarity < 0.95:
+                    continue
+                yield self, similarity * 100, item["#IMDB_ID"], None, None
