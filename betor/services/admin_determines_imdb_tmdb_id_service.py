@@ -29,13 +29,18 @@ class AdminDeterminesIMDBTMDBIdService:
         raw_item = await self.raw_items_repository.get_by_provider_url(provider_url)
         if not raw_item:
             raise RawItemNotFound()
-        imdb_id, tmdb_id, item_type = (
+        imdb_id, imdb_score_value, tmdb_id, tmdb_score_value, item_type = (
             await self.determines_imdb_tmdb_ids_service.determines(raw_item)
         )
         if not imdb_id or not tmdb_id or not item_type:
             raise ValueError(f"{imdb_id=} {tmdb_id=} {item_type=}")
         await self.items_repository.update_provider_url_imdb_tmdb_id(
-            provider_url, imdb_id, tmdb_id, item_type
+            provider_url,
+            imdb_id,
+            imdb_score_value,
+            tmdb_id,
+            tmdb_score_value,
+            item_type,
         )
         return AdminDeterminesIMDBTMDBIdResult(
             raw_item=raw_item, imdb_id=imdb_id, tmdb_id=tmdb_id, item_type=item_type

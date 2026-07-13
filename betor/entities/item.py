@@ -13,7 +13,9 @@ class BaseItem(TypedDict):
     provider_slug: str
     provider_url: str
     imdb_id: Optional[str]
+    imdb_score_value: Optional[float]
     tmdb_id: Optional[str]
+    tmdb_score_value: Optional[float]
     item_type: Optional[ItemType]
 
 

@@ -62,7 +62,9 @@ class ItemsRepository:
             provider_slug=result["provider_slug"],
             provider_url=result["provider_url"],
             imdb_id=result.get("imdb_id"),
+            imdb_score_value=result.get("imdb_score_value"),
             tmdb_id=result.get("tmdb_id"),
+            tmdb_score_value=result.get("tmdb_score_value"),
             item_type=result.get("item_type"),
             id=str(result["_id"]),
             hash=result.get(ItemsRepository.HASH_FIELD),
@@ -245,7 +247,13 @@ class ItemsRepository:
         )
 
     async def update_provider_url_imdb_tmdb_id(
-        self, provider_url: str, imdb_id: str, tmdb_id: str, item_type: ItemType
+        self,
+        provider_url: str,
+        imdb_id: Optional[str],
+        imdb_score_value: Optional[float],
+        tmdb_id: Optional[str],
+        tmdb_score_value: Optional[float],
+        item_type: Optional[ItemType],
     ):
         await self.collection.update_many(
             {
@@ -254,7 +262,9 @@ class ItemsRepository:
             {
                 "$set": {
                     "imdb_id": imdb_id,
+                    "imdb_score_value": imdb_score_value,
                     "tmdb_id": tmdb_id,
+                    "tmdb_score_value": tmdb_score_value,
                     "item_type": item_type,
                     ItemsRepository.UPDATED_AT_FIELD: datetime.now(),
                 }
