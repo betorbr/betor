@@ -35,10 +35,11 @@ class ImdbSuggestionStrategy(Strategy):
                         [v.strip() for v in s.get("s", "").split(",")]
                     )
                     raw_item_cast = set(raw_item["cast"])
-                    if suggestion_cast.intersection(raw_item_cast):
-                        if s["qid"] == "movie":
-                            yield self, 50.0, s["id"], None, ItemType.movie
-                        if s["qid"] in ["tvSeries", "tvMiniSeries"]:
-                            yield self, 50.0, s["id"], None, ItemType.tv
+                    if not suggestion_cast.intersection(raw_item_cast):
+                        continue
+                    if s["qid"] == "movie":
+                        yield self, 50.0, s["id"], None, ItemType.movie
+                    if s["qid"] in ["tvSeries", "tvMiniSeries"]:
+                        yield self, 50.0, s["id"], None, ItemType.tv
             except IMDbSuggestionAPIError:
                 return
