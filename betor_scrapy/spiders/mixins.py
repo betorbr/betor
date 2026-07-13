@@ -23,6 +23,7 @@ class UnlockSystemAdsMixin:
     PROTECTED_URLS_CF_CLEARANCE_DOMAIN = {
         "systemads.net": ".systemads.net",
         "videosad.net": ".videosad.net",
+        "systemads1.com": ".systemads1.com",
     }
 
     @classmethod

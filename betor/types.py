@@ -1,4 +1,6 @@
 from typing import (
+    TYPE_CHECKING,
+    AsyncGenerator,
     Callable,
     Dict,
     List,
@@ -12,6 +14,11 @@ from typing import (
 )
 
 import motor.motor_asyncio
+
+if TYPE_CHECKING:
+    from betor.adapters.determines_strategies.strategy import Strategy
+    from betor.enums import ItemType
+
 
 T = TypeVar("T")
 
@@ -33,3 +40,13 @@ ApaginateAggregateParams: TypeAlias = Tuple[
 Languages: TypeAlias = List[str]
 
 InsertOrUpdateResult: TypeAlias = Literal["inserted", "updated", "no_change"]
+
+StrategyResult: TypeAlias = Tuple[
+    "Strategy", float, Optional[str], Optional[str], Optional["ItemType"]
+]
+
+StrategyGenerator: TypeAlias = AsyncGenerator[StrategyResult, None]
+
+ScoreKey: TypeAlias = Tuple[str, Optional["ItemType"]]
+
+Scores: TypeAlias = Dict[ScoreKey, float]
