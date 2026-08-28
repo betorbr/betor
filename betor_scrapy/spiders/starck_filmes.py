@@ -1,3 +1,5 @@
+import base64
+import urllib.parse
 from typing import List, Optional
 
 import scrapy
@@ -30,6 +32,39 @@ class StarckFilmesSpider(ProviderSpider, scrapy.Spider):
             index = (index + step) % length
         return "".join(map(str, original))
 
+    @classmethod
+    def decode_base64_url(cls, base64_url: str) -> Optional[str]:
+        if not base64_url:
+            return None
+        s = base64_url.replace("-", "+").replace("_", "/")
+        s += "=" * ((4 - len(s) % 4) % 4)
+        try:
+            return base64.b64decode(s).decode("utf-8")
+        except Exception:
+            return None
+
+    @classmethod
+    def extract_magnets_from_filmedl_href(cls, href: str) -> List[str]:
+        results: List[str] = []
+        try:
+            parsed = urllib.parse.urlparse(href)
+            qs = urllib.parse.parse_qs(parsed.query)
+            for my_id in qs.get("id", []):
+                decoded = cls.decode_base64_url(my_id)
+                if not decoded:
+                    continue
+                if "magnet" in decoded:
+                    magnet_link = decoded
+                else:
+                    try:
+                        magnet_link = cls.unshuffle_string(decoded)
+                    except Exception:
+                        continue
+                results.append(magnet_link)
+        except Exception:
+            pass
+        return results
+
     def parse(self, response: scrapy.http.Response):
         if response.xpath(
             "//section[@class='container']//div[@class='home post-catalog']"
@@ -58,6 +93,12 @@ class StarckFilmesSpider(ProviderSpider, scrapy.Spider):
             loader.add_value(field, value)
         loader.add_xpath("raw_title", "//div[@class='main-title']//h1//text()")
         loader.add_xpath("magnet_uris", "//a[starts-with(@href, 'magnet')]/@href")
+        # Handle filmedl protected links like: https://filmedl.com/sf_mone/?id=<base64>
+        for href in response.xpath(
+            "//a[starts-with(@href, 'https://filmedl.com/sf_mone/?id=')]/@href"
+        ).getall():
+            for magnet_link in self.extract_magnets_from_filmedl_href(href):
+                loader.add_value("magnet_uris", magnet_link)
         for shuffled_magnet_link in response.xpath("//@data-u").getall():
             try:
                 magnet_link = StarckFilmesSpider.unshuffle_string(shuffled_magnet_link)
