@@ -3,7 +3,7 @@ from typing import List
 import pytest
 
 from betor.enums import QualityEnum
-from betor_scrapy.processors import IMDbIDs, Language, Quality, Title
+from betor_scrapy.processors import IMDbIDs, Language, Quality, Title, Year
 
 
 class TestTitle:
@@ -110,6 +110,44 @@ class TestLanguage:
     def test_ok(self, value: str, expected: str):
         processor = Language()
         assert list(processor(value)) == expected
+
+
+class TestYear:
+    @pytest.mark.parametrize(
+        (
+            "value",
+            "expected",
+        ),
+        [
+            (
+                "2010",
+                2010,
+            ),
+            (
+                2010,
+                2010,
+            ),
+            (
+                "2010-2020",
+                2010,
+            ),
+            (
+                "2010/2020",
+                2010,
+            ),
+            (
+                " 2010 - 2020 ",
+                2010,
+            ),
+            (
+                "N/A",
+                None,
+            ),
+        ],
+    )
+    def test_ok(self, value, expected):
+        processor = Year()
+        assert processor(value) == expected
 
 
 class TestIMDbIDs:

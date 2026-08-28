@@ -8,7 +8,7 @@ from betor.enums import QualityEnum
 from betor.providers.provider import Provider
 from betor_scrapy.items import ScrapyItem
 
-from .processors import IMDbIDs, Language, Quality, SetIdentity, Title
+from .processors import IMDbIDs, Language, Quality, SetIdentity, Title, Year
 
 
 class ProviderLoader(scrapy.loader.ItemLoader):
@@ -18,7 +18,7 @@ class ProviderLoader(scrapy.loader.ItemLoader):
     title_out = Title()
     translated_title_out = Title()
     raw_title_out = Title()
-    year_in = MapCompose(int)
+    year_in = MapCompose(Year())
     qualitys_in = MapCompose(Quality())
     qualitys_out = SetIdentity[QualityEnum]()
     languages_in = MapCompose(Language())
