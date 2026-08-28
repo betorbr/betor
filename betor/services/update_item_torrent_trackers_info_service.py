@@ -1,3 +1,6 @@
+import base64
+from typing import Dict, Optional
+
 import motor.motor_asyncio
 import torf
 from scrapeer import Scraper
@@ -18,14 +21,39 @@ class UpdateItemTorrentTrackersInfoService:
         )
         return torrent_trackers_info
 
+    def get_best_torrent_tracker_info(
+        self, magnet: torf.Magnet
+    ) -> Optional[Dict[str, int]]:
+        result: Optional[Dict[str, int]] = None
+        trackers = list(magnet.tr) + [
+            "udp://open.stealth.si:80/announce",
+            "udp://tracker-udp.gbitt.info:80/announce",
+            "http://ipv4announce.sktorrent.eu:6969/announce",
+            "udp://tracker.torrent.eu.org:451/announce",
+            "udp://evan.im:6969/announce",
+        ]
+        for tracker in trackers:
+            results = self.scraper.scrape(
+                hashes=[magnet.infohash],
+                trackers=[tracker],
+                timeout=15,
+            )
+            r = results.get(magnet.infohash, {})
+            if not result or r.get("seeders", 0) > result.get("seeders", 0):
+                result = r
+        return result
+
     def get_torrent_trackers_info(self, magnet_uri: str) -> TorrentTrackersInfo:
         magnet = torf.Magnet.from_string(magnet_uri)
-        results = self.scraper.scrape(
-            hashes=[magnet.infohash],
-            trackers=list(magnet.tr) or ["udp://tracker.opentrackr.org:1337/announce"],
-            timeout=15,
-        )
-        result = results.get(magnet.infohash, {})
+        if not len(magnet.infohash) == 40:
+            try:
+                magnet.infohash = base64.b32decode(
+                    magnet.infohash.upper() + "=" * ((8 - len(magnet.infohash) % 8) % 8)
+                ).hex()
+            except:  # noqa: E722
+                pass
+        result = self.get_best_torrent_tracker_info(magnet)
+        assert result, "No result found for magnet URI: {}".format(magnet_uri)
         return TorrentTrackersInfo(
             torrent_num_peers=result.get("leechers"),
             torrent_num_seeds=result.get("seeders"),
