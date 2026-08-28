@@ -98,11 +98,13 @@ class StarckFilmesSpider(ProviderSpider, scrapy.Spider):
             "//a[starts-with(@href, 'https://filmedl.com/sf_mone/?id=')]/@href"
         ).getall():
             for magnet_link in self.extract_magnets_from_filmedl_href(href):
-                loader.add_value("magnet_uris", magnet_link)
+                if magnet_link:
+                    loader.add_value("magnet_uris", magnet_link)
         for shuffled_magnet_link in response.xpath("//@data-u").getall():
             try:
                 magnet_link = StarckFilmesSpider.unshuffle_string(shuffled_magnet_link)
-                loader.add_value("magnet_uris", magnet_link)
+                if magnet_link:
+                    loader.add_value("magnet_uris", magnet_link)
             except ValueError:
                 self.logger.debug(
                     "Failed to unshuffle magnet link: %s", shuffled_magnet_link
