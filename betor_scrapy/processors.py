@@ -6,6 +6,33 @@ from slugify import slugify
 
 from betor.enums import QualityEnum
 
+
+class Year:
+    YEAR_PATTERNS = (r"(?P<start>\d{4})\s*[-/]\s*(?P<end>\d{4})",)
+
+    def __call__(self, value) -> Optional[int]:
+        if value is None:
+            return None
+
+        value = str(value).strip()
+        if not value:
+            return None
+
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            pass
+
+        for pattern in Year.YEAR_PATTERNS:
+            match = re.search(pattern, value)
+            if match:
+                start_year = match.group("start")
+                if start_year.isdigit():
+                    return int(start_year)
+
+        return None
+
+
 T = TypeVar("T")
 
 
