@@ -24,9 +24,9 @@ jobs:
           poetry install
       - name: Linting, formatting and typing
         run: |
-          poetry run flake8
-          poetry run isort --profile black .
-          poetry run black .
-          poetry run mypy .
+          poetry run flake8 betor betor_scrapy tests acceptance_tests
+          poetry run isort --profile black betor betor_scrapy tests acceptance_tests
+          poetry run black betor betor_scrapy tests acceptance_tests
+          poetry run mypy betor betor_scrapy tests acceptance_tests
       - name: Unit Testing
         run: poetry run pytest tests
