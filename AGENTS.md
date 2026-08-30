@@ -1,49 +1,37 @@
-# AI Agent Instructions for BeTor
+<!-- bmad:context -->
+<!-- Verified 2026-08-30 against 1ff0bfc. Managed by bmad-project-context; edits inside this block are replaced on refresh. Keep anything you want preserved outside the markers. -->
 
-## Purpose
-This repository implements a Python-based media search backend that combines FastAPI, Scrapy, Celery, MongoDB, Redis, and Scrapyd.
+## BeTor
 
-## Key project facts
-- Python 3.13 with dependency management via Poetry.
-- Package roots: `betor` and `betor_scrapy`.
-- CI uses `poetry install`, `poetry run flake8`, `poetry run isort --profile black .`, `poetry run black .`, `poetry run mypy .`, and `poetry run pytest tests`.
-- Code is organized around API, providers, services, repositories, external API integrations, and Scrapy spiders/pipelines.
+P2P movie and TV series search engine. Python 3.13+, FastAPI for API, Scrapy for scraping, Celery for task processing, MongoDB + Redis for state. Tickets and demands tracked in GitHub issues and commits.
 
-## Primary entry points
-- `betor/api/app.py` — FastAPI application.
-- `betor/celery/app.py` — Celery application and task registration.
-- `betor_scrapy/settings.py` — Scrapy settings and pipeline configuration.
-- `docker-compose.yml` — local orchestrated environment for API, Scrapyd, Celery workers, Redis, MongoDB, and related services.
+## Policy
 
-## Important directories
-- `betor/api/` — API endpoints and app wiring.
-- `betor/celery/` — background task definitions.
-- `betor/providers/` — provider-specific scraper logic.
-- `betor/services/` — business workflows and item enrichment.
-- `betor/repositories/` — data persistence logic.
-- `betor/external_apis/` — TMDB/IMDB integrations.
-- `betor_scrapy/spiders/` — Scrapy spiders for each torrent provider.
-- `betor_scrapy/pipelines/` — Scrapy item processing, raw item normalization, and persistence.
+- Never push code directly to main. Always branch and PR.
+- Direct commits to main only for:
+    - `poetry update` results (commit `poetry.lock`)
+    - Release commits: `poetry version [major|minor|patch]` then commit `pyproject.toml` with message `release: x.x.x`
+- Never edit generated files: `poetry.lock`, `coverage.xml`, `scrapyd-eggs/`, `.mypy_cache/`, `.pytest_cache/`
 
-## Style and conventions
-- Use the existing format rules from `black` and `isort`.
-- The code uses async/await widely; preserve async behavior in services and pipelines.
-- Tests are under `tests/`; run `poetry run pytest tests`.
-- `pytest.ini` enables coverage for `betor` and `betor_scrapy`.
+## Where things are
 
-## What agents should do
-- Prefer editing within `betor/` and `betor_scrapy/` for feature, bugfix, or refactor work.
-- When adding or changing spiders, keep provider-specific parsing isolated in `betor_scrapy/spiders/`.
-- When adjusting business rules, update `betor/services/` and corresponding tests.
-- For data model changes, verify `betor/entities/`, repository logic, and API contracts.
+- API (FastAPI): `betor/` — endpoints, services, repositories
+- Scrapers (Scrapy): `betor_scrapy/spiders/` — spider definitions
+- Unit tests: `tests/` — test coverage, no external services needed
+- Acceptance/integration tests: `acceptance_tests/` — full-stack validation with `docker compose -f acceptance-tests.docker-compose.yml`
+- CI/CD: `.github/workflows/ci.yml` (linting, typing, unit tests), `release.yml` (Docker build on tags)
 
-## Useful references
-- `README.md` — architecture overview and component relationships.
-- `pyproject.toml` — package metadata, dependencies, and developer tooling.
-- `.github/workflows/ci.yml` — authoritative CI commands.
-- `docker-compose.yml` — local environment with API, Scrapyd, Celery, Redis, MongoDB.
+## Running and verifying
 
-## Additional guidance
-- Do not assume there is a frontend component in this repository.
-- Keep changes focused and test-driven whenever possible.
-- If behavior depends on external providers, prefer adding unit tests that isolate parsing and transformation logic.
+- Run unit tests: `poetry run pytest tests`
+- Run acceptance tests: first `docker compose -f acceptance-tests.docker-compose.yml up -d`, then `poetry run pytest acceptance_tests`
+- Linting, formatting, typing: `poetry run flake8`, `poetry run isort --profile black .`, `poetry run black .`, `poetry run mypy .`
+- All commands must run through `poetry run` — do not invoke Python or tools directly
+
+## Known pitfalls
+
+- Never commit code changes directly to main — always create a feature branch and open a PR
+- Acceptance tests require the full Docker Compose stack running; unit tests run in isolation
+- Always use `poetry run` prefix, even for simple commands like pytest or linting tools
+
+<!-- /bmad:context -->
