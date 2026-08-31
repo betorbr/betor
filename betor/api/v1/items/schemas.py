@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, computed_field
 
-from betor.entities import Episode
+from betor.entities import Episode, TorrentFailure
 from betor.enums import ItemType
 from betor.settings import store_torrent_file_settings
 from betor.types import Languages
@@ -26,6 +26,10 @@ class ItemSchema(BaseModel):
     torrent_num_seeds: Optional[int]
     torrent_files: Optional[List[str]]
     torrent_size: Optional[int]
+    torrent_failure_history: List[TorrentFailure]
+    torrent_failure_days: int
+    torrent_is_dying: bool
+    torrent_is_dead: bool
     download_path: Optional[str]
     languages: Languages
     episodes: List[Episode]
