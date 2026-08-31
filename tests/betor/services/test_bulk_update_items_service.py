@@ -196,3 +196,74 @@ class TestBulkUpdateItemsServiceDispatchMaintenanceTasks:
         bulk_update_items_service.items_repository.collection.count_documents.assert_awaited_once_with(
             {}
         )
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("torrent_is_dying", [True, False])
+    async def test_zero_exclusion_days_preserves_torrent_filter(
+        self,
+        bulk_update_items_service: BulkUpdateItemsService,
+        torrent_is_dying: bool,
+    ):
+        cursor = mock.MagicMock()
+        cursor.sort.return_value = cursor
+        cursor.limit.return_value = cursor
+        cursor.__aiter__.return_value = []
+        bulk_update_items_service.items_repository.collection.find.return_value = cursor
+        bulk_update_items_service.items_repository.collection.count_documents.return_value = (
+            2
+        )
+
+        with mock.patch("betor.services.bulk_update_items_service.celery_app"):
+            result = await bulk_update_items_service.dispatch_maintenance_tasks(
+                exclude_updated_within_days=0,
+                torrent_is_dying=torrent_is_dying,
+            )
+
+        assert result.filtered_count == 2
+        assert result.remaining_count == 2
+        count_queries = [
+            call.args[0]
+            for call in bulk_update_items_service.items_repository.collection.count_documents.await_args_list
+        ]
+        assert count_queries == [
+            {"torrent_is_dying": torrent_is_dying},
+            {"torrent_is_dying": torrent_is_dying},
+        ]
+        bulk_update_items_service.items_repository.collection.find.assert_called_once_with(
+            {"torrent_is_dying": torrent_is_dying}
+        )
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("torrent_is_dying", [True, False, None])
+    async def test_combines_torrent_is_dying_with_date_queries(
+        self,
+        bulk_update_items_service: BulkUpdateItemsService,
+        torrent_is_dying: bool | None,
+    ):
+        cursor = mock.MagicMock()
+        cursor.sort.return_value = cursor
+        cursor.limit.return_value = cursor
+        cursor.__aiter__.return_value = []
+        bulk_update_items_service.items_repository.collection.find.return_value = cursor
+        bulk_update_items_service.items_repository.collection.count_documents.side_effect = [
+            1,
+            2,
+        ]
+
+        with mock.patch("betor.services.bulk_update_items_service.celery_app"):
+            await bulk_update_items_service.dispatch_maintenance_tasks(
+                torrent_is_dying=torrent_is_dying
+            )
+
+        count_queries = [
+            call.args[0]
+            for call in bulk_update_items_service.items_repository.collection.count_documents.await_args_list
+        ]
+        find_query = (
+            bulk_update_items_service.items_repository.collection.find.call_args.args[0]
+        )
+        for query in [*count_queries, find_query]:
+            if torrent_is_dying is None:
+                assert "torrent_is_dying" not in query
+            else:
+                assert query["torrent_is_dying"] is torrent_is_dying

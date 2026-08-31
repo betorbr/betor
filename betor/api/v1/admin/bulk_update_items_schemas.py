@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -11,6 +11,10 @@ class BulkUpdateItemsRequest(BaseModel):
         default=30,
         ge=0,
         description="Exclude items updated within X days",
+    )
+    torrent_is_dying: Optional[bool] = Field(
+        default=None,
+        description="Filter items by torrent health status",
     )
 
 
