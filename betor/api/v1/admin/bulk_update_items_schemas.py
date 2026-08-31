@@ -14,12 +14,21 @@ class BulkUpdateItemsRequest(BaseModel):
     )
 
 
+class UpdatedItem(BaseModel):
+    """Task and item identifiers for a dispatched update."""
+
+    task_id: str = Field(description="UUID of the dispatched Celery task")
+    item_id: str = Field(description="ID of the item being updated")
+
+
 class BulkUpdateItemsResponse(BaseModel):
     """Response payload for bulk update items endpoint."""
 
-    task_ids: List[str] = Field(description="UUIDs of dispatched Celery tasks")
+    updated_items: List[UpdatedItem] = Field(
+        description="Items and task UUIDs dispatched for update"
+    )
     processed_count: int = Field(description="Number of items scheduled for update")
-    excluded_count: int = Field(description="Number of items excluded by date filter")
-    total_available: int = Field(
-        description="Total items without date filter (respecting limit)"
+    filtered_count: int = Field(description="Number of items updated within the window")
+    remaining_count: int = Field(
+        description="Number of items still eligible for update"
     )
