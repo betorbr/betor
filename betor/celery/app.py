@@ -21,4 +21,5 @@ celery_app.conf.task_routes = {
     "update_item_torrent_info": {"queue": "torrents"},
     "tmdb_api_request": {"queue": "api-requests"},
     "update_item_torrent_trackers_info": {"queue": "torrents"},
+    "admin_bulk_update_item": {"queue": "items"},
 }
