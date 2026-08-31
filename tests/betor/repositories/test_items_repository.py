@@ -1,11 +1,12 @@
 from collections import OrderedDict
+from datetime import datetime
 from typing import Generator
 from unittest import mock
 
 import motor.motor_asyncio
 import pytest
 
-from betor.entities import RawItem
+from betor.entities import RawItem, TorrentFailure
 from betor.repositories import ItemsRepository
 
 
@@ -204,3 +205,42 @@ class TestDumpAllItems:
         assert len(items) == 1
         assert items[0]["id"] == "1234"
         assert items[0]["provider_slug"] == "slug"
+
+
+class TestRecordTorrentFailure:
+    @pytest.mark.asyncio
+    async def test_appends_failure_and_recomputes_health(
+        self, items_repository: ItemsRepository, collection_mock
+    ):
+        collection_mock.update_many = mock.AsyncMock()
+        failure: TorrentFailure = {
+            "occurred_at": datetime.now(),
+            "failure_point": "update_item_torrent_info",
+        }
+
+        await items_repository.record_torrent_failure("magnet-uri", failure)
+
+        collection_mock.update_many.assert_awaited_once()
+        query, pipeline = collection_mock.update_many.call_args.args
+        assert query == {"magnet_uri": "magnet-uri"}
+        assert pipeline[0]["$set"]["torrent_failure_history"]["$concatArrays"]
+        assert pipeline[1]["$set"]["torrent_failure_days"]["$size"]
+        assert pipeline[2]["$set"]["torrent_is_dying"] == {
+            "$gte": ["$torrent_failure_days", 1]
+        }
+
+    def test_parse_result_uses_legacy_health_defaults(self):
+        result = ItemsRepository.parse_result(
+            {
+                "_id": "1234",
+                "provider_slug": "slug",
+                "provider_url": "url",
+                "magnet_uri": "magnet",
+                "magnet_xt": "xt",
+            }
+        )
+
+        assert result["torrent_failure_history"] == []
+        assert result["torrent_failure_days"] == 0
+        assert result["torrent_is_dying"] is False
+        assert result["torrent_is_dead"] is False

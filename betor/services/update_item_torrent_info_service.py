@@ -1,5 +1,5 @@
 import tempfile
-from time import sleep
+from time import monotonic, sleep
 
 import fsspec
 import libtorrent as lt
@@ -7,6 +7,7 @@ import motor.motor_asyncio
 
 from betor.celery.app import celery_app
 from betor.entities import TorrentInfo
+from betor.exceptions import TorrentMetadataTimeout
 from betor.repositories import ItemsRepository
 from betor.settings import libtorrent_settings, store_torrent_file_settings
 
@@ -34,8 +35,14 @@ class UpdateItemTorrentInfoService:
             lt_add_torrent_params = lt.parse_magnet_uri(magnet_uri)
             lt_add_torrent_params.save_path = save_path
             lt_torrent_handler = lt_session.add_torrent(lt_add_torrent_params)
+            timeout_at = monotonic() + libtorrent_settings.metadata_timeout
             while not lt_torrent_handler.has_metadata():
-                sleep(1)
+                if monotonic() >= timeout_at:
+                    lt_session.remove_torrent(lt_torrent_handler)
+                    raise TorrentMetadataTimeout(
+                        f"Timed out retrieving torrent metadata for {magnet_uri}"
+                    )
+                sleep(min(1, max(0, timeout_at - monotonic())))
             lt_torrent_info = lt_torrent_handler.torrent_file()
             if lt_torrent_info is None:
                 lt_session.remove_torrent(lt_torrent_handler)

@@ -1,7 +1,7 @@
 import hashlib
 import json
 from collections import OrderedDict
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import perf_counter
 from typing import Dict, List, Optional, Sequence
 
@@ -13,6 +13,7 @@ from betor.entities import (
     EpisodesInfo,
     Item,
     LanguagesInfo,
+    TorrentFailure,
     TorrentInfo,
     TorrentTrackersInfo,
 )
@@ -53,6 +54,10 @@ class ItemsRepository:
                 "torrent_files",
                 "download_path",
                 "languages",
+                "torrent_failure_history",
+                "torrent_failure_days",
+                "torrent_is_dying",
+                "torrent_is_dead",
             ]
         )
 
@@ -73,6 +78,10 @@ class ItemsRepository:
             magnet_uri=result["magnet_uri"],
             magnet_xt=result["magnet_xt"],
             magnet_dn=result.get("magnet_dn"),
+            torrent_failure_history=result.get("torrent_failure_history", []),
+            torrent_failure_days=result.get("torrent_failure_days", 0),
+            torrent_is_dying=result.get("torrent_is_dying", False),
+            torrent_is_dead=result.get("torrent_is_dead", False),
             torrent_name=result.get("torrent_name"),
             torrent_files=result.get("torrent_files"),
             torrent_size=result.get("torrent_size"),
@@ -284,6 +293,70 @@ class ItemsRepository:
                     ItemsRepository.UPDATED_AT_FIELD: datetime.now(),
                 }
             },
+        )
+
+    async def record_torrent_failure(self, magnet_uri: str, failure: TorrentFailure):
+        now = datetime.now()
+        window_start = (now - timedelta(days=6)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        window_end = (now + timedelta(days=1)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        failure_history = {
+            "$concatArrays": [
+                {"$ifNull": ["$torrent_failure_history", []]},
+                [failure],
+            ]
+        }
+        recent_failures = {
+            "$filter": {
+                "input": failure_history,
+                "as": "failure",
+                "cond": {
+                    "$and": [
+                        {"$gte": ["$$failure.occurred_at", window_start]},
+                        {"$lt": ["$$failure.occurred_at", window_end]},
+                    ]
+                },
+            }
+        }
+        failure_days = {
+            "$size": {
+                "$setUnion": [
+                    {
+                        "$map": {
+                            "input": recent_failures,
+                            "as": "failure",
+                            "in": {
+                                "$dateToString": {
+                                    "format": "%Y-%m-%d",
+                                    "date": "$$failure.occurred_at",
+                                }
+                            },
+                        }
+                    },
+                    [],
+                ]
+            }
+        }
+        await self.collection.update_many(
+            {"magnet_uri": magnet_uri},
+            [
+                {"$set": {"torrent_failure_history": failure_history}},
+                {
+                    "$set": {
+                        "torrent_failure_days": failure_days,
+                        ItemsRepository.UPDATED_AT_FIELD: now,
+                    }
+                },
+                {
+                    "$set": {
+                        "torrent_is_dying": {"$gte": ["$torrent_failure_days", 1]},
+                        "torrent_is_dead": {"$gte": ["$torrent_failure_days", 5]},
+                    }
+                },
+            ],
         )
 
     async def count_by_provider_slug_and_item_type(

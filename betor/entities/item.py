@@ -1,10 +1,11 @@
 from datetime import datetime
-from typing import Optional, TypedDict
+from typing import List, Optional, TypedDict
 
 from betor.enums import ItemType
 
 from .episodes_info import EpisodesInfo
 from .languages_info import LanguagesInfo
+from .torrent_failure import TorrentFailure
 from .torrent_info import TorrentInfo
 from .torrent_trackers_info import TorrentTrackersInfo
 
@@ -27,3 +28,7 @@ class Item(BaseItem, TorrentInfo, TorrentTrackersInfo, LanguagesInfo, EpisodesIn
     magnet_uri: str
     magnet_xt: str
     magnet_dn: Optional[str]
+    torrent_failure_history: List[TorrentFailure]
+    torrent_failure_days: int
+    torrent_is_dying: bool
+    torrent_is_dead: bool
