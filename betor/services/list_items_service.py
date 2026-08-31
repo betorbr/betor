@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import motor.motor_asyncio
 from bson.objectid import ObjectId
@@ -35,10 +35,11 @@ class ListItemsService:
         items_id: Optional[List[str]] = None,
         seasons: Optional[List[int]] = None,
         episodes: Optional[List[int]] = None,
+        torrent_is_dying: Optional[bool] = None,
     ) -> ApaginateParams[Item]:
         cursor_sort = CURSOR_SORT_MAPPING.get(sort)
         assert cursor_sort
-        filter_statements: List[Dict[str, Union[str, Union[Dict, List]]]] = []
+        filter_statements: List[Dict[str, Any]] = []
         if imdb_id is not None or tmdb_id is not None:
             id_statements = []
             if imdb_id is not None:
@@ -52,6 +53,8 @@ class ListItemsService:
             filter_statements.append({"seasons": {"$in": seasons}})
         if episodes is not None:
             filter_statements.append({"episodes.episode": {"$in": episodes}})
+        if torrent_is_dying is not None:
+            filter_statements.append({"torrent_is_dying": torrent_is_dying})
         query_filter = (
             {
                 **({"$and": filter_statements} if filter_statements else {}),

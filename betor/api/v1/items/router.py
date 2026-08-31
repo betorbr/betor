@@ -23,6 +23,10 @@ async def list_items(
     item_type: Annotated[Optional[List[ItemType]], Query()] = None,
     season: Annotated[Optional[List[int]], Query()] = None,
     episode: Annotated[Optional[List[int]], Query()] = None,
+    torrent_is_dying: Annotated[
+        Optional[bool],
+        Query(description="Filtra itens pelo estado de saude do torrent"),
+    ] = None,
 ) -> Page[ItemSchema]:
     service = ListItemsService(request.app.mongodb_client)
     collection, query_filter, cursor_sort, transformer = service.apaginate_params(
@@ -32,6 +36,7 @@ async def list_items(
         item_types=item_type,
         seasons=season,
         episodes=episode,
+        torrent_is_dying=torrent_is_dying,
     )
     return await apaginate(
         collection,

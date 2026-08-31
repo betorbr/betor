@@ -85,4 +85,5 @@ async def bulk_update_items(
     return await service.dispatch_maintenance_tasks(
         limit=payload.limit,
         exclude_updated_within_days=payload.exclude_updated_within_days,
+        torrent_is_dying=payload.torrent_is_dying,
     )

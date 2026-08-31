@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import motor.motor_asyncio
 
@@ -18,7 +18,10 @@ class BulkUpdateItemsService:
         self.items_repository = ItemsRepository(mongodb_client)
 
     async def dispatch_maintenance_tasks(
-        self, limit: int = 50, exclude_updated_within_days: int = 30
+        self,
+        limit: int = 50,
+        exclude_updated_within_days: int = 30,
+        torrent_is_dying: Optional[bool] = None,
     ) -> BulkUpdateItemsResponse:
         """
         Query stale items and dispatch Celery maintenance tasks.
@@ -26,8 +29,13 @@ class BulkUpdateItemsService:
         Returns:
             Response with dispatched item/task pairs and complete-set counts.
         """
-        query_with_date: Dict[str, Any] = {}
-        recent_query: Dict[str, Any] = {}
+        item_filter: Dict[str, Any] = (
+            {"torrent_is_dying": torrent_is_dying}
+            if torrent_is_dying is not None
+            else {}
+        )
+        query_with_date = item_filter.copy()
+        recent_query = item_filter.copy()
         if exclude_updated_within_days > 0:
             cutoff_date = datetime.now(tz=timezone.utc) - timedelta(
                 days=exclude_updated_within_days
