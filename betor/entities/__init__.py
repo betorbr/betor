@@ -6,6 +6,7 @@ from .languages_info import LanguagesInfo
 from .provider_url_imdb_mapping import ProviderURLIMDBMapping
 from .raw_item import RawItem
 from .search_job_monitor import SearchJobMonitor, SearchProviderResult, SearchRequest
+from .torrent_failure import TorrentFailure, TorrentFailurePoint
 from .torrent_info import TorrentInfo
 from .torrent_trackers_info import TorrentTrackersInfo
 
@@ -14,6 +15,8 @@ __all__ = [
     "BaseItem",
     "Item",
     "TorrentInfo",
+    "TorrentFailure",
+    "TorrentFailurePoint",
     "JobMonitor",
     "Job",
     "SearchRequest",
