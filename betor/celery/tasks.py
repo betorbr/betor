@@ -104,6 +104,22 @@ def _update_item_torrent_trackers_info(magnet_uri: str, **kwargs):
     return result
 
 
+def _admin_bulk_update_item(item_id: str, **kwargs):
+    """
+    Admin maintenance task dispatcher for a single item during bulk updates.
+    Delegates to AdminBulkUpdateItemService for logic.
+    """
+    mongodb_client = get_mongodb_client()
+    from betor.services.admin_bulk_update_item_service import (
+        AdminBulkUpdateItemService,
+    )
+
+    service = AdminBulkUpdateItemService(mongodb_client)
+    result = asyncio.run(service.process(item_id))
+    mongodb_client.close()
+    return result
+
+
 process_raw_item: Task = celery_app.task(
     _process_raw_item,
     base=BetorCeleryTask,
@@ -137,4 +153,12 @@ update_item_torrent_trackers_info = celery_app.task(
     _update_item_torrent_trackers_info,
     base=BetorCeleryTask,
     name="update_item_torrent_trackers_info",
+)
+admin_bulk_update_item = celery_app.task(
+    _admin_bulk_update_item,
+    base=BetorCeleryTask,
+    name="admin_bulk_update_item",
+    default_retry_delay=15,
+    autoretry_for=(Exception,),
+    retry_kwargs={"max_retries": 3},
 )

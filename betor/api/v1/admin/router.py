@@ -14,6 +14,10 @@ from betor.services import (
 )
 from betor.services.admin_download_items_service import AdminDownloadItemsService
 
+from .bulk_update_items_schemas import (
+    BulkUpdateItemsRequest,
+    BulkUpdateItemsResponse,
+)
 from .schemas import (
     AdminDeterminesIMDBTMDBIdPayload,
     AdminDeterminesIMDBTMDBIdRawItemNotFoundError,
@@ -68,3 +72,17 @@ async def download_items(request: BetorRequest):
         return await service.get_or_create_dump()
     except RuntimeError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@admin_router.post("/bulk-update-items/", response_model=BulkUpdateItemsResponse)
+async def bulk_update_items(
+    request: BetorRequest, payload: BulkUpdateItemsRequest
+) -> BulkUpdateItemsResponse:
+    """Dispatch maintenance tasks for stale items."""
+    from betor.services.bulk_update_items_service import BulkUpdateItemsService
+
+    service = BulkUpdateItemsService(request.app.mongodb_client)
+    return await service.dispatch_maintenance_tasks(
+        limit=payload.limit,
+        exclude_updated_within_days=payload.exclude_updated_within_days,
+    )
