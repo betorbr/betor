@@ -210,3 +210,7 @@ __marimo__/
 dbs/
 twistd.pid
 scrapyd-eggs/
+
+# private passwords and tokens
+*.token
+*.password
