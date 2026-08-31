@@ -6,6 +6,7 @@ import torf
 from scrapeer import Scraper
 
 from betor.entities import TorrentTrackersInfo
+from betor.exceptions import TorrentTrackersInfoNotFound
 from betor.repositories import ItemsRepository
 
 
@@ -56,7 +57,10 @@ class UpdateItemTorrentTrackersInfoService:
             except:  # noqa: E722
                 pass
         result = self.get_best_torrent_tracker_info(magnet)
-        assert result, "No result found for magnet URI: {}".format(magnet_uri)
+        if not result:
+            raise TorrentTrackersInfoNotFound(
+                "No result found for magnet URI: {}".format(magnet_uri)
+            )
         return TorrentTrackersInfo(
             torrent_num_peers=result.get("leechers"),
             torrent_num_seeds=result.get("seeders"),

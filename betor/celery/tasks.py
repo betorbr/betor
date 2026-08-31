@@ -1,4 +1,6 @@
 import asyncio
+import logging
+from datetime import datetime
 from typing import Optional
 
 import httpx
@@ -7,6 +9,7 @@ from celery import Task
 from betor.databases.mongodb import get_mongodb_client
 from betor.databases.redis import get_redis_client
 from betor.entities import TorrentInfo
+from betor.exceptions import TorrentMetadataTimeout, TorrentTrackersInfoNotFound
 from betor.services import (
     AddJobResultsService,
     ProcessRawItemService,
@@ -18,6 +21,8 @@ from betor.services import (
 from betor.settings import tmdb_api_settings
 
 from .app import celery_app
+
+logger = logging.getLogger(__name__)
 
 
 class BetorCeleryTask(Task):
@@ -57,9 +62,24 @@ def _process_raw_item(
 def _update_item_torrent_info(magnet_uri: str, **kwargs):
     mongodb_client = get_mongodb_client()
     service = UpdateItemTorrentInfoService(mongodb_client)
-    result = asyncio.run(service.update(magnet_uri))
-    mongodb_client.close()
-    return result
+    try:
+        return asyncio.run(service.update(magnet_uri))
+    except TorrentMetadataTimeout:
+        try:
+            asyncio.run(
+                service.items_repository.record_torrent_failure(
+                    magnet_uri,
+                    {
+                        "occurred_at": datetime.now(),
+                        "failure_point": "update_item_torrent_info",
+                    },
+                )
+            )
+        except Exception:
+            logger.exception("Could not record torrent info failure")
+        raise
+    finally:
+        mongodb_client.close()
 
 
 def _update_item_languages_info(item_id: str, **kwargs):
@@ -99,9 +119,24 @@ def _tmdb_api_request(url: str):
 def _update_item_torrent_trackers_info(magnet_uri: str, **kwargs):
     mongodb_client = get_mongodb_client()
     service = UpdateItemTorrentTrackersInfoService(mongodb_client)
-    result = asyncio.run(service.update(magnet_uri))
-    mongodb_client.close()
-    return result
+    try:
+        return asyncio.run(service.update(magnet_uri))
+    except TorrentTrackersInfoNotFound:
+        try:
+            asyncio.run(
+                service.items_repository.record_torrent_failure(
+                    magnet_uri,
+                    {
+                        "occurred_at": datetime.now(),
+                        "failure_point": "update_item_torrent_trackers_info",
+                    },
+                )
+            )
+        except Exception:
+            logger.exception("Could not record torrent trackers failure")
+        raise
+    finally:
+        mongodb_client.close()
 
 
 def _admin_bulk_update_item(item_id: str, **kwargs):

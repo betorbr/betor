@@ -51,6 +51,7 @@ class LibtorrentSettings(BaseSettings):
     )
 
     listen_interfaces: str = "0.0.0.0:6881"
+    metadata_timeout: int = 5 * 60
 
 
 class SearchJobMonitorSettings(BaseSettings):
