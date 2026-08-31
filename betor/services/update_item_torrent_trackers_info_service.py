@@ -25,13 +25,16 @@ class UpdateItemTorrentTrackersInfoService:
         self, magnet: torf.Magnet
     ) -> Optional[Dict[str, int]]:
         result: Optional[Dict[str, int]] = None
-        trackers = list(magnet.tr) + [
-            "udp://open.stealth.si:80/announce",
-            "udp://tracker-udp.gbitt.info:80/announce",
-            "http://ipv4announce.sktorrent.eu:6969/announce",
-            "udp://tracker.torrent.eu.org:451/announce",
-            "udp://evan.im:6969/announce",
-        ]
+        trackers = set(
+            list(magnet.tr)
+            + [
+                "udp://open.stealth.si:80/announce",
+                "udp://tracker-udp.gbitt.info:80/announce",
+                "http://ipv4announce.sktorrent.eu:6969/announce",
+                "udp://tracker.torrent.eu.org:451/announce",
+                "udp://evan.im:6969/announce",
+            ]
+        )
         for tracker in trackers:
             results = self.scraper.scrape(
                 hashes=[magnet.infohash],
