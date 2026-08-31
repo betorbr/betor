@@ -214,3 +214,6 @@ scrapyd-eggs/
 # private passwords and tokens
 *.token
 *.password
+
+# local tests
+/test_*
