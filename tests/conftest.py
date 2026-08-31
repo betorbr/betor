@@ -30,7 +30,8 @@ def raw_item(request: pytest.FixtureRequest, fake: Faker) -> RawItem:
         year=None,
         cast=None,
     )
-    if request.param and isinstance(request.param, dict):
+    # Support both parametrized (with request.param) and non-parametrized usage
+    if hasattr(request, "param") and request.param and isinstance(request.param, dict):
         raw_item.update(request.param)
     return raw_item
 
@@ -64,6 +65,7 @@ def item(request: pytest.FixtureRequest, fake: Faker) -> Item:
         episodes=[],
         seasons=[],
     )
-    if request.param and isinstance(request.param, dict):
+    # Support both parametrized (with request.param) and non-parametrized usage
+    if hasattr(request, "param") and request.param and isinstance(request.param, dict):
         item.update(request.param)
     return item

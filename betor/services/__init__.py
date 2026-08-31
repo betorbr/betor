@@ -1,4 +1,5 @@
 from .add_job_results_service import AddJobResultsService
+from .admin_bulk_update_item_service import AdminBulkUpdateItemService
 from .admin_determines_imdb_tmdb_id_service import (
     AdminDeterminesIMDBTMDBIdResult,
     AdminDeterminesIMDBTMDBIdService,
@@ -11,6 +12,7 @@ from .admin_normalize_items_tmdb_id_service import (
     AdminNormalizeItemsTMDBIdResult,
     AdminNormalizeItemsTMDBIdService,
 )
+from .bulk_update_items_service import BulkUpdateItemsService
 from .catalog_service import CatalogService
 from .detail_job_monitor_service import DetailJobMonitorService
 from .determines_imdb_tmdb_ids_service import DeterminesIMDbTMDBIdsService
@@ -56,4 +58,6 @@ __all__ = [
     "GetItemService",
     "GetRawItemService",
     "ListRawItemsService",
+    "BulkUpdateItemsService",
+    "AdminBulkUpdateItemService",
 ]
