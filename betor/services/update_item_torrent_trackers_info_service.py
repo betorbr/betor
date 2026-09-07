@@ -20,6 +20,7 @@ class UpdateItemTorrentTrackersInfoService:
         await self.items_repository.update_torrent_trackers_info(
             magnet_uri, torrent_trackers_info
         )
+        await self.items_repository.maintain_torrent_health(magnet_uri)
         return torrent_trackers_info
 
     def get_best_torrent_tracker_info(
