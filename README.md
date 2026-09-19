@@ -10,6 +10,7 @@ BeTor é o buscador de filmes e séries com o jeitinho mais brasileiro da intern
 - [Starck Filmes](https://www.starckfilmes.site/)
 - [Rede Torrent](https://redetorrent.com/)
 - [Sem Torrent](https://semtorrent.com/)
+- [DarkMahou](https://darkmahou.io/) — [integração e testes](docs/darkmahou.md)
 
 ### Solicitação de provedor
 

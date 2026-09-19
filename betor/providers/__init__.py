@@ -2,6 +2,7 @@ from typing import Literal, TypeAlias
 
 from .bludv import bludv
 from .comando_torrents import comando_torrents
+from .darkmahou import darkmahou
 from .provider import Provider
 from .rede_torrent import rede_torrent
 from .sem_torrent import sem_torrent
@@ -15,6 +16,7 @@ PROVIDERS = [
     starck_filmes,
     rede_torrent,
     sem_torrent,
+    darkmahou,
 ]
 
 ProviderSlug: TypeAlias = Literal[
@@ -24,6 +26,7 @@ ProviderSlug: TypeAlias = Literal[
     "starck-filmes",
     "rede-torrent",
     "sem-torrent",
+    "darkmahou",
 ]
 
 __all__ = [
@@ -35,4 +38,5 @@ __all__ = [
     "starck_filmes",
     "rede_torrent",
     "sem_torrent",
+    "darkmahou",
 ]
