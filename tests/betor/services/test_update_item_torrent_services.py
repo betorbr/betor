@@ -238,9 +238,15 @@ def test_upload_itorrent_accepts_success_page_with_torrent_url():
     </html>
     """
 
-    with mock.patch(
-        "betor.services.update_item_torrent_info_service.requests.post"
-    ) as post_mock:
+    with (
+        mock.patch(
+            "betor.services.update_item_torrent_info_service.requests.post"
+        ) as post_mock,
+        mock.patch(
+            "betor.services.update_item_torrent_info_service.verify_itorrent_download_exists",
+            return_value=True,
+        ) as verify_mock,
+    ):
         post_mock.return_value.status_code = 200
         post_mock.return_value.raise_for_status.return_value = None
         post_mock.return_value.text = success_html
@@ -251,9 +257,29 @@ def test_upload_itorrent_accepts_success_page_with_torrent_url():
             timeout=10,
         )
 
+    verify_mock.assert_called_once_with(hash_value, timeout=10)
     assert success is True
     assert info_hash == hash_value
     assert response_text == success_html
+
+
+def test_verify_itorrent_download_exists_tries_upper_and_lowercase_hashes():
+    from betor.services.update_item_torrent_info_service import (
+        verify_itorrent_download_exists,
+    )
+
+    with mock.patch(
+        "betor.services.update_item_torrent_info_service.requests.head"
+    ) as head_mock:
+        head_mock.side_effect = [
+            mock.Mock(status_code=520, url="https://itorrents.net/torrent/abc.torrent"),
+            mock.Mock(status_code=200, url="https://itorrents.net/torrent/ABC.torrent"),
+        ]
+
+        assert verify_itorrent_download_exists("abc", timeout=10) is True
+        assert head_mock.call_count == 2
+        assert head_mock.call_args_list[0].args[0] == "https://itorrents.net/torrent/ABC.torrent"
+        assert head_mock.call_args_list[1].args[0] == "https://itorrents.net/torrent/abc.torrent"
 
 
 def test_upload_itorrent_rejects_error_no_data_response():

@@ -92,7 +92,7 @@ class ITorrentSettings(BaseSettings):
     upload_enabled: bool = True
     download_enabled: bool = True
     autoupload_url: str = "https://itorrents.net/upload.php"
-    public_download_base_url: str = "http://itorrents.net/torrent"
+    public_download_base_url: str = "https://itorrents.net/torrent"
 
 
 class DownloadItemsStoreSettings(BaseSettings):

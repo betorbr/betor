@@ -51,6 +51,38 @@ def extract_itorrent_info_hash(response_text: str) -> str | None:
     return None
 
 
+def verify_itorrent_download_exists(
+    info_hash: str,
+    *,
+    base_url: str = itorrent_settings.public_download_base_url,
+    timeout: int = 10,
+) -> bool:
+    if not info_hash:
+        return False
+
+    for variant in (info_hash.upper(), info_hash.lower()):
+        url = f"{base_url.rstrip('/')}/{variant}.torrent"
+        try:
+            response = requests.head(url, allow_redirects=True, timeout=timeout)
+            if response.status_code in {200, 206, 301, 302, 303, 307, 308}:
+                logger.info(
+                    "iTorrent torrent found via HEAD; hash=%s status=%s final_url=%s",
+                    info_hash,
+                    response.status_code,
+                    response.url,
+                )
+                return True
+            logger.warning(
+                "iTorrent torrent HEAD check failed; hash=%s url=%s status=%s",
+                info_hash,
+                url,
+                response.status_code,
+            )
+        except requests.RequestException as exc:
+            logger.warning("iTorrent torrent HEAD check failed for %s: %s", url, exc)
+    return False
+
+
 def upload_torrent_to_itorrent(
     torrent_file_bytes: bytes,
     *,
@@ -77,7 +109,17 @@ def upload_torrent_to_itorrent(
                 response.status_code,
                 response.text[:500],
             )
-        return (info_hash is not None, info_hash, response.text)
+            return False, None, response.text
+
+        if not verify_itorrent_download_exists(info_hash, timeout=timeout):
+            logger.warning(
+                "iTorrent upload returned a hash but the torrent is not publicly available; hash=%s response=%s",
+                info_hash,
+                response.text[:500],
+            )
+            return False, info_hash, response.text
+
+        return True, info_hash, response.text
     except requests.RequestException as exc:
         logger.warning("iTorrent upload request failed: %s", exc)
         return False, None, str(exc)
