@@ -224,6 +224,38 @@ def test_metadata_service_does_not_call_itorrent_upload_when_disabled():
     assert torrent_info["itorrent_uploaded_at"] is None
 
 
+def test_upload_itorrent_accepts_success_page_with_torrent_url():
+    from betor.services.update_item_torrent_info_service import (
+        upload_torrent_to_itorrent,
+    )
+
+    hash_value = "ED0E37901D11FABDEF74134260894A26B1FABCD8"
+    success_html = f"""
+    <html>
+      <body>
+        <a href="/torrent/{hash_value}.torrent">Download</a>
+      </body>
+    </html>
+    """
+
+    with mock.patch(
+        "betor.services.update_item_torrent_info_service.requests.post"
+    ) as post_mock:
+        post_mock.return_value.status_code = 200
+        post_mock.return_value.raise_for_status.return_value = None
+        post_mock.return_value.text = success_html
+
+        success, info_hash, response_text = upload_torrent_to_itorrent(
+            b"torrent-data",
+            url="https://itorrents.net/upload.php",
+            timeout=10,
+        )
+
+    assert success is True
+    assert info_hash == hash_value
+    assert response_text == success_html
+
+
 def test_upload_itorrent_rejects_error_no_data_response():
     from betor.services.update_item_torrent_info_service import (
         upload_torrent_to_itorrent,

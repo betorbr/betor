@@ -1,3 +1,4 @@
+import re
 import tempfile
 from datetime import datetime
 from logging import getLogger
@@ -22,15 +23,31 @@ logger = getLogger(__name__)
 
 
 def extract_itorrent_info_hash(response_text: str) -> str | None:
+    if not response_text or not response_text.strip():
+        return None
+
+    for pattern in (
+        r"/torrent/([A-Fa-f0-9]{40})\.torrent",
+        r"[A-Fa-f0-9]{40}",
+    ):
+        match = re.search(pattern, response_text)
+        if match:
+            info_hash = match.group(1) if pattern.startswith("/torrent/") else match.group(0)
+            if len(info_hash) == 40 and all(
+                c in "0123456789abcdefABCDEF" for c in info_hash
+            ):
+                return info_hash
+
     response_lines = [
         line.strip() for line in response_text.splitlines() if line.strip()
     ]
-    if not response_lines:
-        return None
+    for line in reversed(response_lines):
+        candidate = line[:40]
+        if len(candidate) == 40 and all(
+            c in "0123456789abcdefABCDEF" for c in candidate
+        ):
+            return candidate
 
-    info_hash = response_lines[-1][:40]
-    if len(info_hash) == 40 and all(c in "0123456789abcdefABCDEF" for c in info_hash):
-        return info_hash
     return None
 
 
