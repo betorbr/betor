@@ -142,7 +142,9 @@ def test_metadata_service_sets_upload_timestamp_when_itorrent_upload_succeeds():
             return_value=0,
         ),
         mock.patch.object(itorrent_settings, "upload_enabled", True),
-        mock.patch.object(service, "upload_to_itorrent", return_value=True) as upload_mock,
+        mock.patch.object(
+            service, "upload_to_itorrent", return_value=True
+        ) as upload_mock,
     ):
         torrent_info = service.get_info_from_lt_session("magnet-uri")
 
@@ -220,3 +222,26 @@ def test_metadata_service_does_not_call_itorrent_upload_when_disabled():
 
     upload_mock.assert_not_called()
     assert torrent_info["itorrent_uploaded_at"] is None
+
+
+def test_upload_itorrent_rejects_error_no_data_response():
+    from betor.services.update_item_torrent_info_service import (
+        upload_torrent_to_itorrent,
+    )
+
+    with mock.patch(
+        "betor.services.update_item_torrent_info_service.requests.post"
+    ) as post_mock:
+        post_mock.return_value.status_code = 200
+        post_mock.return_value.raise_for_status.return_value = None
+        post_mock.return_value.text = "error, no data"
+
+        success, info_hash, response_text = upload_torrent_to_itorrent(
+            b"torrent-data",
+            url="http://itorrents.net/autoupload.php",
+            timeout=10,
+        )
+
+    assert success is False
+    assert info_hash is None
+    assert response_text == "error, no data"

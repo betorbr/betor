@@ -18,8 +18,52 @@ from betor.settings import (
     store_torrent_file_settings,
 )
 
-
 logger = getLogger(__name__)
+
+
+def extract_itorrent_info_hash(response_text: str) -> str | None:
+    response_lines = [
+        line.strip() for line in response_text.splitlines() if line.strip()
+    ]
+    if not response_lines:
+        return None
+
+    info_hash = response_lines[-1][:40]
+    if len(info_hash) == 40 and all(c in "0123456789abcdefABCDEF" for c in info_hash):
+        return info_hash
+    return None
+
+
+def upload_torrent_to_itorrent(
+    torrent_file_bytes: bytes,
+    *,
+    url: str,
+    timeout: int = 10,
+) -> tuple[bool, str | None, str]:
+    try:
+        response = requests.post(
+            url,
+            files={
+                "torrent": (
+                    "upload.torrent",
+                    torrent_file_bytes,
+                    "application/x-bittorrent",
+                )
+            },
+            timeout=timeout,
+        )
+        response.raise_for_status()
+        info_hash = extract_itorrent_info_hash(response.text)
+        if info_hash is None:
+            logger.warning(
+                "iTorrent upload did not return a valid info hash; status=%s response=%s",
+                response.status_code,
+                response.text[:500],
+            )
+        return (info_hash is not None, info_hash, response.text)
+    except requests.RequestException as exc:
+        logger.warning("iTorrent upload request failed: %s", exc)
+        return False, None, str(exc)
 
 
 class UpdateItemTorrentInfoService:
@@ -96,25 +140,9 @@ class UpdateItemTorrentInfoService:
 
     @staticmethod
     def upload_to_itorrent(torrent_file_bytes: bytes) -> bool:
-        try:
-            response = requests.post(
-                itorrent_settings.autoupload_url,
-                files={
-                    "torrent": (
-                        "upload.torrent",
-                        torrent_file_bytes,
-                        "application/x-bittorrent",
-                    )
-                },
-                timeout=10,
-            )
-            response.raise_for_status()
-            response_lines = [line.strip() for line in response.text.splitlines() if line.strip()]
-            if not response_lines:
-                return False
-            info_hash = response_lines[-1][:40]
-            return len(info_hash) == 40 and all(
-                c in "0123456789abcdefABCDEF" for c in info_hash
-            )
-        except requests.RequestException:
-            return False
+        success, _info_hash, _response_text = upload_torrent_to_itorrent(
+            torrent_file_bytes,
+            url=itorrent_settings.autoupload_url,
+            timeout=10,
+        )
+        return success
