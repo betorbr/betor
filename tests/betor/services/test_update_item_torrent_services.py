@@ -12,6 +12,54 @@ from betor.services.update_item_torrent_trackers_info_service import (
 from betor.settings import libtorrent_settings
 
 
+@pytest.mark.asyncio
+async def test_metadata_service_update_recalculates_health_on_success():
+    service = UpdateItemTorrentInfoService(mock.MagicMock())
+    torrent_info = {
+        "torrent_name": "name",
+        "torrent_files": ["file.mkv"],
+        "torrent_size": 123,
+        "download_path": None,
+    }
+    service.get_info_from_lt_session = mock.MagicMock(return_value=torrent_info)
+    service.items_repository.update_torrent_info = mock.AsyncMock()
+    service.items_repository.maintain_torrent_health = mock.AsyncMock()
+    service.items_repository.get_all_by_magnet_uri = mock.AsyncMock(return_value=[])
+
+    with mock.patch("betor.services.update_item_torrent_info_service.celery_app"):
+        result = await service.update("magnet-uri")
+
+    assert result == torrent_info
+    service.items_repository.update_torrent_info.assert_awaited_once_with(
+        "magnet-uri", torrent_info
+    )
+    service.items_repository.maintain_torrent_health.assert_awaited_once_with(
+        "magnet-uri"
+    )
+
+
+@pytest.mark.asyncio
+async def test_tracker_service_update_recalculates_health_on_success():
+    service = UpdateItemTorrentTrackersInfoService(mock.MagicMock())
+    trackers_info = {
+        "torrent_num_peers": 3,
+        "torrent_num_seeds": 7,
+    }
+    service.get_torrent_trackers_info = mock.MagicMock(return_value=trackers_info)
+    service.items_repository.update_torrent_trackers_info = mock.AsyncMock()
+    service.items_repository.maintain_torrent_health = mock.AsyncMock()
+
+    result = await service.update("magnet-uri")
+
+    assert result == trackers_info
+    service.items_repository.update_torrent_trackers_info.assert_awaited_once_with(
+        "magnet-uri", trackers_info
+    )
+    service.items_repository.maintain_torrent_health.assert_awaited_once_with(
+        "magnet-uri"
+    )
+
+
 def test_tracker_service_raises_domain_exception_for_missing_result():
     service = UpdateItemTorrentTrackersInfoService(mock.MagicMock())
     with mock.patch.object(service, "get_best_torrent_tracker_info", return_value=None):

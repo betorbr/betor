@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Optional
 
 import httpx
@@ -70,7 +70,7 @@ def _update_item_torrent_info(magnet_uri: str, **kwargs):
                 service.items_repository.record_torrent_failure(
                     magnet_uri,
                     {
-                        "occurred_at": datetime.now(),
+                        "occurred_at": datetime.now(UTC),
                         "failure_point": "update_item_torrent_info",
                     },
                 )
@@ -127,7 +127,7 @@ def _update_item_torrent_trackers_info(magnet_uri: str, **kwargs):
                 service.items_repository.record_torrent_failure(
                     magnet_uri,
                     {
-                        "occurred_at": datetime.now(),
+                        "occurred_at": datetime.now(UTC),
                         "failure_point": "update_item_torrent_trackers_info",
                     },
                 )

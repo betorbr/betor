@@ -19,6 +19,7 @@ class UpdateItemTorrentInfoService:
     async def update(self, magnet_uri: str):
         torrent_info = self.get_info_from_lt_session(magnet_uri)
         await self.items_repository.update_torrent_info(magnet_uri, torrent_info)
+        await self.items_repository.maintain_torrent_health(magnet_uri)
         items = await self.items_repository.get_all_by_magnet_uri(magnet_uri)
         for item in items:
             celery_app.signature("update_item_languages_info").delay(item["id"])

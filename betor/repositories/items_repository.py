@@ -1,9 +1,10 @@
 import hashlib
 import json
+import logging
 from collections import OrderedDict
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from time import perf_counter
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, List, Optional, Sequence, cast
 
 import motor.motor_asyncio
 from bson.errors import InvalidId
@@ -20,6 +21,9 @@ from betor.entities import (
 from betor.enums import ItemType
 from betor.settings import database_mongodb_settings
 from betor.types import InsertOrUpdateResult
+
+
+logger = logging.getLogger(__name__)
 
 
 class ItemsRepository:
@@ -96,6 +100,16 @@ class ItemsRepository:
     @classmethod
     def parse_results(cls, results: Sequence[Dict]) -> Sequence[Item]:
         return [ItemsRepository.parse_result(r) for r in results]
+
+    @staticmethod
+    def _utc_now() -> datetime:
+        return datetime.now(UTC).replace(tzinfo=None)
+
+    @staticmethod
+    def _to_utc_naive(value: datetime) -> datetime:
+        if value.tzinfo is not None:
+            return value.astimezone(UTC).replace(tzinfo=None)
+        return value
 
     def __init__(self, mongodb_client: motor.motor_asyncio.AsyncIOMotorClient):
         self.mongodb_client = mongodb_client
@@ -295,28 +309,28 @@ class ItemsRepository:
             },
         )
 
-    async def record_torrent_failure(self, magnet_uri: str, failure: TorrentFailure):
-        now = datetime.now()
-        window_start = (now - timedelta(days=6)).replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
-        window_end = (now + timedelta(days=1)).replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
-        failure_history = {
-            "$concatArrays": [
-                {"$ifNull": ["$torrent_failure_history", []]},
-                [failure],
-            ]
-        }
-        recent_failures = {
+    def _build_torrent_health_pipeline(
+        self, now: datetime, append_failure: Optional[TorrentFailure] = None
+    ) -> List[Dict]:
+        history_input: Dict = {"$ifNull": ["$torrent_failure_history", []]}
+        if append_failure is not None:
+            history_input = {
+                "$concatArrays": [
+                    history_input,
+                    [append_failure],
+                ]
+            }
+
+        window_start = now - timedelta(days=7)
+        valid_history = {
             "$filter": {
-                "input": failure_history,
+                "input": history_input,
                 "as": "failure",
                 "cond": {
                     "$and": [
+                        {"$eq": [{"$type": "$$failure.occurred_at"}, "date"]},
                         {"$gte": ["$$failure.occurred_at", window_start]},
-                        {"$lt": ["$$failure.occurred_at", window_end]},
+                        {"$lte": ["$$failure.occurred_at", now]},
                     ]
                 },
             }
@@ -326,12 +340,13 @@ class ItemsRepository:
                 "$setUnion": [
                     {
                         "$map": {
-                            "input": recent_failures,
+                            "input": valid_history,
                             "as": "failure",
                             "in": {
                                 "$dateToString": {
                                     "format": "%Y-%m-%d",
                                     "date": "$$failure.occurred_at",
+                                    "timezone": "UTC",
                                 }
                             },
                         }
@@ -340,23 +355,58 @@ class ItemsRepository:
                 ]
             }
         }
+
+        return [
+            {"$set": {"torrent_failure_history": valid_history}},
+            {
+                "$set": {
+                    "torrent_failure_days": failure_days,
+                    ItemsRepository.UPDATED_AT_FIELD: now,
+                }
+            },
+            {
+                "$set": {
+                    "torrent_is_dying": {"$gte": ["$torrent_failure_days", 1]},
+                    "torrent_is_dead": {"$gte": ["$torrent_failure_days", 5]},
+                }
+            },
+        ]
+
+    async def maintain_torrent_health(self, magnet_uri: str):
+        now = ItemsRepository._utc_now()
         await self.collection.update_many(
             {"magnet_uri": magnet_uri},
-            [
-                {"$set": {"torrent_failure_history": failure_history}},
-                {
-                    "$set": {
-                        "torrent_failure_days": failure_days,
-                        ItemsRepository.UPDATED_AT_FIELD: now,
-                    }
-                },
-                {
-                    "$set": {
-                        "torrent_is_dying": {"$gte": ["$torrent_failure_days", 1]},
-                        "torrent_is_dead": {"$gte": ["$torrent_failure_days", 5]},
-                    }
-                },
-            ],
+            self._build_torrent_health_pipeline(now),
+        )
+
+    async def record_torrent_failure(self, magnet_uri: str, failure: TorrentFailure):
+        now = ItemsRepository._utc_now()
+        occurred_at = failure.get("occurred_at")
+        append_failure: Optional[TorrentFailure] = None
+        if not isinstance(occurred_at, datetime):
+            logger.warning(
+                "Skipping invalid torrent failure event for %s: occurred_at is not datetime",
+                magnet_uri,
+            )
+        else:
+            normalized_occurred_at = ItemsRepository._to_utc_naive(occurred_at)
+            if normalized_occurred_at > now:
+                logger.warning(
+                    "Skipping future torrent failure event for %s: occurred_at=%s now=%s",
+                    magnet_uri,
+                    occurred_at,
+                    now,
+                )
+                append_failure = None
+            else:
+                append_failure = cast(
+                    TorrentFailure,
+                    {**failure, "occurred_at": normalized_occurred_at},
+                )
+
+        await self.collection.update_many(
+            {"magnet_uri": magnet_uri},
+            self._build_torrent_health_pipeline(now, append_failure=append_failure),
         )
 
     async def count_by_provider_slug_and_item_type(
