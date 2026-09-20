@@ -1,4 +1,3 @@
-import base64
 from typing import Dict, Optional
 
 import motor.motor_asyncio
@@ -8,6 +7,7 @@ from scrapeer import Scraper
 from betor.entities import TorrentTrackersInfo
 from betor.exceptions import TorrentTrackersInfoNotFound
 from betor.repositories import ItemsRepository
+from betor.utils import extract_magnet_info_hash
 
 
 class UpdateItemTorrentTrackersInfoService:
@@ -54,13 +54,9 @@ class UpdateItemTorrentTrackersInfoService:
 
     def get_torrent_trackers_info(self, magnet_uri: str) -> TorrentTrackersInfo:
         magnet = torf.Magnet.from_string(magnet_uri)
-        if not len(magnet.infohash) == 40:
-            try:
-                magnet.infohash = base64.b32decode(
-                    magnet.infohash.upper() + "=" * ((8 - len(magnet.infohash) % 8) % 8)
-                ).hex()
-            except:  # noqa: E722
-                pass
+        parsed_info_hash = extract_magnet_info_hash(magnet_uri)
+        if parsed_info_hash:
+            magnet.infohash = parsed_info_hash
         result = self.get_best_torrent_tracker_info(magnet)
         if not result:
             raise TorrentTrackersInfoNotFound(

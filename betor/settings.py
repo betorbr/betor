@@ -84,6 +84,17 @@ class StoreTorrentFileSettings(BaseSettings):
         return self.save_url is not None
 
 
+class ITorrentSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env", env_prefix="itorrent_", extra="allow"
+    )
+
+    upload_enabled: bool = True
+    download_enabled: bool = True
+    autoupload_url: str = "https://itorrents.net/upload.php"
+    public_download_base_url: str = "https://itorrents.net/torrent"
+
+
 class DownloadItemsStoreSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env", env_prefix="download_items_store_", extra="allow"
@@ -127,6 +138,7 @@ libtorrent_settings = LibtorrentSettings()
 search_job_monitor_settings = SearchJobMonitorSettings()
 tmdb_api_settings = TMDBApiSettings()
 store_torrent_file_settings = StoreTorrentFileSettings()
+itorrent_settings = ITorrentSettings()
 influx_db_stats_collector_settings = InfluxDBStatsCollectorSettings()
 download_items_store_settings = DownloadItemsStoreSettings()
 download_items_cache_settings = DownloadItemsCacheSettings()

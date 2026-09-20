@@ -5,8 +5,9 @@ from pydantic import BaseModel, computed_field
 
 from betor.entities import Episode, TorrentFailure
 from betor.enums import ItemType
-from betor.settings import store_torrent_file_settings
+from betor.settings import itorrent_settings, store_torrent_file_settings
 from betor.types import Languages
+from betor.utils import extract_magnet_info_hash
 
 
 class ItemSchema(BaseModel):
@@ -31,6 +32,7 @@ class ItemSchema(BaseModel):
     torrent_is_dying: bool
     torrent_is_dead: bool
     download_path: Optional[str]
+    itorrent_uploaded_at: Optional[datetime] = None
     languages: Languages
     episodes: List[Episode]
     seasons: List[int]
@@ -39,6 +41,13 @@ class ItemSchema(BaseModel):
 
     @computed_field
     def download_url(self) -> Optional[str]:
+        if itorrent_settings.download_enabled and self.itorrent_uploaded_at is not None:
+            info_hash = extract_magnet_info_hash(self.magnet_uri)
+            if info_hash:
+                return (
+                    f"{itorrent_settings.public_download_base_url}/{info_hash.upper()}.torrent"
+                )
+
         if store_torrent_file_settings.public_download_base_url and self.download_path:
             return f"{store_torrent_file_settings.public_download_base_url}/{self.download_path}"
         return None
