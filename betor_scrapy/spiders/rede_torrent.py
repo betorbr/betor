@@ -29,7 +29,6 @@ class RedeTorrentSpider(TitleJSONLDMixin, ProviderSpider, scrapy.Spider):
     def parse_item(self, response: scrapy.http.Response):
         assert isinstance(response, scrapy.http.TextResponse)
         loader = ProviderLoader(rede_torrent, response=response)
-
         informacoes_text = [
             t.strip()
             for t in response.xpath(
