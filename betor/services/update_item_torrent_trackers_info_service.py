@@ -30,6 +30,7 @@ class UpdateItemTorrentTrackersInfoService:
         trackers = set(
             list(magnet.tr)
             + [
+                "udp://tracker.opentrackr.org:1337/announce",
                 "udp://open.stealth.si:80/announce",
                 "udp://tracker-udp.gbitt.info:80/announce",
                 "http://ipv4announce.sktorrent.eu:6969/announce",
@@ -39,11 +40,14 @@ class UpdateItemTorrentTrackersInfoService:
         )
         for tracker in trackers:
             results = self.scraper.scrape(
-                hashes=[magnet.infohash],
+                hashes=[magnet.infohash, magnet.infohash.lower()],
                 trackers=[tracker],
-                timeout=15,
+                timeout=5,
             )
-            r = results.get(magnet.infohash, {})
+            r = results.get(magnet.infohash, {}) or results.get(
+                magnet.infohash.lower(), {}
+            )
+            print(f"Tracker: {tracker}, Result: {r}")
             if not result or r.get("seeders", 0) > result.get("seeders", 0):
                 result = r
         return result
