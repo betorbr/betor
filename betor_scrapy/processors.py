@@ -42,15 +42,16 @@ class Title:
             return None
         value = " ".join(values).strip()
         value = re.sub(r"\s+", " ", value)
-        value = re.sub(r" - [CAM|TS|HD|WEB-DL]+$", "", value)
+        value = re.sub(r"- [CAM|TS|HD|WEB-DL|Fan Dub|Legendado|Dublado]+", "", value)
         value = re.sub(r" - [\d]+ª [Temporada|TEMPORADA]+$", "", value)
         value = re.sub(r" S[\d]+$", "", value)
-        return value
+        return value.strip()
 
 
 class Quality:
     ALIASES = {
         "1080p / WEB-DL": QualityEnum.webdl_1080p,
+        "WEB-DL / 1080P / HD": QualityEnum.webdl_1080p,
     }
 
     def __call__(self, value: str) -> QualityEnum:

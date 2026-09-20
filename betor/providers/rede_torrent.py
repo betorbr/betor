@@ -2,8 +2,8 @@ from .provider import Provider
 
 rede_torrent = Provider(
     "rede-torrent",
-    "https://redetorrent.com",
-    "https://redetorrent.com/{page}/",
-    "https://redetorrent.com/index.php?s={qs}",
-    "https://redetorrent.com/{page}/?s={qs}",
+    "https://redestorrents.com",
+    "https://redestorrents.com/pagina/{page}/",
+    "https://redestorrents.com/index.php?s={qs}",
+    "https://redestorrents.com/pagina/{page}/?s={qs}",
 )
