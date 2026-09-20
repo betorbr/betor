@@ -3,6 +3,8 @@ from unittest import mock
 
 from betor.api.v1.items.schemas import ItemSchema
 from betor.entities import Item
+
+
 def test_download_url_uses_itorrent_when_enabled_and_uploaded(item: Item):
     payload = {
         **item,
