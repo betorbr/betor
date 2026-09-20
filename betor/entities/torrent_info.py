@@ -1,4 +1,5 @@
-from typing import List, Optional, TypedDict
+from datetime import datetime
+from typing import List, NotRequired, Optional, TypedDict
 
 
 class TorrentInfo(TypedDict):
@@ -6,3 +7,4 @@ class TorrentInfo(TypedDict):
     torrent_files: Optional[List[str]]
     torrent_size: Optional[int]
     download_path: Optional[str]
+    itorrent_uploaded_at: NotRequired[Optional[datetime]]

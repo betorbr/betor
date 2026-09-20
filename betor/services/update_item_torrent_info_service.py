@@ -1,15 +1,25 @@
 import tempfile
+from datetime import datetime
+from logging import getLogger
 from time import monotonic, sleep
 
 import fsspec
 import libtorrent as lt
 import motor.motor_asyncio
+import requests
 
 from betor.celery.app import celery_app
 from betor.entities import TorrentInfo
 from betor.exceptions import TorrentMetadataTimeout
 from betor.repositories import ItemsRepository
-from betor.settings import libtorrent_settings, store_torrent_file_settings
+from betor.settings import (
+    itorrent_settings,
+    libtorrent_settings,
+    store_torrent_file_settings,
+)
+
+
+logger = getLogger(__name__)
 
 
 class UpdateItemTorrentInfoService:
@@ -52,13 +62,25 @@ class UpdateItemTorrentInfoService:
                 )
             lt_file_storage = lt_torrent_info.orig_files()
             torrent_file = lt.create_torrent(lt_torrent_info)
+            torrent_bytes = lt.bencode(torrent_file.generate())
             download_path = None
             if store_torrent_file_settings.enabled:
                 download_path = f"{lt_torrent_info.info_hash()}.torrent"
                 with fsspec.open(
                     f"{store_torrent_file_settings.save_url}/{download_path}", "wb"
                 ) as f:
-                    f.write(lt.bencode(torrent_file.generate()))
+                    f.write(torrent_bytes)
+
+            itorrent_uploaded_at = None
+            if itorrent_settings.upload_enabled:
+                if self.upload_to_itorrent(torrent_bytes):
+                    itorrent_uploaded_at = datetime.now()
+                else:
+                    logger.warning(
+                        "Could not upload torrent metadata to iTorrent",
+                        extra={"magnet_uri": magnet_uri},
+                    )
+
             torrent_info = TorrentInfo(
                 torrent_name=lt_file_storage.name(),
                 torrent_files=[
@@ -67,6 +89,32 @@ class UpdateItemTorrentInfoService:
                 ],
                 torrent_size=lt_torrent_info.total_size(),
                 download_path=download_path,
+                itorrent_uploaded_at=itorrent_uploaded_at,
             )
             lt_session.remove_torrent(lt_torrent_handler)
             return torrent_info
+
+    @staticmethod
+    def upload_to_itorrent(torrent_file_bytes: bytes) -> bool:
+        try:
+            response = requests.post(
+                itorrent_settings.autoupload_url,
+                files={
+                    "torrent": (
+                        "upload.torrent",
+                        torrent_file_bytes,
+                        "application/x-bittorrent",
+                    )
+                },
+                timeout=10,
+            )
+            response.raise_for_status()
+            response_lines = [line.strip() for line in response.text.splitlines() if line.strip()]
+            if not response_lines:
+                return False
+            info_hash = response_lines[-1][:40]
+            return len(info_hash) == 40 and all(
+                c in "0123456789abcdefABCDEF" for c in info_hash
+            )
+        except requests.RequestException:
+            return False
