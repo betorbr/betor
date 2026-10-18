@@ -24,6 +24,11 @@ class QualityEnum(StrEnum):
     webdl_2160p = "WEBDL-2160p"
     bluray_2160p = "Bluray-2160p"
     bluray_2160p_remux = "Bluray-2160p Remux"
+    webdl = "WEBDL"
+    r2160p = "2160p"
+    r1080p = "1080p"
+    r720p = "720p"
+    r480p = "480p"
 
 
 class ItemsSortEnum(StrEnum):
