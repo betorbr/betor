@@ -52,6 +52,7 @@ class Quality:
     ALIASES = {
         "1080p / WEB-DL": QualityEnum.webdl_1080p,
         "WEB-DL / 1080P / HD": QualityEnum.webdl_1080p,
+        "WEB-DL": QualityEnum.webdl,
     }
 
     def __call__(self, value: str) -> QualityEnum:
