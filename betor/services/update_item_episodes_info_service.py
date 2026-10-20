@@ -52,7 +52,7 @@ class UpdateItemEpisodesInfoService:
             for result in DETERMINES_EPISODES_REGEX.finditer(f):
                 season = int(result.group("season"))
                 start_episode = int(result.group("episode"))
-                suffix = f[result.end() : result.end() + 12]
+                suffix = f[result.end(): result.end() + 12]
                 end_episode = None
                 if suffix.startswith("-") or suffix.startswith("_"):
                     range_match = re.search(r"[\-_]?(?P<episode>\d{1,2})", suffix)
