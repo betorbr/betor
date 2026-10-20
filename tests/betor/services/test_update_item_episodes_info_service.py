@@ -24,8 +24,9 @@ class TestUpdateItem:
         self,
         update_item_episodes_info_service: UpdateItemEpisodesInfoService,
     ):
+        item_id = "507f1f77bcf86cd799439011"
         item = {
-            "id": "507f1f77bcf86cd799439011",
+            "id": item_id,
             "torrent_name": "Marshals.Uma.História.de.Yellowstone.S02E03.WEB-DL.1080p.x264.DUAL.5.1-STARCKFILMES",
             "magnet_dn": "BAIXARAPIDO.COM-.EPISODIO-03.1080P.MKV.-DUBLADO-DUAL-AUDIO-.Marshals.Uma.História.de.Yellowstone.S02E03.WEB-DL.1080p.x264.DUAL.5.1-STARCKFILMES",
             "torrent_files": [
@@ -34,18 +35,24 @@ class TestUpdateItem:
                 "STARCKFILMES.jpg",
             ],
         }
-        update_item_episodes_info_service.items_repository.get_by_id = mock.AsyncMock(
-            return_value=item
-        )
-        update_item_episodes_info_service.items_repository.update_item_episodes_info = (
-            mock.AsyncMock()
-        )
 
-        result = await update_item_episodes_info_service.update_item(item["id"])
+        with (
+            mock.patch.object(
+                update_item_episodes_info_service.items_repository,
+                "get_by_id",
+                new=mock.AsyncMock(return_value=item),
+            ),
+            mock.patch.object(
+                update_item_episodes_info_service.items_repository,
+                "update_item_episodes_info",
+                new=mock.AsyncMock(),
+            ) as update_item_episodes_info_mock,
+        ):
+            result = await update_item_episodes_info_service.update_item(item_id)
 
         assert result == {"episodes": [{"season": 2, "episode": 3}], "seasons": [2]}
-        update_item_episodes_info_service.items_repository.update_item_episodes_info.assert_awaited_once_with(
-            item["id"], {"episodes": [{"season": 2, "episode": 3}], "seasons": [2]}
+        update_item_episodes_info_mock.assert_awaited_once_with(
+            item_id, {"episodes": [{"season": 2, "episode": 3}], "seasons": [2]}
         )
 
 
