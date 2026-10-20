@@ -18,6 +18,44 @@ def update_item_episodes_info_service(mongodb_client_mock):
     return UpdateItemEpisodesInfoService(mongodb_client_mock)
 
 
+class TestUpdateItem:
+    @pytest.mark.asyncio
+    async def test_uses_torrent_files_when_updating_by_item_id(
+        self,
+        update_item_episodes_info_service: UpdateItemEpisodesInfoService,
+    ):
+        item_id = "507f1f77bcf86cd799439011"
+        item = {
+            "id": item_id,
+            "torrent_name": "Marshals.Uma.História.de.Yellowstone.S02E03.WEB-DL.1080p.x264.DUAL.5.1-STARCKFILMES",
+            "magnet_dn": "BAIXARAPIDO.COM-.EPISODIO-03.1080P.MKV.-DUBLADO-DUAL-AUDIO-.Marshals.Uma.História.de.Yellowstone.S02E03.WEB-DL.1080p.x264.DUAL.5.1-STARCKFILMES",
+            "torrent_files": [
+                "Marshals.Uma.História.de.Yellowstone.S02E03.WEB-DL.1080p.x264.DUAL.5.1-STARCKFILMES.mkv",
+                "CANAL TELEGRAM.url",
+                "STARCKFILMES.jpg",
+            ],
+        }
+
+        with (
+            mock.patch.object(
+                update_item_episodes_info_service.items_repository,
+                "get_by_id",
+                new=mock.AsyncMock(return_value=item),
+            ),
+            mock.patch.object(
+                update_item_episodes_info_service.items_repository,
+                "update_item_episodes_info",
+                new=mock.AsyncMock(),
+            ) as update_item_episodes_info_mock,
+        ):
+            result = await update_item_episodes_info_service.update_item(item_id)
+
+        assert result == {"episodes": [{"season": 2, "episode": 3}], "seasons": [2]}
+        update_item_episodes_info_mock.assert_awaited_once_with(
+            item_id, {"episodes": [{"season": 2, "episode": 3}], "seasons": [2]}
+        )
+
+
 class TestDeterminesEpisodes:
     @pytest.mark.parametrize(
         (
@@ -54,6 +92,17 @@ class TestDeterminesEpisodes:
                     download_path=None,
                 ),
                 [Episode(season=3, episode=7), Episode(season=3, episode=6)],
+            ),
+            (
+                TorrentInfo(
+                    torrent_name=None,
+                    torrent_files=[
+                        "Youth S01E01-02 WEB-DL 1080p x264 DUAL 5.1.mkv",
+                    ],
+                    torrent_size=None,
+                    download_path=None,
+                ),
+                [Episode(season=1, episode=1), Episode(season=1, episode=2)],
             ),
         ],
     )
