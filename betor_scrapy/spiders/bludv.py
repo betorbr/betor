@@ -5,11 +5,10 @@ from betor.providers import bludv
 from betor_scrapy.loaders import ProviderLoader
 from betor_scrapy.utils import extract_fields
 
-from .mixins import UnlockSystemAdsMixin
 from .provider_spider import ProviderSpider
 
 
-class BludvSpider(ProviderSpider, UnlockSystemAdsMixin, scrapy.Spider):
+class BludvSpider(ProviderSpider, scrapy.Spider):
     provider = bludv
     name = bludv.slug
     allowed_domains = bludv.domains
@@ -51,4 +50,4 @@ class BludvSpider(ProviderSpider, UnlockSystemAdsMixin, scrapy.Spider):
             "imdb_id",
             "//div[@class='post']//a[starts-with(@href, 'https://www.imdb.com')]/@href",
         )
-        yield from self.unlock_system_ads_magnet_uris(response, loader)
+        yield loader.load_item()
