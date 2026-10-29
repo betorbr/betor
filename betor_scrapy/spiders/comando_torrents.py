@@ -5,11 +5,10 @@ from betor.providers import comando_torrents
 from betor_scrapy.loaders import ProviderLoader
 from betor_scrapy.utils import extract_fields
 
-from .mixins import UnlockSystemAdsMixin
 from .provider_spider import ProviderSpider
 
 
-class ComandoTorrentsSpider(ProviderSpider, UnlockSystemAdsMixin, scrapy.Spider):
+class ComandoTorrentsSpider(ProviderSpider, scrapy.Spider):
     provider = comando_torrents
     name = comando_torrents.slug
     allowed_domains = comando_torrents.domains
@@ -44,4 +43,4 @@ class ComandoTorrentsSpider(ProviderSpider, UnlockSystemAdsMixin, scrapy.Spider)
         loader.add_xpath(
             "imdb_id", "//article//a[starts-with(@href, 'https://www.imdb.com')]/@href"
         )
-        yield from self.unlock_system_ads_magnet_uris(response, loader)
+        yield loader.load_item()

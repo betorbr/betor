@@ -44,26 +44,51 @@ class StarckFilmesSpider(ProviderSpider, scrapy.Spider):
             return None
 
     @classmethod
-    def extract_magnets_from_filmedl_href(cls, href: str) -> List[str]:
-        results: List[str] = []
+    def unlock_filmedl_link(cls, href: str) -> Optional[str]:
         try:
             parsed = urllib.parse.urlparse(href)
             qs = urllib.parse.parse_qs(parsed.query)
-            for my_id in qs.get("id", []):
-                decoded = cls.decode_base64_url(my_id)
-                if not decoded:
-                    continue
-                if "magnet" in decoded:
-                    magnet_link = decoded
-                else:
-                    try:
-                        magnet_link = cls.unshuffle_string(decoded)
-                    except Exception:
-                        continue
-                results.append(magnet_link)
+            id_values = qs.get("id") or qs.get("xid")
+            if not id_values:
+                return None
+            id_value = "".join(id_values)
+
+            # Try reversal + base64 decode
+            try:
+                rev = id_value[::-1]
+                s1 = rev.replace("-", "+").replace("_", "/")
+                s1 += "=" * ((4 - len(s1) % 4) % 4)
+                dec1 = base64.b64decode(s1).decode("utf-8")
+                if "magnet:" in dec1:
+                    return dec1
+            except Exception:
+                pass
+
+            # Try unshuffle + base64 decode
+            try:
+                unsh = cls.unshuffle_string(id_value)
+                s2 = unsh.replace("-", "+").replace("_", "/")
+                s2 += "=" * ((4 - len(s2) % 4) % 4)
+                dec2 = base64.b64decode(s2).decode("utf-8")
+                if "magnet:" in dec2:
+                    return dec2
+            except Exception:
+                pass
+
+            # Try direct base64 decode / unshuffle
+            dec3 = cls.decode_base64_url(id_value)
+            if dec3:
+                if "magnet:" in dec3:
+                    return dec3
+                try:
+                    magnet_link = cls.unshuffle_string(dec3)
+                    if "magnet:" in magnet_link:
+                        return magnet_link
+                except Exception:
+                    pass
         except Exception:
             pass
-        return results
+        return None
 
     def parse(self, response: scrapy.http.Response):
         if response.xpath(
@@ -93,13 +118,15 @@ class StarckFilmesSpider(ProviderSpider, scrapy.Spider):
             loader.add_value(field, value)
         loader.add_xpath("raw_title", "//div[@class='main-title']//h1//text()")
         loader.add_xpath("magnet_uris", "//a[starts-with(@href, 'magnet')]/@href")
-        # Handle filmedl protected links like: https://filmedl.com/sf_mone/?id=<base64>
+
+        # Handle filmedl protected links (e.g. https://filmedl.com/sf_mone/?id=..., https://filmedl.com/?xid=...)
         for href in response.xpath(
-            "//a[starts-with(@href, 'https://filmedl.com/sf_mone/?id=')]/@href"
+            "//a[starts-with(@href, 'https://filmedl.com/')]/@href"
         ).getall():
-            for magnet_link in self.extract_magnets_from_filmedl_href(href):
-                if magnet_link:
-                    loader.add_value("magnet_uris", magnet_link)
+            magnet_link = self.unlock_filmedl_link(href)
+            if magnet_link:
+                loader.add_value("magnet_uris", magnet_link)
+
         for shuffled_magnet_link in response.xpath("//@data-u").getall():
             try:
                 magnet_link = StarckFilmesSpider.unshuffle_string(shuffled_magnet_link)

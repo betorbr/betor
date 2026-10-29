@@ -5,11 +5,10 @@ from betor.providers import torrent_dos_filmes
 from betor_scrapy.loaders import ProviderLoader
 from betor_scrapy.utils import extract_fields
 
-from .mixins import UnlockSystemAdsMixin
 from .provider_spider import ProviderSpider
 
 
-class TorrentDosFilmesSpider(ProviderSpider, UnlockSystemAdsMixin, scrapy.Spider):
+class TorrentDosFilmesSpider(ProviderSpider, scrapy.Spider):
     provider = torrent_dos_filmes
     name = torrent_dos_filmes.slug
     allowed_domains = torrent_dos_filmes.domains
@@ -47,4 +46,4 @@ class TorrentDosFilmesSpider(ProviderSpider, UnlockSystemAdsMixin, scrapy.Spider
         loader.add_xpath(
             "imdb_id", "//article//a[starts-with(@href, 'https://www.imdb.com')]/@href"
         )
-        yield from self.unlock_system_ads_magnet_uris(response, loader)
+        yield loader.load_item()
