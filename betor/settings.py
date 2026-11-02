@@ -67,7 +67,7 @@ class ITMDBApiSettings(BaseSettings):
         env_file=".env", env_prefix="it_mdb_api_", extra="allow"
     )
 
-    url: str = "http://localhost:8000"
+    url: str = "https://it-mdb-api.dgls.me"
     timeout: int = 30
 
 
