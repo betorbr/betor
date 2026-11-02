@@ -50,4 +50,17 @@ class BludvSpider(ProviderSpider, scrapy.Spider):
             "imdb_id",
             "//div[@class='post']//a[starts-with(@href, 'https://www.imdb.com')]/@href",
         )
+
+        unlocker = getattr(self, "bludv_unlocker", None)
+        if unlocker:
+            for gate_url in response.xpath(
+                "//a[contains(@href, '/gate/go/')]/@href"
+            ).getall():
+                try:
+                    magnet_link = unlocker.unlock_gate_url(gate_url, self)
+                    if magnet_link:
+                        loader.add_value("magnet_uris", magnet_link)
+                except Exception as e:
+                    self.logger.debug("Failed to unlock gate URL %s: %s", gate_url, e)
+
         yield loader.load_item()
