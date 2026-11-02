@@ -69,6 +69,12 @@ flower = "^2.0.1"
 faker = "^37.5.3"
 types-setuptools = "^80.9.0.20250809"
 
+[tool.black]
+exclude = "(\\.agents|_bmad)"
+
+[tool.mypy]
+exclude = ["^\\.agents/", "^_bmad/"]
+
 [tool.setuptools]
 packages = ["betor", "betor_scrapy"]
 

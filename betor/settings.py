@@ -62,13 +62,13 @@ class SearchJobMonitorSettings(BaseSettings):
     ttl: int = 30 * 60
 
 
-class TMDBApiSettings(BaseSettings):
+class ITMDBApiSettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env", env_prefix="tmdb_api_", extra="allow"
+        env_file=".env", env_prefix="it_mdb_api_", extra="allow"
     )
 
-    access_token: Optional[str] = None
-    rate_limit: str = "1/s"
+    url: str = "http://localhost:8000"
+    timeout: int = 30
 
 
 class StoreTorrentFileSettings(BaseSettings):
@@ -136,7 +136,7 @@ celery_settings = CelerySettings()
 scrapyd_settings = ScrapydSettings()
 libtorrent_settings = LibtorrentSettings()
 search_job_monitor_settings = SearchJobMonitorSettings()
-tmdb_api_settings = TMDBApiSettings()
+itmdb_api_settings = ITMDBApiSettings()
 store_torrent_file_settings = StoreTorrentFileSettings()
 itorrent_settings = ITorrentSettings()
 influx_db_stats_collector_settings = InfluxDBStatsCollectorSettings()

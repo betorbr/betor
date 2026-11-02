@@ -3,8 +3,7 @@ from typing import Optional
 
 from betor.entities import RawItem
 from betor.enums import ItemType
-from betor.external_apis import TMDBSearchMultiAPI
-from betor.settings import tmdb_api_settings
+from betor.external_apis import ITMDBAPI, ITMDBAPIError
 from betor.types import Scores, StrategyGenerator
 from betor.utils import jaccard_similarity
 
@@ -14,8 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 class TmdbTranslatedTitleSearchStrategy(Strategy):
-    def __init__(self, tmdb_search_multi_api: TMDBSearchMultiAPI):
-        self.tmdb_search_multi_api = tmdb_search_multi_api
+    def __init__(self, itmdb_api: ITMDBAPI):
+        self.itmdb_api = itmdb_api
 
     async def __call__(
         self,
@@ -28,16 +27,12 @@ class TmdbTranslatedTitleSearchStrategy(Strategy):
                 "Skipping TmdbTranslatedTitleSearchStrategy due to missing translated title"
             )
             return
-        if not tmdb_api_settings.access_token:
-            logger.warning(
-                "Skipping TmdbTranslatedTitleSearchStrategy due to missing TMDb API token"
-            )
+        try:
+            results = await self.itmdb_api.search(raw_item["translated_title"], "pt-BR")
+        except ITMDBAPIError:
             return
-        response = await self.tmdb_search_multi_api.execute(
-            raw_item["translated_title"], "pt-BR"
-        )
-        for result in response["results"]:
-            title_name = result.get("title") or result.get("name")
+        for result in results:
+            title_name = result.get("title") or result.get("original_title")
             if not title_name:
                 continue
             similarity = jaccard_similarity(
@@ -46,7 +41,11 @@ class TmdbTranslatedTitleSearchStrategy(Strategy):
             )
             if similarity < 0.95:
                 break
-            if result["media_type"] == "movie":
-                yield self, similarity * 100, None, str(result["id"]), ItemType.movie
-            elif result["media_type"] == "tv":
-                yield self, similarity * 100, None, str(result["id"]), ItemType.tv
+            media_type = result.get("media_type")
+            tmdb_id = result.get("tmdb_id") or result.get("id")
+            if not tmdb_id:
+                continue
+            if media_type == "movie":
+                yield self, similarity * 100, None, str(tmdb_id), ItemType.movie
+            elif media_type == "tv":
+                yield self, similarity * 100, None, str(tmdb_id), ItemType.tv

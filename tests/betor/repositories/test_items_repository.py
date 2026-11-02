@@ -225,9 +225,9 @@ class TestRecordTorrentFailure:
         history_filter = pipeline[0]["$set"]["torrent_failure_history"]["$filter"]
         assert history_filter["input"] == {"$ifNull": ["$torrent_failure_history", []]}
 
-        day_format = pipeline[1]["$set"]["torrent_failure_days"]["$size"]["$setUnion"][0][
-            "$map"
-        ]["in"]["$dateToString"]
+        day_format = pipeline[1]["$set"]["torrent_failure_days"]["$size"]["$setUnion"][
+            0
+        ]["$map"]["in"]["$dateToString"]
         assert day_format == {
             "format": "%Y-%m-%d",
             "date": "$$failure.occurred_at",
@@ -306,12 +306,16 @@ class TestRecordTorrentFailure:
             },
         )
 
-        with mock.patch("betor.repositories.items_repository.logger.warning") as warning:
+        with mock.patch(
+            "betor.repositories.items_repository.logger.warning"
+        ) as warning:
             await items_repository.record_torrent_failure("magnet-uri", failure)
 
         warning.assert_called_once()
         _, pipeline = collection_mock.update_many.call_args.args
-        history_input = pipeline[0]["$set"]["torrent_failure_history"]["$filter"]["input"]
+        history_input = pipeline[0]["$set"]["torrent_failure_history"]["$filter"][
+            "input"
+        ]
         assert history_input == {"$ifNull": ["$torrent_failure_history", []]}
 
     @pytest.mark.asyncio
@@ -333,7 +337,9 @@ class TestRecordTorrentFailure:
 
         warning.assert_called_once()
         _, pipeline = collection_mock.update_many.call_args.args
-        history_input = pipeline[0]["$set"]["torrent_failure_history"]["$filter"]["input"]
+        history_input = pipeline[0]["$set"]["torrent_failure_history"]["$filter"][
+            "input"
+        ]
         assert history_input == {"$ifNull": ["$torrent_failure_history", []]}
 
     def test_parse_result_uses_legacy_health_defaults(self):

@@ -22,7 +22,6 @@ from betor.enums import ItemType
 from betor.settings import database_mongodb_settings
 from betor.types import InsertOrUpdateResult
 
-
 logger = logging.getLogger(__name__)
 
 
