@@ -104,6 +104,21 @@ class TestDeterminesEpisodes:
                 ),
                 [Episode(season=1, episode=1), Episode(season=1, episode=2)],
             ),
+            (
+                TorrentInfo(
+                    torrent_name=None,
+                    torrent_files=[
+                        "Avatar - Os Sete Refúgios S01E04-05-06 WEB-DL 1080p x264 DUAL 5.1.mkv",
+                    ],
+                    torrent_size=None,
+                    download_path=None,
+                ),
+                [
+                    Episode(season=1, episode=4),
+                    Episode(season=1, episode=5),
+                    Episode(season=1, episode=6),
+                ],
+            ),
         ],
     )
     def test_ok(

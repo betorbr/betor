@@ -52,25 +52,21 @@ class UpdateItemEpisodesInfoService:
             for result in DETERMINES_EPISODES_REGEX.finditer(f):
                 season = int(result.group("season"))
                 start_episode = int(result.group("episode"))
-                suffix = f[result.end() : result.end() + 12]  # noqa: E203
-                end_episode = None
-                if suffix.startswith("-") or suffix.startswith("_"):
-                    range_match = re.search(r"[\-_]?(?P<episode>\d{1,2})", suffix)
-                    if range_match and range_match.start() in {0, 1}:
-                        end_episode = int(range_match.group("episode"))
-                elif suffix.startswith("E") or suffix.startswith("e"):
-                    range_match = re.match(r"(?i)E(?P<episode>\d{1,2})", suffix)
-                    if range_match:
-                        end_episode = int(range_match.group("episode"))
+                suffix = f[result.end() :]  # noqa: E203
+                parsed_episodes = [start_episode]
+                pos = 0
+                while pos < len(suffix):
+                    match = re.match(
+                        r"(?i)^([-_]+E?|E)(?P<episode>\d{1,2})(?!\d)", suffix[pos:]
+                    )
+                    if not match:
+                        break
+                    parsed_episodes.append(int(match.group("episode")))
+                    pos += match.end()
 
-                episode_numbers = [start_episode]
-                if end_episode is not None:
-                    if end_episode >= start_episode:
-                        episode_numbers = list(range(start_episode, end_episode + 1))
-                    else:
-                        episode_numbers = list(
-                            range(start_episode, end_episode - 1, -1)
-                        )
+                episode_numbers = list(
+                    range(min(parsed_episodes), max(parsed_episodes) + 1)
+                )
                 for episode_number in episode_numbers:
                     episodes.append(Episode(season=season, episode=episode_number))
         return episodes
