@@ -217,3 +217,4 @@ scrapyd-eggs/
 
 # local tests
 /test_*
+torrents/

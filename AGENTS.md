@@ -1,5 +1,5 @@
 <!-- bmad:context -->
-<!-- Verified 2026-08-30 against 1ff0bfc. Managed by bmad-project-context; edits inside this block are replaced on refresh. Keep anything you want preserved outside the markers. -->
+<!-- Verified 2026-11-02 against d8544d9. Managed by bmad-project-context; edits inside this block are replaced on refresh. Keep anything you want preserved outside the markers. -->
 
 ## BeTor
 
