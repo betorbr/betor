@@ -24,7 +24,7 @@ async def lifespan(app: BetorFastAPI):
     app.scheduler.shutdown()
 
 
-app = BetorFastAPI(lifespan=lifespan)
+app = BetorFastAPI(lifespan=lifespan, version="1.58.0", title="BeTor API")
 instrumentator = Instrumentator()
 
 add_pagination(app)
