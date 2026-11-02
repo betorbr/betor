@@ -9,7 +9,11 @@ from betor.services.update_item_torrent_info_service import (
 from betor.services.update_item_torrent_trackers_info_service import (
     UpdateItemTorrentTrackersInfoService,
 )
-from betor.settings import itorrent_settings, libtorrent_settings
+from betor.settings import (
+    itorrent_settings,
+    libtorrent_settings,
+    store_torrent_file_settings,
+)
 
 
 @pytest.mark.asyncio
@@ -145,6 +149,7 @@ def test_metadata_service_sets_upload_timestamp_when_itorrent_upload_succeeds():
             "betor.services.update_item_torrent_info_service.fsspec.open"
         ) as fsspec_open_mock,
         mock.patch.object(itorrent_settings, "upload_enabled", True),
+        mock.patch.object(store_torrent_file_settings, "save_url", "memory://test"),
         mock.patch.object(
             service, "upload_to_itorrent", return_value=True
         ) as upload_mock,
@@ -191,6 +196,7 @@ def test_metadata_service_keeps_upload_timestamp_null_when_itorrent_upload_fails
             "betor.services.update_item_torrent_info_service.fsspec.open"
         ) as fsspec_open_mock,
         mock.patch.object(itorrent_settings, "upload_enabled", True),
+        mock.patch.object(store_torrent_file_settings, "save_url", "memory://test"),
         mock.patch.object(service, "upload_to_itorrent", return_value=False),
     ):
         mock_file = mock.MagicMock()
@@ -233,6 +239,7 @@ def test_metadata_service_does_not_call_itorrent_upload_when_disabled():
             "betor.services.update_item_torrent_info_service.fsspec.open"
         ) as fsspec_open_mock,
         mock.patch.object(itorrent_settings, "upload_enabled", False),
+        mock.patch.object(store_torrent_file_settings, "save_url", "memory://test"),
         mock.patch.object(service, "upload_to_itorrent") as upload_mock,
     ):
         mock_file = mock.MagicMock()
