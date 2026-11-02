@@ -25,6 +25,7 @@ HTTPCACHE_POLICY = "betor_scrapy.httpcache.BetorHTTPCachePolicy"
 HTTPCACHE_IGNORE_HTTP_CODES = [500]
 EXTENSIONS = {
     "betor_scrapy.extensions.FlareSolverrExtension": 500,
+    "betor_scrapy.extensions.UnlockBludvGateExtension": 501,
 }
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",

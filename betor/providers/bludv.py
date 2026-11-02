@@ -2,7 +2,7 @@ from .provider import Provider
 
 bludv = Provider(
     "bludv",
-    "https://bludvfilmes1.xyz",
+    "https://bludvfilmes2.xyz",
     "{base_url}/page/{page}/",
     "{base_url}/?s={qs}",
     "{base_url}/page/{page}/?s={qs}",
@@ -13,6 +13,7 @@ bludv = Provider(
         "bludv1.com",
         "bludv2.xyz",
         "bludvfilmes.xyz",
+        "bludvfilmes1.xyz",
     ],
     cf_clearance_domain=".bludvfilmes1.xyz",
 )
