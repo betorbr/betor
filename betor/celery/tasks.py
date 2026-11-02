@@ -3,7 +3,6 @@ import logging
 from datetime import UTC, datetime
 from typing import Optional
 
-import httpx
 from celery import Task
 
 from betor.databases.mongodb import get_mongodb_client
@@ -18,7 +17,6 @@ from betor.services import (
     UpdateItemTorrentInfoService,
     UpdateItemTorrentTrackersInfoService,
 )
-from betor.settings import tmdb_api_settings
 
 from .app import celery_app
 
@@ -107,15 +105,6 @@ def _update_item_episodes_info(
     return result
 
 
-def _tmdb_api_request(url: str):
-    assert tmdb_api_settings.access_token
-    response = httpx.get(
-        url, headers={"Authorization": f"Bearer {tmdb_api_settings.access_token}"}
-    )
-    response.raise_for_status()
-    return response.json()
-
-
 def _update_item_torrent_trackers_info(magnet_uri: str, **kwargs):
     mongodb_client = get_mongodb_client()
     service = UpdateItemTorrentTrackersInfoService(mongodb_client)
@@ -178,11 +167,6 @@ update_item_episodes_info = celery_app.task(
     _update_item_episodes_info,
     base=BetorCeleryTask,
     name="update_item_episodes_info",
-)
-tmdb_api_request = celery_app.task(
-    _tmdb_api_request,
-    name="tmdb_api_request",
-    rate_limit=tmdb_api_settings.rate_limit,
 )
 update_item_torrent_trackers_info = celery_app.task(
     _update_item_torrent_trackers_info,

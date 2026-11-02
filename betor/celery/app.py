@@ -12,14 +12,12 @@ celery_app = Celery(
 celery_app.conf.task_queues = [
     Queue("items"),
     Queue("torrents"),
-    Queue("api-requests"),
 ]
 celery_app.conf.task_routes = {
     "process_raw_item": {"queue": "items"},
     "update_item_languages_info": {"queue": "items"},
     "update_item_episodes_info": {"queue": "items"},
     "update_item_torrent_info": {"queue": "torrents"},
-    "tmdb_api_request": {"queue": "api-requests"},
     "update_item_torrent_trackers_info": {"queue": "torrents"},
     "admin_bulk_update_item": {"queue": "items"},
 }

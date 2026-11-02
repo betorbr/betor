@@ -1,5 +1,6 @@
-import pytest
 from unittest import mock
+
+import pytest
 
 from betor.utils import extract_magnet_info_hash, jaccard_similarity
 
@@ -27,11 +28,16 @@ class TestExtractMagnetInfoHash:
             "magnet:?xt=urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c&dn=test"
         )
 
-        assert extract_magnet_info_hash(magnet_uri) == "dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c"
+        assert (
+            extract_magnet_info_hash(magnet_uri)
+            == "dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c"
+        )
 
     def test_returns_hex_info_hash_for_base32_magnet(self):
         mock_magnet = mock.Mock(infohash="MFRGGZDFMZTWQ2LKNNWG23TPOBYXE43U")
-        with mock.patch("betor.utils.torf.Magnet.from_string", return_value=mock_magnet):
+        with mock.patch(
+            "betor.utils.torf.Magnet.from_string", return_value=mock_magnet
+        ):
             assert (
                 extract_magnet_info_hash("magnet:?xt=urn:btih:any")
                 == "6162636465666768696a6b6c6d6e6f7071727374"

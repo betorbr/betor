@@ -4,7 +4,7 @@ from typing import List, Optional, TypedDict
 import motor.motor_asyncio
 
 from betor.enums import ItemType
-from betor.external_apis import TMDBFindByIdAPI
+from betor.external_apis import ITMDBAPI, ITMDBAPIError
 from betor.repositories import ItemsRepository
 
 
@@ -28,7 +28,7 @@ class AdminNormalizeItemsTMDBIdResult(TypedDict):
 class AdminNormalizeItemsTMDBIdService:
     def __init__(self, mongodb_client: motor.motor_asyncio.AsyncIOMotorClient):
         self.items_repository = ItemsRepository(mongodb_client)
-        self.tmdb_find_by_id_api = TMDBFindByIdAPI()
+        self.itmdb_api = ITMDBAPI()
 
     async def normalize(self) -> AdminNormalizeItemsTMDBIdResult:
         result = AdminNormalizeItemsTMDBIdResult(success=[], failed=[])
@@ -36,24 +36,44 @@ class AdminNormalizeItemsTMDBIdService:
         for item in items:
             try:
                 assert item["id"] and item["imdb_id"]
-                response = await self.tmdb_find_by_id_api.execute(
-                    item["imdb_id"], "imdb_id"
-                )
-                results = response["movie_results"] + response["tv_results"]
-                for r in results:
-                    if (
-                        item["item_type"] == ItemType.movie
-                        and r["media_type"] != "movie"
-                    ) or (item["item_type"] == ItemType.tv and r["media_type"] != "tv"):
-                        continue
-                    tmdb_id = str(r["id"])
+                imdb_id = item["imdb_id"]
+                item_type = item["item_type"]
+
+                tmdb_id = None
+                if item_type == ItemType.movie:
+                    try:
+                        resp = await self.itmdb_api.get_movie_by_imdb_id(imdb_id)
+                        tmdb_id = str(resp.get("tmdb_id") or resp.get("id"))
+                    except ITMDBAPIError:
+                        pass
+                elif item_type == ItemType.tv:
+                    try:
+                        resp = await self.itmdb_api.get_tvshow_by_imdb_id(imdb_id)
+                        tmdb_id = str(resp.get("tmdb_id") or resp.get("id"))
+                    except ITMDBAPIError:
+                        pass
+
+                if not tmdb_id:
+                    # try both
+                    try:
+                        resp = await self.itmdb_api.get_movie_by_imdb_id(imdb_id)
+                        tmdb_id = str(resp.get("tmdb_id") or resp.get("id"))
+                    except ITMDBAPIError:
+                        try:
+                            resp = await self.itmdb_api.get_tvshow_by_imdb_id(imdb_id)
+                            tmdb_id = str(resp.get("tmdb_id") or resp.get("id"))
+                        except ITMDBAPIError:
+                            pass
+
+                if tmdb_id:
                     await self.items_repository.update_tmdb_id(item["id"], tmdb_id)
                     result["success"].append(
                         AdminNormalizeItemsTMDBIdResultSucess(
                             item_id=item["id"], imdb_id=item["imdb_id"], tmdb_id=tmdb_id
                         )
                     )
-                    break
+                else:
+                    raise ValueError(f"Could not find tmdb_id for {imdb_id}")
             except Exception:
                 result["failed"].append(
                     AdminNormalizeItemsTMDBIdResultFailed(

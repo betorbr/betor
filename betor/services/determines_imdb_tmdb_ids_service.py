@@ -16,11 +16,9 @@ from betor.adapters.determines_strategies import (
 from betor.entities import RawItem
 from betor.enums import ItemType
 from betor.external_apis import (
+    ITMDBAPI,
     IMDBIAmIdiotAreYouTooSearchAPI,
     IMDbSuggestionAPI,
-    TMDBExternalIdsAPI,
-    TMDBFindByIdAPI,
-    TMDBSearchMultiAPI,
     TMDBTrendingAPI,
 )
 from betor.repositories import ProviderURLIMDBMappingRepository
@@ -38,25 +36,23 @@ class DeterminesIMDbTMDBIdsService:
 
     def __init__(self, mongodb_client: motor.motor_asyncio.AsyncIOMotorClient):
         self.tmdb_trending_api = TMDBTrendingAPI()
-        self.tmdb_find_by_id_api = TMDBFindByIdAPI()
+        self.itmdb_api = ITMDBAPI()
         self.imdb_suggestion_api = IMDbSuggestionAPI()
         self.provider_url_imdb_mapping_repository = ProviderURLIMDBMappingRepository(
             mongodb_client
         )
-        self.tmdb_external_ids_api = TMDBExternalIdsAPI()
         self.imdb_search_api = IMDBIAmIdiotAreYouTooSearchAPI()
-        self.tmdb_search_multi_api = TMDBSearchMultiAPI()
         self.strategies = [
             ProviderURLMappingStrategy(
-                self.provider_url_imdb_mapping_repository, self.tmdb_find_by_id_api
+                self.provider_url_imdb_mapping_repository, self.itmdb_api
             ),
             RawImdbIdStrategy(),
             ImdbSearchStrategy(self.imdb_search_api),
             ImdbSuggestionStrategy(self.imdb_suggestion_api),
             TmdbTrendingStrategy(self.tmdb_trending_api),
-            TmdbTranslatedTitleSearchStrategy(self.tmdb_search_multi_api),
-            TmdbFindByImdbStrategy(self.tmdb_find_by_id_api),
-            ImdbFindByTmdbStrategy(self.tmdb_external_ids_api),
+            TmdbTranslatedTitleSearchStrategy(self.itmdb_api),
+            TmdbFindByImdbStrategy(self.itmdb_api),
+            ImdbFindByTmdbStrategy(self.itmdb_api),
         ]
 
     async def determines(self, raw_item: RawItem) -> Tuple[

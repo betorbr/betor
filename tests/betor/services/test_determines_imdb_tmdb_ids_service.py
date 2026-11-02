@@ -21,13 +21,10 @@ def mongodb_client_mock():
 def determines_service(mongodb_client_mock):
     with (
         mock.patch("betor.services.determines_imdb_tmdb_ids_service.TMDBTrendingAPI"),
-        mock.patch("betor.services.determines_imdb_tmdb_ids_service.TMDBFindByIdAPI"),
+        mock.patch("betor.services.determines_imdb_tmdb_ids_service.ITMDBAPI"),
         mock.patch("betor.services.determines_imdb_tmdb_ids_service.IMDbSuggestionAPI"),
         mock.patch(
             "betor.services.determines_imdb_tmdb_ids_service.ProviderURLIMDBMappingRepository"
-        ),
-        mock.patch(
-            "betor.services.determines_imdb_tmdb_ids_service.TMDBExternalIdsAPI"
         ),
     ):
         yield DeterminesIMDbTMDBIdsService(mongodb_client_mock)

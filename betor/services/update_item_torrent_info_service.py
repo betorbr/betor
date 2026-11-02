@@ -32,7 +32,9 @@ def extract_itorrent_info_hash(response_text: str) -> str | None:
     ):
         match = re.search(pattern, response_text)
         if match:
-            info_hash = match.group(1) if pattern.startswith("/torrent/") else match.group(0)
+            info_hash = (
+                match.group(1) if pattern.startswith("/torrent/") else match.group(0)
+            )
             if len(info_hash) == 40 and all(
                 c in "0123456789abcdefABCDEF" for c in info_hash
             ):

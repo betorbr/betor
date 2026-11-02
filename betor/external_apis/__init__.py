@@ -13,21 +13,11 @@ from .imdb_suggestion_api import (
     IMDbSuggestionResponseLink,
     IMDbSuggestionResponseTitle,
 )
-from .tmdb_external_ids_api import (
-    TMDBExternalIdsAPI,
-    TMDBExternalIdsAPIError,
-    TMDBExternalIdsResponse,
-)
-from .tmdb_find_by_id_api import (
-    TMDBFindByIdAPI,
-    TMDBFindByIdAPIError,
-    TMDBFindByIdResponse,
-    TMDBFindByIdResponseResult,
-)
-from .tmdb_search_multi_api import (
-    TMDBSearchMultiAPI,
-    TMDBSearchMultiAPIError,
-    TMDBSearchMultiAPIResponse,
+from .itmdb_api import (
+    ITMDBAPI,
+    ITMDBAPIError,
+    ITMDBItemResponse,
+    ITMDBSearchItemResponse,
 )
 from .tmdb_trending_api import (
     TMDBTrendingAPI,
@@ -43,25 +33,19 @@ __all__ = [
     "IMDbSuggestionResponseTitle",
     "IMDbSuggestionResponseLink",
     "IMDbSuggestionResponseImage",
-    "TMDBTrendingAPI",
-    "TMDBTrendingAPIError",
-    "TMDBTrendingResponse",
-    "TMDBTrendingResponseResultTitle",
-    "TMDBFindByIdAPI",
-    "TMDBFindByIdAPIError",
-    "TMDBFindByIdResponse",
-    "TMDBFindByIdResponseResult",
     "IMDBAPIDevSearchAPI",
     "IMDBAPIDevSearchAPIError",
     "IMDBAPIDevTitleAPI",
     "IMDBAPIDevTitleAPIError",
-    "TMDBExternalIdsAPI",
-    "TMDBExternalIdsResponse",
-    "TMDBExternalIdsAPIError",
     "IMDBIAmIdiotAreYouTooSearchAPI",
     "IMDBIAmIdiotAreYouTooSearchAPIResponse",
     "IMDBIAmIdiotAreYouTooSearchAPIError",
-    "TMDBSearchMultiAPI",
-    "TMDBSearchMultiAPIResponse",
-    "TMDBSearchMultiAPIError",
+    "ITMDBAPI",
+    "ITMDBAPIError",
+    "ITMDBItemResponse",
+    "ITMDBSearchItemResponse",
+    "TMDBTrendingAPI",
+    "TMDBTrendingAPIError",
+    "TMDBTrendingResponse",
+    "TMDBTrendingResponseResultTitle",
 ]

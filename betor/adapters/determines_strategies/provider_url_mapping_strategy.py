@@ -2,7 +2,7 @@ from typing import Optional
 
 from betor.entities import RawItem
 from betor.enums import ItemType
-from betor.external_apis import TMDBFindByIdAPI, TMDBFindByIdAPIError
+from betor.external_apis import ITMDBAPI, ITMDBAPIError
 from betor.repositories import ProviderURLIMDBMappingRepository
 from betor.types import Scores, StrategyGenerator
 
@@ -13,10 +13,10 @@ class ProviderURLMappingStrategy(Strategy):
     def __init__(
         self,
         provider_repo: ProviderURLIMDBMappingRepository,
-        tmdb_find_by_id_api: TMDBFindByIdAPI,
+        itmdb_api: ITMDBAPI,
     ):
         self.provider_repo = provider_repo
-        self.tmdb_find_by_id_api = tmdb_find_by_id_api
+        self.itmdb_api = itmdb_api
 
     async def __call__(
         self,
@@ -27,17 +27,18 @@ class ProviderURLMappingStrategy(Strategy):
         if provider_url_mapping := await self.provider_repo.get(
             raw_item["provider_url"]
         ):
+            imdb_id = provider_url_mapping["imdb_id"]
             try:
-                response = await self.tmdb_find_by_id_api.execute(
-                    provider_url_mapping["imdb_id"], "imdb_id"
-                )
-                for movie in response["movie_results"]:
-                    yield self, 100.0, provider_url_mapping["imdb_id"], str(
-                        movie["id"]
-                    ), ItemType.movie
-                for tv in response["tv_results"]:
-                    yield self, 100.0, provider_url_mapping["imdb_id"], str(
-                        tv["id"]
-                    ), ItemType.tv
-            except TMDBFindByIdAPIError:
-                return
+                response = await self.itmdb_api.get_movie_by_imdb_id(imdb_id)
+                tmdb_id = response.get("tmdb_id") or response.get("id")
+                if tmdb_id:
+                    yield self, 100.0, imdb_id, str(tmdb_id), ItemType.movie
+            except ITMDBAPIError:
+                pass
+            try:
+                response = await self.itmdb_api.get_tvshow_by_imdb_id(imdb_id)
+                tmdb_id = response.get("tmdb_id") or response.get("id")
+                if tmdb_id:
+                    yield self, 100.0, imdb_id, str(tmdb_id), ItemType.tv
+            except ITMDBAPIError:
+                pass

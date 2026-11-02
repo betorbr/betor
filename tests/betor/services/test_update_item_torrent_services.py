@@ -9,7 +9,11 @@ from betor.services.update_item_torrent_info_service import (
 from betor.services.update_item_torrent_trackers_info_service import (
     UpdateItemTorrentTrackersInfoService,
 )
-from betor.settings import itorrent_settings, libtorrent_settings
+from betor.settings import (
+    itorrent_settings,
+    libtorrent_settings,
+    store_torrent_file_settings,
+)
 
 
 @pytest.mark.asyncio
@@ -141,13 +145,21 @@ def test_metadata_service_sets_upload_timestamp_when_itorrent_upload_succeeds():
             "betor.services.update_item_torrent_info_service.monotonic",
             return_value=0,
         ),
+        mock.patch(
+            "betor.services.update_item_torrent_info_service.fsspec.open"
+        ) as fsspec_open_mock,
         mock.patch.object(itorrent_settings, "upload_enabled", True),
+        mock.patch.object(store_torrent_file_settings, "save_url", "memory://test"),
         mock.patch.object(
             service, "upload_to_itorrent", return_value=True
         ) as upload_mock,
     ):
+        mock_file = mock.MagicMock()
+        fsspec_open_mock.return_value.__enter__.return_value = mock_file
         torrent_info = service.get_info_from_lt_session("magnet-uri")
 
+    fsspec_open_mock.assert_called_once()
+    mock_file.write.assert_called_once_with(b"torrent-content")
     upload_mock.assert_called_once_with(b"torrent-content")
     assert torrent_info["itorrent_uploaded_at"] is not None
     session.remove_torrent.assert_called_once_with(handler)
@@ -180,11 +192,19 @@ def test_metadata_service_keeps_upload_timestamp_null_when_itorrent_upload_fails
             "betor.services.update_item_torrent_info_service.monotonic",
             return_value=0,
         ),
+        mock.patch(
+            "betor.services.update_item_torrent_info_service.fsspec.open"
+        ) as fsspec_open_mock,
         mock.patch.object(itorrent_settings, "upload_enabled", True),
+        mock.patch.object(store_torrent_file_settings, "save_url", "memory://test"),
         mock.patch.object(service, "upload_to_itorrent", return_value=False),
     ):
+        mock_file = mock.MagicMock()
+        fsspec_open_mock.return_value.__enter__.return_value = mock_file
         torrent_info = service.get_info_from_lt_session("magnet-uri")
 
+    fsspec_open_mock.assert_called_once()
+    mock_file.write.assert_called_once_with(b"torrent-content")
     assert torrent_info["itorrent_uploaded_at"] is None
 
 
@@ -215,11 +235,19 @@ def test_metadata_service_does_not_call_itorrent_upload_when_disabled():
             "betor.services.update_item_torrent_info_service.monotonic",
             return_value=0,
         ),
+        mock.patch(
+            "betor.services.update_item_torrent_info_service.fsspec.open"
+        ) as fsspec_open_mock,
         mock.patch.object(itorrent_settings, "upload_enabled", False),
+        mock.patch.object(store_torrent_file_settings, "save_url", "memory://test"),
         mock.patch.object(service, "upload_to_itorrent") as upload_mock,
     ):
+        mock_file = mock.MagicMock()
+        fsspec_open_mock.return_value.__enter__.return_value = mock_file
         torrent_info = service.get_info_from_lt_session("magnet-uri")
 
+    fsspec_open_mock.assert_called_once()
+    mock_file.write.assert_called_once_with(b"torrent-content")
     upload_mock.assert_not_called()
     assert torrent_info["itorrent_uploaded_at"] is None
 
@@ -230,13 +258,11 @@ def test_upload_itorrent_accepts_success_page_with_torrent_url():
     )
 
     hash_value = "ED0E37901D11FABDEF74134260894A26B1FABCD8"
-    success_html = f"""
-    <html>
-      <body>
+    success_html = f"""<html>
+    <body>
         <a href="/torrent/{hash_value}.torrent">Download</a>
-      </body>
-    </html>
-    """
+    </body>
+</html>"""
 
     with (
         mock.patch(
@@ -278,8 +304,14 @@ def test_verify_itorrent_download_exists_tries_upper_and_lowercase_hashes():
 
         assert verify_itorrent_download_exists("abc", timeout=10) is True
         assert head_mock.call_count == 2
-        assert head_mock.call_args_list[0].args[0] == "https://itorrents.net/torrent/ABC.torrent"
-        assert head_mock.call_args_list[1].args[0] == "https://itorrents.net/torrent/abc.torrent"
+        assert (
+            head_mock.call_args_list[0].args[0]
+            == "https://itorrents.net/torrent/ABC.torrent"
+        )
+        assert (
+            head_mock.call_args_list[1].args[0]
+            == "https://itorrents.net/torrent/abc.torrent"
+        )
 
 
 def test_upload_itorrent_rejects_error_no_data_response():
