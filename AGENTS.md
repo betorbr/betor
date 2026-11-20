@@ -19,7 +19,7 @@ P2P movie and TV series search engine. Python 3.13+, FastAPI for API, Scrapy for
 - Scrapers (Scrapy): `betor_scrapy/spiders/` — spider definitions
 - Unit tests: `tests/` — test coverage, no external services needed
 - Acceptance/integration tests: `acceptance_tests/` — full-stack validation with `docker compose -f acceptance-tests.docker-compose.yml`
-- CI/CD: `.github/workflows/ci.yml` (linting, typing, unit tests), `release.yml` (Docker build on tags)
+- CI/CD: `.github/workflows/ci.yml` (linting, typing, unit tests), `.github/workflows/cd.yml` (Docker build and publish to GHCR on tags)
 
 ## Running and verifying
 
